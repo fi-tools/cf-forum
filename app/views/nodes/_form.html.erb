@@ -1,13 +1,13 @@
-<%= form_with(model: entry) do |form| %>
-  <% if entry.errors.any? %>
+<%= form_with(model: node) do |form| %>
+  <% if node.errors.any? %>
     <div id="message is-danger">
       <div class="message-header">
-        <p><%= pluralize(entry.errors.count, "error") %> prohibited this entry from being saved:</p>
+        <p><%= pluralize(node.errors.count, "error") %> prohibited this node from being saved:</p>
       </div>
 
       <div class="message-body">
       <ul>
-        <% entry.errors.each do |error| %>
+        <% node.errors.each do |error| %>
           <li><%= error.full_message %></li>
         <% end %>
       </ul> 

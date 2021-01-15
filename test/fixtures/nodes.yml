@@ -11,7 +11,7 @@ p1r1:
   genesis: p1
 
 p1r1r1:
-  author: amdin
+  author: admin
   content_version: c1r1r1a
   is_top_post: false
   parent: p1r1

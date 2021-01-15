@@ -5,9 +5,11 @@ class NodesController < ApplicationController
   # GET /nodes.json
   def index
     @nodes = Node.where("created_at >= ?", Date.today)
+    puts Node.all.each do |n|
+      n.id 
+    end
     # @top_level_nodes = Node.where("is_top_post = true")
     @top_level_nodes = Node.is_top_post(true)
-    @replies = Node.genesis(self)
   end
 
   # GET /nodes/1

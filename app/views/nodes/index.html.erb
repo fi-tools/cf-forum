@@ -14,7 +14,8 @@
           </header>
           <div class="card-content">
             <div class="content">
-              <em>A: <%= link_to node.author.name, node.author %></em><br/> 
+              <em>A: <%= link_to node.author.name, node.author %></em><br/>
+              U: <%= link_to node.user.username, node.user %><br/>
               D: <%= node.created_at %> / <%= time_ago_in_words(node.created_at) %> ago<br/>
               Replies: <%= node.replies.count %>
             </div>

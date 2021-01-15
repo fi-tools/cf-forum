@@ -5,7 +5,12 @@ class Node < ApplicationRecord
     belongs_to :genesis, class_name: "Node"
 
     has_one :user, through: :author
-    
-    attr_accessor :is_top_post, :genesis_id
+
+    scope :is_top_post, -> (x) { where(is_top_post: x) }
+    scope :genesis, -> (x) { where(genesis_id: x.id) }
+
+    def replies
+        Node.genesis(self).all()
+    end
 end
 
