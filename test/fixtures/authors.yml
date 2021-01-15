@@ -1,0 +1,4 @@
+admin:
+  name: admin-name
+  user: admin
+  public?: true

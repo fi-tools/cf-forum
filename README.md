@@ -1,5 +1,17 @@
 # README
 
+run:
+
+* `bundle guard` to start guard
+* then `rails s` (or `bundle rails s`) to run the server 
+
+useful for testing migrations:
+
+* `rails db:migrate && dialog --yesno "Rollback?" 0 0 && rails db:rollback`
+* `rails db:migrate && (until dialog --yesno "Rollback now?" 0 0; do echo 'use ctrl+c to never rollback'; sleep 3; done) && rails db:rollback`
+
+----
+
 This README would normally document whatever steps are necessary to get the
 application up and running.
 

@@ -1,0 +1,18 @@
+p1:
+  author: admin
+  content_version: c1a
+  top_post?: true
+
+p1r1:
+  author: admin
+  content_version: c1r1a
+  top_post?: false
+  parent: p1
+  genesis: p1
+
+p1r1r1:
+  author: amdin
+  content_version: c1r1r1a
+  top_post?: false
+  parent: p1r1
+  genesis: p1

@@ -1,5 +1,5 @@
 <% content_for :title do %>
-  Foodlog &ndash; <% DateTime.now %>
+  Foodlog &ndash; <%= DateTime.now.to_s(:nice_date) %>
 <% end %>
 
   <div class="columns mt-6 is-centered">
@@ -7,24 +7,27 @@
       <div class="column is-one-quarter">
         <div class="card">
           <header class="card-header">
-            <%= entry.meal_type %>
+            <p class="card-header-title"><%= entry.meal_type %></p>
           </header>
           <div class="card-content">
             <div class="content">
-              <p>calories: <span class="has-text-weight-bold"><%= entry.calories %></span></p>
-              <p>proteins: <span class="has-text-weight-bold"><%= entry.proteins %></span></p>
-              <p>carbs: <span class="has-text-weight-bold"><%= entry.carbs %></span></p>
-              <p>fats: <span class="has-text-weight-bold"><%= entry.fats %></span></p>
+              <p>calories (g): <span class="has-text-weight-bold"><%= entry.calories %></span></p>
+              <p>proteins (g): <span class="has-text-weight-bold"><%= entry.proteins %></span></p>
+              <p>carbs (g): <span class="has-text-weight-bold"><%= entry.carbs %></span></p>
+              <p>fats (g): <span class="has-text-weight-bold"><%= entry.fats %></span></p>
+              <p class="italic">Logged <%= time_ago_in_words(entry.created_at) %> ago</p>
             </div>
           </div>
+          <div class="cart-footer">
+            <td><%= link_to 'Show', entry, class: "card-footer-item" %></td>
+            <td><%= link_to 'Edit', edit_entry_path(entry), class: "card-footer-item" %></td>
+            <td><%= link_to 'Destroy', entry, method: :delete, data: { confirm: 'Are you sure?' }, class: "card-footer-item" %></td>
+          </div>
         </div>
-        <td><%= link_to 'Show', entry %></td>
-        <td><%= link_to 'Edit', edit_entry_path(entry) %></td>
-        <td><%= link_to 'Destroy', entry, method: :delete, data: { confirm: 'Are you sure?' } %></td>
       </div>
     <% end %>
   </div>
 
-<br>
-
-<%= link_to 'New Entry', new_entry_path %>
+<div class="columns is-centered mt-6">
+  <%= link_to "View all entries", archives_index_path, class: "button is-link is-outlined is-centered" %>
+</div>

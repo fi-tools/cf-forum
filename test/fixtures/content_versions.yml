@@ -1,0 +1,18 @@
+c1a:
+  node: p1
+  author: admin
+  title: '$LABEL title'
+  body: '$LABEL body'
+
+c1r1a:
+  node: p1r1
+  author: admin
+  title: '$LABEL title'
+  body: '$LABEL body'
+
+c1r1r1a:
+  node: p1r1r1
+  author: admin
+  title: '$LABEL title'
+  body: '$LABEL body'
+
