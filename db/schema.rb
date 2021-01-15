@@ -45,17 +45,21 @@ ActiveRecord::Schema.define(version: 2021_01_15_020047) do
     t.datetime "updated_at", precision: 6, null: false
   end
 
+  create_table "node_links", force: :cascade do |t|
+    t.integer "from"
+    t.integer "to"
+    t.index ["from"], name: "index_node_links_on_from"
+    t.index ["to"], name: "index_node_links_on_to"
+  end
+
   create_table "nodes", force: :cascade do |t|
     t.integer "author_id"
     t.integer "content_version_id"
-    t.boolean "is_top_post"
     t.integer "parent_id"
-    t.integer "genesis_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["author_id"], name: "index_nodes_on_author_id"
     t.index ["content_version_id"], name: "index_nodes_on_content_version_id"
-    t.index ["genesis_id"], name: "index_nodes_on_genesis_id"
     t.index ["parent_id"], name: "index_nodes_on_parent_id"
   end
 
@@ -72,6 +76,7 @@ ActiveRecord::Schema.define(version: 2021_01_15_020047) do
   add_foreign_key "content_versions", "authors"
   add_foreign_key "content_versions", "content_versions"
   add_foreign_key "content_versions", "nodes"
-  add_foreign_key "nodes", "nodes", column: "genesis_id"
+  add_foreign_key "node_links", "nodes", column: "from"
+  add_foreign_key "node_links", "nodes", column: "to"
   add_foreign_key "nodes", "nodes", column: "parent_id"
 end

@@ -9,10 +9,10 @@
   <div class="column">
     <nav class="panel is-link">
       <div class="panel-heading">
-        <%= @node.content_version.title %>
+        <%= @node.content_version&.title %>
       </div>
       <div class="panel-block">
-        By: <%= @node.author.name %>
+        By: <%= @node.author&.name %>
       </div>
       <div class="panel-block">
         Date: <%= @node.created_at %>
@@ -34,7 +34,7 @@
 
 <h3 class='title'>Replies:</h3>
 
-<% @node.replies.each do |r| %>
+<% @node.children.each do |r| %>
 
 <div class='columns is-centered'>
 <div class='column'>

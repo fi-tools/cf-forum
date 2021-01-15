@@ -9,6 +9,7 @@ useful for testing migrations:
 
 * `rails db:migrate && dialog --yesno "Rollback?" 0 0 && rails db:rollback`
 * `rails db:migrate && (until dialog --yesno "Rollback now?" 0 0; do echo 'use ctrl+c to never rollback'; sleep 3; done) && rails db:rollback`
+* `rails db:reset && rails db:rollback && rails db:migrate && rails db:seed`
 
 load test fixtures into dev environment
 

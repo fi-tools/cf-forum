@@ -4,20 +4,20 @@
 <% end %>
 
   <div class="columns mt-6 is-centered">
-    <% @top_level_nodes.each do |node| %>
+    <% @cat_nodes.each do |node| %>
       <div class="column">
         <div class="card">
           <header class="card-header">
             <p class="card-header-title">
-              <%= link_to node.content_version.title, node %>
+              Title: <%= link_to node.content_version.title, node %>
             </p>
           </header>
           <div class="card-content">
             <div class="content">
-              <em>A: <%= link_to node.author.name, node.author %></em><br/>
-              U: <%= link_to node.user.username, node.user %><br/>
-              D: <%= node.created_at %> / <%= time_ago_in_words(node.created_at) %> ago<br/>
-              Replies: <%= node.replies.count %>
+              <em>A: <%= link_to node.author&.name, node.author %></em><br/>
+              U: <%= link_to node.user&.username, node.user %><br/>
+              D: <%= node.created_at %> / <%= time_ago_in_words(node.created_at || DateTime.now) %> ago<br/>
+              Replies: <%= node.children.count %>
             </div>
           </div>
           <div class="cart-footer">

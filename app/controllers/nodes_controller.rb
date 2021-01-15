@@ -4,12 +4,13 @@ class NodesController < ApplicationController
   # GET /nodes
   # GET /nodes.json
   def index
-    @nodes = Node.where("created_at >= ?", Date.today)
+    # @nodes = Node.where("created_at >= ?", Date.today)
+    @cat_nodes = set_node_to_root.children
     puts Node.all.each do |n|
       n.id 
     end
     # @top_level_nodes = Node.where("is_top_post = true")
-    @top_level_nodes = Node.is_top_post(true)
+    # @nodes_under = Node.is_top_post(true)
   end
 
   # GET /nodes/1
@@ -66,10 +67,20 @@ class NodesController < ApplicationController
     end
   end
 
+
+
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_node
       @node = Node.find(params[:id])
+    end
+    
+    def set_node_to_root
+      @node = Node.find(0)
+    end
+
+    def children_of node_id
+      Node.find(node_id).children
     end
 
     # Only allow a list of trusted parameters through.
