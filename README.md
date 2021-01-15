@@ -10,6 +10,10 @@ useful for testing migrations:
 * `rails db:migrate && dialog --yesno "Rollback?" 0 0 && rails db:rollback`
 * `rails db:migrate && (until dialog --yesno "Rollback now?" 0 0; do echo 'use ctrl+c to never rollback'; sleep 3; done) && rails db:rollback`
 
+load test fixtures into dev environment
+
+* `RAILS_ENV=development bin/rails db:fixtures:load`
+
 ----
 
 This README would normally document whatever steps are necessary to get the
