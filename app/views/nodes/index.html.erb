@@ -1,0 +1,34 @@
+<% content_for :title do %>
+  <%# Foodlog &ndash; <%= DateTime.now.to_s(:nice_date) %>
+  Critical Fallibilism Forum
+<% end %>
+
+  <div class="columns mt-6 is-centered">
+    <% @top_level_nodes.each do |node| %>
+      <div class="column">
+        <div class="card">
+          <header class="card-header">
+            <p class="card-header-title">
+              <%= link_to node.content_version.title, node %>
+            </p>
+          </header>
+          <div class="card-content">
+            <div class="content">
+              <em>A: <%= link_to node.author.name, node.author %></em><br/> 
+              D: <%= node.created_at %> / <%= time_ago_in_words(node.created_at) %> ago<br/>
+              Replies: <%= node.replies.count %>
+            </div>
+          </div>
+          <div class="cart-footer">
+            <td><%= link_to 'Show', node, class: "card-footer-item" %></td>
+            <td><%= link_to 'Edit', edit_node_path(node), class: "card-footer-item" %></td>
+            <td><%= link_to 'Destroy', node, method: :delete, data: { confirm: 'Are you sure?' }, class: "card-footer-item" %></td>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+<div class="columns is-centered mt-6">
+  <%= link_to "View all entries", archives_index_path, class: "button is-link is-outlined is-centered" %>
+</div>

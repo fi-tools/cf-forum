@@ -1,7 +1,7 @@
 Rails.application.routes.draw do
   get 'archives/index'
-  resources :entries
+  resources :nodes, :authors, :users
   # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
 
-  root to: "entries#index"
+  root to: "nodes#index"
 end

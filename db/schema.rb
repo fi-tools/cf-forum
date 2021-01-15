@@ -48,7 +48,7 @@ ActiveRecord::Schema.define(version: 2021_01_15_020047) do
   create_table "nodes", force: :cascade do |t|
     t.integer "author_id"
     t.integer "content_version_id"
-    t.boolean "top_post?"
+    t.boolean "is_top_post"
     t.integer "parent_id"
     t.integer "genesis_id"
     t.datetime "created_at", precision: 6, null: false

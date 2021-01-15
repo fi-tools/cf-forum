@@ -31,7 +31,7 @@ class CreateInit < ActiveRecord::Migration[6.1]
     create_table :nodes do |t|
       t.belongs_to :author
       t.belongs_to :content_version
-      t.boolean :top_post?
+      t.boolean :is_top_post
 
       t.integer :parent_id, index: true
       t.integer :genesis_id, index: true
