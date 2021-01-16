@@ -32,11 +32,25 @@
                 <span>Download</span>
               </a>
             </span> %>
+            <!--
             <span class="navbar-item">
               <%= link_to new_node_path, class: "button is-success" do %>
-                <span>Create new entry</span>
+                <span>New Post</span>
               <% end %>
             </span>
+              -->
+            <% if !current_user %>
+              <span class="navbar-item">
+                <%= link_to 'New Acct', new_user_registration_path, class: "button is-warning" %>
+              </span>
+              <span class="navbar-item">
+                <%= link_to 'Sign In', new_user_session_path, class: "button is-warning" %>
+              </span>
+            <% else %>
+              <span class="navbar-item">
+                <%= link_to 'Sign Out', destroy_user_session_path, method: :delete, class: "button is-warning" %>
+              </span>
+            <% end %>
           </div>
         </div>
       </div>

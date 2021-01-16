@@ -1,11 +1,9 @@
 <% content_for :title do %>
   Critical Fallibilism Forum
 <% end %>
-
 <% content_for :subtitle do %>
-    <%= @node.content.title %>
+  <%= @node.content.title %>
 <% end %>
-
 <% case @node.depth
     when 0 %>
 <%= render 'view_root', node: @node %>
@@ -14,11 +12,12 @@
 <% when 2 %>
 <%= render 'view_post', node: @node %>
 <% else %>
-  <%= render 'view_comment', node: @node %>
+  <%# <%= render 'view_comment', node: @node %>
+  <!-- easier to render comments like we would posts for the moment -->
+  <%= render 'view_post', node: @node %>
 <% end %>
-
 <% if !@node.parent.nil? %>
-<div class="columns is-centered mt-6">
-  <%= link_to "To Parent", node_path(@node.parent), class: "button is-link is-outlined is-centered" %>
-</div>
+  <div class="columns is-centered mt-6">
+    <%= link_to "To Parent", node_path(@node.parent), class: "button is-link is-outlined is-centered" %>
+  </div>
 <% end %>

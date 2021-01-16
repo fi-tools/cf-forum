@@ -2,10 +2,10 @@ class CreateInit < ActiveRecord::Migration[6.1]
   def up
     # stand-in; replace later or alter as needed
     create_table :users do |t|
-      t.text :username, limit: 63, null: false
-      t.text :hex_pw_hash, null: false, limit: 63
-      t.text :email, unique: true, index: true
-
+      # t.text :username, limit: 63, null: false
+      # t.text :hex_pw_hash, null: false, limit: 63
+      # t.text :email, unique: true, index: true
+      t.string :username, limit: 63, unique: true, index: true
       t.timestamps
     end
 
@@ -17,13 +17,18 @@ class CreateInit < ActiveRecord::Migration[6.1]
       t.timestamps
     end
 
+    create_table :user_default_authors do |t|
+      t.belongs_to :user, null: false, unique: true, foreign_key: true
+      t.belongs_to :author, null: false, unique: true, foreign_key: true
+    end
+
     create_table :content_versions do |t|
       t.belongs_to :author, foreign_key: true, index: true
       t.belongs_to :node, foreign_key: true, index: true
       # t.references :content_version, foreign_key: true, index: true, comment: "parent"
-      t.text :title, null: false
+      t.text :title
       t.text :body
-      
+
       t.timestamps
     end
 
@@ -43,7 +48,6 @@ class CreateInit < ActiveRecord::Migration[6.1]
     # execute "insert into content_versions (id, title, created_at, updated_at) values (1, 'Main', 0, 0)"
     # execute "insert into nodes (id, content_version_id, parent_id, created_at, updated_at) values (1, 1, 0, 0, 0)"
     # execute "update content_versions set node_id = 1 where id = 1"
-
 
     # create_table :node_links do |t|
     #   t.integer :from, foreign_key: true, index: true

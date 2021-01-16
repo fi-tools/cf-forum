@@ -1,31 +1,31 @@
-
-<div class='panel'>
-<% if node.content.title %>
-<div class='panel-heading'>
-    <%= node.content.title %>
-</div>
-<% end %>
-<div class='panel-block'>
+<div class='panel' id='<%= node.id %>'>
+  <% if node.content.title %>
+    <div class='panel-heading'>
+      <%= node.content.title %>
+    </div>
+  <% end %>
+  <div class='panel-block'>
     <%= node.content.body %>
-</div>
-<div class='panel-block'>
+  </div>
+  <div class='panel-block'>
     <%= link_to node.author.name || "Anonymous", node.author %>, <%= node.created_at %>
     <% if node.content_versions.count > 1 %>, <em>Updated at: <%= node.content.created_at %></em>
     <% end %>
     <% 
 =begin %>
-<% 
+    <% 
 =end %>
-</div>
-<div class='panel-block'>
+  </div>
+  <div class='panel-block'>
     <%= link_to "Reply", reply_to_node_path(:parent_id => node.id), class: "button is-small is-link" %>
+    <%= link_to "Permalink", "##{node.id}", class: "button is-gray is-small ml-1" %>
+    <%= link_to "Direct Link", node, class: "button is-gray is-small ml-1" %>
+  </div>
 </div>
-</div>
-
 <div class="box">
-<% if node.children.count > 0 %>
-        <% node.children.each do |child| %>
-            <%= render 'view_comment_inline', node: child %>
-        <% end %>
-<% end %>
+  <% if node.children.count > 0 %>
+    <% node.children.each do |child| %>
+      <%= render 'view_comment_inline', node: child %>
+    <% end %>
+  <% end %>
 </div>

@@ -1,0 +1,21 @@
+<% content_for :title do %>
+  Critical Fallibilism Forum
+<% end %>
+<% content_for :subtitle do %>
+  Author: <%= @author.name %>
+<% end %>
+<div class="columns mt-6">
+  <div class="column">
+    <div class="title is-size-2">
+      Posts: (<%= @author.posts.count %>)
+    </div>
+    <% @author.posts.each do |post| %>
+      <div class="content pa-3">
+        <div class="title is-size-4">
+          <%= link_to "Title: " + post.content.title, post %>
+        </div>
+        <%= post.content.created_at %>
+      </div>
+    <% end %>
+  </div>
+</div>
