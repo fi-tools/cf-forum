@@ -14,7 +14,10 @@
           <a><%= node.created_at %> / <%= time_ago_in_words(node.created_at || DateTime.now) %> ago</a>
         </li>
         <li class="is-active">
-          <a>Replies: <%= node.children_rec.count %></a>
+          <a>Children: <%= node.children_rec.count %></a>
+        </li>
+        <li class="is-active">
+          <a>Descendants: <%= node.children_rec(true).count %></a>
         </li>
       </ul>
     </nav>

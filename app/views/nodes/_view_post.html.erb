@@ -1,21 +1,25 @@
 <div class="columns mt-6 is-centered">
   <div class="column">
     <nav class="panel">
-      <div class="panel-heading has-background-primary-light">
-        <%= @node.content&.title %>
-        <%= link_to "../", node.parent, class: "is-small" %>
+      <div class="panel-heading has-background-primary-light is-flex">
+        <div class="is-flex-grow-5">
+          <%= @node.content&.title %>
+          <%= link_to "../", node.parent, class: "is-small" %>
+        </div>
+        <div class="">
+          <% if current_user && node.user.id == current_user.id %>
+            <%= link_to 'Edit', edit_node_path(@node), class: "button is-small" %>
+          <% end %>
+          <%= link_to 'Reply', reply_to_node_path(:parent_id => @node.id), class: "button is-success is-small" %>
+        </div>
       </div>
       <div class="panel-block">
         <%= @node.content.body %>
       </div>
-      <p class="panel-tabs has-text-left is-flex pl-1">
-        <% if current_user && node.user.id == current_user.id %>
-          <%= link_to 'Edit', edit_node_path(@node), class: "" %>
-        <% end %>
-        <%= link_to 'Reply', reply_to_node_path(:parent_id => @node.id), class: "" %>
+      <!-- <p class="panel-tabs has-text-left is-flex pl-1">
         <%# <%= link_to 'Delete', node_path(@node), class: "button is-warning", method: :delete, data: { confirm: "Are you sure?" } %>
         <span class="is-flex-grow-4"></span>
-      </p>
+      </p> -->
       <div class="panel-block">
         <nav class="breadcrumb">
           <ul>
@@ -44,4 +48,6 @@
   <% @node.children_rec.each do |r| %>
     <%= render 'view_comment_inline', node: r %>
   <% end %>
+<% else %>
+  <h5 class='is-size-5'>No Comments.</h5>
 <% end %>
