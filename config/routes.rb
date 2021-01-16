@@ -10,6 +10,8 @@ Rails.application.routes.draw do
   get "/edit/:id", to: "content_versions#new", as: "edit_node"
   get "/comment/reply_to", to: "nodes#new_comment", as: "reply_to_node"
 
+  get "/users/authors", to: "authors#mine", as: "edit_user_authors"
+
   post "/nodes", to: "nodes#create", as: "nodes"
 
   get "/:id", to: "nodes#show", as: "node"

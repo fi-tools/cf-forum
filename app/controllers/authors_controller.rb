@@ -4,6 +4,9 @@ class AuthorsController < ApplicationController
   def show
   end
 
+  def mine
+  end
+
   private
 
   def set_author

@@ -48,6 +48,12 @@
               </span>
             <% else %>
               <span class="navbar-item">
+                <%= link_to 'My Identities', edit_user_authors_path, class: "button is-info" %>
+              </span>
+              <span class="navbar-item">
+                <%= link_to 'My Account', edit_user_registration_path, class: "button is-info" %>
+              </span>
+              <span class="navbar-item">
                 <%= link_to 'Sign Out', destroy_user_session_path, method: :delete, class: "button is-warning" %>
               </span>
             <% end %>

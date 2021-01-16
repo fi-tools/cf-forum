@@ -38,7 +38,7 @@ class Node < ApplicationRecord
     if !rec
       return children
     end
-    Node.where("id in (#{self.children_rec_sql(self)})")
+    Node.where("id in (#{self.children_rec_sql(self)}) AND id != ?", [self.id])
   end
 
   private

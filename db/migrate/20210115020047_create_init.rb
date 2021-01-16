@@ -5,7 +5,7 @@ class CreateInit < ActiveRecord::Migration[6.1]
       # t.text :username, limit: 63, null: false
       # t.text :hex_pw_hash, null: false, limit: 63
       # t.text :email, unique: true, index: true
-      t.string :username, limit: 63, unique: true, index: true
+      t.string :username, limit: 63, null: false, unique: true, index: true
       t.timestamps
     end
 

@@ -1,16 +1,23 @@
 <div class="card">
-  <header class="card-header">
-    <p class="card-header-title">
+  <div class="card-content">
+    <p class="title is-size-4 mb-1">
       <%= link_to node.content.title, node %>
     </p>
-  </header>
-  <div class="card-content">
-    <div class="content">
-      <em>A: <%= link_to node.author.name, node.author %></em><br/>
-      U: <%= link_to node.user.username, node.user %><br/>
-      D: <%= node.created_at %> / <%= time_ago_in_words(node.created_at || DateTime.now) %> ago<br/>
-      Replies: <%= node.children_rec.count %>
-    </div>
+    <p class="border">
+      <%= node.content.body.slice(0, 200) %>
+    </p>
+    <nav class="breadcrumb">
+      <ul>
+        <li><%= link_to node.author.name, node.author %></li>
+        <li><%= link_to node.user.username, node.user %></li>
+        <li class="is-active">
+          <a><%= node.created_at %> / <%= time_ago_in_words(node.created_at || DateTime.now) %> ago</a>
+        </li>
+        <li class="is-active">
+          <a>Replies: <%= node.children_rec.count %></a>
+        </li>
+      </ul>
+    </nav>
   </div>
   <div class="cart-footer">
     <!--

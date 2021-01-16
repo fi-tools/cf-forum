@@ -25,13 +25,15 @@
     </div>
   </div>
 </div>
-<h3 class='title'>Replies:</h3>
-<h5 class='subtitle'>TOC:</h5>
-<ul class="mb-6">
-  <% @node.children_rec(true).each do |r| %>
-    <li> <%= link_to "##{r.id}: #{r.content.title || 'untitled'}", "##{r.id}" %> </li>
+<% if @node.children.length > 0 %>
+  <h3 class='title'>Replies:</h3>
+  <h5 class='subtitle'>TOC:</h5>
+  <ul class="mb-6">
+    <% @node.children_rec(true).each do |r| %>
+      <li> <%= link_to "##{r.id}: #{r.content.title || 'untitled'}", "##{r.id}" %> </li>
+    <% end %>
+  </ul>
+  <% @node.children_rec.each do |r| %>
+    <%= render 'view_comment_inline', node: r %>
   <% end %>
-</ul>
-<% @node.children_rec.each do |r| %>
-  <%= render 'view_comment_inline', node: r %>
 <% end %>
