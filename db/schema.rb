@@ -15,7 +15,7 @@ ActiveRecord::Schema.define(version: 2021_01_15_020047) do
   create_table "authors", force: :cascade do |t|
     t.text "name", limit: 255, null: false
     t.integer "user_id", null: false
-    t.boolean "public?", null: false
+    t.boolean "public", default: true, null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["user_id"], name: "index_authors_on_user_id"
@@ -24,42 +24,20 @@ ActiveRecord::Schema.define(version: 2021_01_15_020047) do
   create_table "content_versions", force: :cascade do |t|
     t.integer "author_id"
     t.integer "node_id"
-    t.integer "content_version_id"
-    t.text "title"
+    t.text "title", null: false
     t.text "body"
-    t.text "body_diff"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["author_id"], name: "index_content_versions_on_author_id"
-    t.index ["content_version_id"], name: "index_content_versions_on_content_version_id"
     t.index ["node_id"], name: "index_content_versions_on_node_id"
-  end
-
-  create_table "entries", force: :cascade do |t|
-    t.string "meal_type"
-    t.integer "calories"
-    t.integer "proteins"
-    t.integer "carbs"
-    t.integer "fats"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
-  end
-
-  create_table "node_links", force: :cascade do |t|
-    t.integer "from"
-    t.integer "to"
-    t.index ["from"], name: "index_node_links_on_from"
-    t.index ["to"], name: "index_node_links_on_to"
   end
 
   create_table "nodes", force: :cascade do |t|
     t.integer "author_id"
-    t.integer "content_version_id"
     t.integer "parent_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["author_id"], name: "index_nodes_on_author_id"
-    t.index ["content_version_id"], name: "index_nodes_on_content_version_id"
     t.index ["parent_id"], name: "index_nodes_on_parent_id"
   end
 
@@ -74,9 +52,6 @@ ActiveRecord::Schema.define(version: 2021_01_15_020047) do
 
   add_foreign_key "authors", "users"
   add_foreign_key "content_versions", "authors"
-  add_foreign_key "content_versions", "content_versions"
   add_foreign_key "content_versions", "nodes"
-  add_foreign_key "node_links", "nodes", column: "from"
-  add_foreign_key "node_links", "nodes", column: "to"
   add_foreign_key "nodes", "nodes", column: "parent_id"
 end

@@ -1,0 +1,22 @@
+<div class="card">
+    <header class="card-header">
+    <p class="card-header-title">
+        <%= link_to node.content.title, node %>
+    </p>
+    </header>
+    <div class="card-content">
+    <div class="content">
+        <em>A: <%= link_to node.author&.name, node.author %></em><br/>
+        U: <%= link_to node.user&.username, node.user %><br/>
+        D: <%= node.created_at %> / <%= time_ago_in_words(node.created_at || DateTime.now) %> ago<br/>
+        Replies: <%= node.children.count %>
+    </div>
+    </div>
+    <div class="cart-footer">
+    <!--
+    <span><%= link_to 'Show', node, class: "card-footer-item" %></span>
+    <span><%= link_to 'Edit', edit_node_path(node), class: "card-footer-item" %></span>
+    <span><%= link_to 'Destroy', node, method: :delete, data: { confirm: 'Are you sure?' }, class: "card-footer-item" %></span>
+    -->
+    </div>
+</div>

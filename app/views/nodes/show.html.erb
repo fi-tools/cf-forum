@@ -1,63 +1,24 @@
 <% content_for :title do %>
-  <%= @node.content_version.title %>
-  <%# &ndash; <%= DateTime.now.to_s(:nice_date) %>
+  Critical Fallibilism Forum
 <% end %>
+
 <% content_for :subtitle do %>
-  CF Forum
+    <%= @node.content.title %>
 <% end %>
-<div class="columns mt-6 is-centered">
-  <div class="column">
-    <nav class="panel is-link">
-      <div class="panel-heading">
-        <%= @node.content_version&.title %>
-      </div>
-      <div class="panel-block">
-        By: <%= @node.author&.name %>
-      </div>
-      <div class="panel-block">
-        Date: <%= @node.created_at %>
-      </div>
-      <div class="panel-block">
-        <%= @node.content_version.body %>
-      </div>
-    </nav>
-    <div class="columns is-mobile">
-      <div class="column">
-        <%= link_to 'Edit', edit_node_path(@node), class: "button is-gray" %>
-        <%= link_to 'Delete', node_path(@node), class: "button is-warning", method: :delete, data: { confirm: "Are you sure?" } %>
-      </div>
-      <div class="column">
-      </div>
-    </div>
-  </div>
+
+<% case @node.depth
+    when 0 %>
+<%= render 'view_root', node: @node %>
+<% when 1 %>
+<%= render 'view_index', node: @node %>
+<% when 2 %>
+<%= render 'view_post', node: @node %>
+<% else %>
+  <%= render 'view_comment', node: @node %>
+<% end %>
+
+<% if !@node.parent.nil? %>
+<div class="columns is-centered mt-6">
+  <%= link_to "To Parent", node_path(@node.parent), class: "button is-link is-outlined is-centered" %>
 </div>
-
-<h3 class='title'>Replies:</h3>
-
-<% @node.children.each do |r| %>
-
-<div class='columns is-centered'>
-<div class='column'>
-  <div class='panel'>
-    <% if r.content_version.title %>
-    <div class='panel-heading'>
-      <%= r.content_version.title %>
-    </div>
-    <% end %>
-    <div class='panel-block'>
-      <%= r.content_version.body %>
-    </div>
-    <div class='panel-block'>
-      <%= r.author&.name || "Anonymous" %>, <%= r.created_at %>
-      <% if r.content_version.parent %>, <em>Updated at: <%= r.content_version.created_at %></em>
-      <% end %>
-      <% 
-=begin %>
-<% 
-=end %>
-    </div>
-  </div>
-</div>
-</div>
-
 <% end %>

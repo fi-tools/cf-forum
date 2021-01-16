@@ -16,29 +16,22 @@
   <% end %>
 
   <div class="field">
-    <%= form.label :meal_type, class: "label" %>
-    <%= form.text_field :meal_type, class: "input" %>
+    <%= form.label :title, class: "label" %>
+    <%= form.text_field :title, class: "input", value: "garfield" %>
   </div>
 
   <div class="field">
-    <%= form.label :calories, class: "label" %>
-    <%= form.number_field :calories, class: "input" %>
+    <%= form.label :name, class: "label" %>
+    <%= form.text_field :name, class: "input", value: "jon" %>
   </div>
 
   <div class="field">
-    <%= form.label :proteins, class: "label" %>
-    <%= form.number_field :proteins, class: "input" %>
+    <%= form.label :body, class: "label" %>
+    <%= form.text_area :body, class: "textarea", size: "80x10", value: "### i hate mondays" %>
+    (markdown support planned)
   </div>
 
-  <div class="field">
-    <%= form.label :carbs, class: "label" %>
-    <%= form.number_field :carbs, class: "input" %>
-  </div>
-
-  <div class="field">
-    <%= form.label :fats, class: "label" %>
-    <%= form.number_field :fats, class: "input" %>
-  </div>
+  <%= form.hidden_field :parent_id, value: parent_id %>
 
   <div class="actions">
     <%= form.submit class: "button is-success" %>

@@ -1,6 +1,9 @@
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
+  config.hosts << "cff.ngrok.io"
+  config.hosts << "cff.au.ngrok.io"
+
   # Settings specified here will take precedence over those in config/application.rb.
   config.middleware.insert_after ActionDispatch::Static, Rack::LiveReload
 

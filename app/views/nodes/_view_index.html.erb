@@ -1,0 +1,19 @@
+<section class="section">
+
+<div class="title is-2">
+    <%= node.content.title %>
+</div>
+
+<div class="subtitle is-4"> 
+    Children: <%= node.children.count %>
+</div>
+
+<div class="grid">
+    <%= link_to "New Post", new_node_path(:parent_id => node.id), class: "button" %>
+</div>
+
+<% node.children.each do |child| %>
+    <%= render 'preview_post', node: child %>
+<% end %>
+
+</section>
