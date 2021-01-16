@@ -6,17 +6,17 @@
     <div class="subtitle is-4">
       <%= link_to "View All Posts (#{node.children.count})", node %>
     </div>
-    <% if node.children.count > 0 %>
+    <% if node.children_rec.count > 0 %>
       <div class="title is-5 mt-3">
         Recent Threads:
       </div>
-      <% node.children.limit(10).each do |child| %>
+      <% node.children_rec.limit(10).each do |child| %>
         <div class="content">
           <%= link_to child.content.title, node_path(child), class: "is-link is-size-6" %>
           / Posted: <%= child.created_at %>
         </div>
       <% end %>
-      <% if node.children.count > 10 %>
+      <% if node.children_rec.count > 10 %>
       <% end %>
     <% end %>
   </div>

@@ -9,7 +9,7 @@
       <em>A: <%= link_to node.author.name, node.author %></em><br/>
       U: <%= link_to node.user.username, node.user %><br/>
       D: <%= node.created_at %> / <%= time_ago_in_words(node.created_at || DateTime.now) %> ago<br/>
-      Replies: <%= node.children.count %>
+      Replies: <%= node.children_rec.count %>
     </div>
   </div>
   <div class="cart-footer">

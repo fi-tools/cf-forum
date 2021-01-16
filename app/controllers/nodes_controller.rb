@@ -20,7 +20,7 @@ class NodesController < ApplicationController
   def new
     @node = Node.new
   end
-  
+
   def new_comment
     @node = Node.new
   end
@@ -37,14 +37,14 @@ class NodesController < ApplicationController
     node_params = params.slice(:parent_id)
     cv_params = params.slice(:title, :body)
     author_params = params.slice(:name)
-    
+
     @author = Author.find_or_create_by(**author_params.merge(:user => User.first))
     @node = Node.new(node_params.merge :author => @author)
     @cv = ContentVersion.new(cv_params.merge :node => @node, :author => @author)
 
     respond_to do |format|
       if @author.save! and @node.save! && @cv.save!
-        format.html { redirect_to @node, notice: 'Node was successfully created.' }
+        format.html { redirect_to @node, notice: "Node was successfully created." }
         format.json { render :show, status: :created, location: @node }
       else
         format.html { render :new, :parent_id => @parent_id }
@@ -58,7 +58,7 @@ class NodesController < ApplicationController
   def update
     respond_to do |format|
       if @node.update(node_params)
-        format.html { redirect_to @node, notice: 'Node was successfully updated.' }
+        format.html { redirect_to @node, notice: "Node was successfully updated." }
         format.json { render :show, status: :ok, location: @node }
       else
         format.html { render :edit }
@@ -72,31 +72,32 @@ class NodesController < ApplicationController
   def destroy
     @node.destroy
     respond_to do |format|
-      format.html { redirect_to nodes_url, notice: 'Node was successfully destroyed.' }
+      format.html { redirect_to nodes_url, notice: "Node was successfully destroyed." }
       format.json { head :no_content }
     end
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_node
-      @node = Node.find(params[:id])
-    end 
-    
-    def set_parent parent_id=params[:parent_id]
-      @parent_id = parent_id
-    end
-    
-    def set_node_to_root
-      @node = Node.find(0)
-    end
 
-    def children_of node_id
-      Node.find(node_id).children
-    end
+  # Use callbacks to share common setup or constraints between actions.
+  def set_node
+    @node = Node.find(params[:id])
+  end
 
-    # Only allow a list of trusted parameters through.
-    def node_params
-      params.require(:node).permit(:parent_id, :title, :body, :name)
-    end
+  def set_parent(parent_id = params[:parent_id])
+    @parent_id = parent_id
+  end
+
+  def set_node_to_root
+    @node = Node.find(0)
+  end
+
+  def children_of(node_id)
+    Node.find(node_id).children_rec
+  end
+
+  # Only allow a list of trusted parameters through.
+  def node_params
+    params.require(:node).permit(:parent_id, :title, :body, :name)
+  end
 end

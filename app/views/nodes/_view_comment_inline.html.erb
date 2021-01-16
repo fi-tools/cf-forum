@@ -23,8 +23,8 @@
   </div>
 </div>
 <div class="box">
-  <% if node.children.count > 0 %>
-    <% node.children.each do |child| %>
+  <% if node.children_rec.count > 0 %>
+    <% node.children_rec.each do |child| %>
       <%= render 'view_comment_inline', node: child %>
     <% end %>
   <% end %>
