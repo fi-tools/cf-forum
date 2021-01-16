@@ -2,16 +2,27 @@
 
 run:
 
+* i think: `bundle install` for deps (you might need global rails, IDK)
 * `bundle guard` to start guard
-* then `rails s` (or `bundle rails s`) to run the server 
+* then `rails s` (or `bundle rails s`?) to run the server 
 
-useful for testing migrations:
+## useful for testing migrations:
+
+### my go-to while developing the schema
+
+```
+rails db:drop db:create db:migrate db:setup
+```
+
+### other
 
 * `rails db:migrate && dialog --yesno "Rollback?" 0 0 && rails db:rollback`
 * `rails db:migrate && (until dialog --yesno "Rollback now?" 0 0; do echo 'use ctrl+c to never rollback'; sleep 3; done) && rails db:rollback`
 * `rails db:reset && rails db:rollback && rails db:migrate && rails db:seed`
 
-load test fixtures into dev environment
+## load test fixtures into dev environment
+
+**warning**: these are out of date; don't load them till updated
 
 * `RAILS_ENV=development bin/rails db:fixtures:load`
 
