@@ -12,7 +12,7 @@
     <% @author.posts.each do |post| %>
       <div class="content pa-3">
         <div class="title is-size-4">
-          <%= link_to "Title: " + post.content.title, post %>
+          <%= link_to "Title: " + (post.content.title || "untitled"), post %>
         </div>
         <%= post.content.created_at %>
       </div>

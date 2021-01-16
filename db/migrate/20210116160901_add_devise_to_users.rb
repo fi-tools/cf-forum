@@ -36,10 +36,16 @@ class AddDeviseToUsers < ActiveRecord::Migration[6.1]
       # t.timestamps null: false
     end
 
-    add_index :users, :email, unique: true
+    # add_index :users, :email, unique: true
     add_index :users, :reset_password_token, unique: true
     # add_index :users, :confirmation_token,   unique: true
     # add_index :users, :unlock_token,         unique: true
+
+    # https://www.leighhalliday.com/requiring-uniqueness-in-rails
+    execute <<-SQL
+      CREATE UNIQUE INDEX user_email_lower_index on users (lower(email));
+      CREATE UNIQUE INDEX user_username_lower_index on users (lower(username));
+    SQL
   end
 
   def self.down

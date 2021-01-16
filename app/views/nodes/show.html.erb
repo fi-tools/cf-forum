@@ -2,7 +2,7 @@
   Critical Fallibilism Forum
 <% end %>
 <% content_for :subtitle do %>
-  <%= @node.content.title %>
+  <%= @node.content.title || "untitled" %>
 <% end %>
 <% case @node.depth
     when 0 %>

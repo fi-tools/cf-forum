@@ -17,6 +17,10 @@ class CreateInit < ActiveRecord::Migration[6.1]
       t.timestamps
     end
 
+    execute <<-SQL
+      CREATE UNIQUE INDEX author_name_lower_index on authors (lower(name));
+    SQL
+
     create_table :user_default_authors do |t|
       t.belongs_to :user, null: false, unique: true, foreign_key: true
       t.belongs_to :author, null: false, unique: true, foreign_key: true

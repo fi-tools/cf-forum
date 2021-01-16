@@ -41,6 +41,7 @@ class SeedDatabase
     @author1 = Author.create! :user => @admin, :name => "name 1", :public => true
     @author2 = Author.create! :user => @admin, :name => "name 2 (secret)", :public => false
     @author3 = Author.create! :user => @admin, :name => "name 3", :public => true
+    # @author4 = Author.create! :user => @admin, :name => "Name 3", :public => true
 
     @root = create_node 0, "Critical Fallibilism Forum"
     @main = create_node 1, "Main", @root.id
@@ -58,6 +59,7 @@ class SeedDatabase
     @reply1a = create_node nil, "Another Reply 1st L", @post2.id, "reply 1st level again", @author3
     @reply4 = create_node nil, nil, @reply3.id, "4th level repy body", @author3
     @reply5 = create_node nil, "5th level", @reply4.id, "body 5th", @author_anon
+    @reply2a = create_node nil, "Click 'To Parent' to go back up", @reply1a.id, "It's at the bottom"
   end
 
   def create_node(id, title, parent = nil, body = nil, author = @admin_author)

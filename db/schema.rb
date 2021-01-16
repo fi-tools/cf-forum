@@ -18,6 +18,7 @@ ActiveRecord::Schema.define(version: 2021_01_16_160901) do
     t.boolean "public", default: true, null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.index "lower(name)", name: "author_name_lower_index", unique: true
     t.index ["user_id"], name: "index_authors_on_user_id"
   end
 
@@ -57,7 +58,7 @@ ActiveRecord::Schema.define(version: 2021_01_16_160901) do
     t.string "reset_password_token"
     t.datetime "reset_password_sent_at"
     t.datetime "remember_created_at"
-    t.index ["email"], name: "index_users_on_email", unique: true
+    t.index "lower(email)", name: "user_email_lower_index", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["username"], name: "index_users_on_username"
   end
