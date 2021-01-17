@@ -1,0 +1,2 @@
+<% view = node.view == "comment" ? "topic" : node.view %>
+<%= render "view_#{view}", node: node %>

@@ -1,0 +1,2 @@
+class ViewTagDecl < TagDecl
+end

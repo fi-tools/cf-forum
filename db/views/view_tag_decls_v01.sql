@@ -1,0 +1,1 @@
+SELECT * FROM tag_decls WHERE tag = 'view' AND user IS NULL
