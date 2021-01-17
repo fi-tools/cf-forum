@@ -16,13 +16,8 @@
         <div id="navbarMenuHeroA" class="navbar-menu">
           <div class="navbar-end">
             <%= link_to "Full Tree", subtree_path(0), class: "navbar-item" %>
-            <a class="navbar-item">
-              Examples
-            </a>
-            <a class="navbar-item">
-              Documentation
-            </a>
-            <span class="navbar-item">
+            <%= link_to "Root", root_path, class: "navbar-item" %>
+            <!-- <span class="navbar-item">
               <a class="button is-primary is-inverted">
                 <span class="icon">
                   <i class="fab fa-github"></i>
@@ -30,6 +25,7 @@
                 <span>Download</span>
               </a>
             </span>
+            -->
             <!--
             <span class="navbar-item">
               <%= link_to new_node_path, class: "button is-success" do %>
