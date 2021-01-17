@@ -28,6 +28,9 @@ gem "devise"
 # adds database views
 gem "scenic"
 
+# functional support
+gem "functional-ruby"
+
 # Use Active Storage variant
 # gem 'image_processing', '~> 1.2'
 
@@ -51,7 +54,7 @@ group :development do
   gem "listen", "~> 3.3"
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem "spring"
-  # guard, guard-zeus, and rack-livereload are used with guard-livereload to do livereloading
+  # guard, guard-zeus, and rack-livereload are used   with guard-livereload to do livereloading
   gem "guard"
   gem "guard-zeus"
   gem "rack-livereload"

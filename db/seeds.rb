@@ -31,9 +31,10 @@
 
 class SeedDatabase
   def initialize
-    pw = SecureRandom.hex(12)
-    puts "Admin Password: #{pw}"
-    @admin = User.create! :username => "admin", :email => "m@xk.io", :password => pw
+    # pw = SecureRandom.hex(12)
+    pw = "hunter2"
+    admin_email = "asdf@xk.io"
+    @admin = User.create! :username => "admin", :email => admin_email, :password => pw
     @admin_author = Author.create! :user => @admin, :name => "Admin", :public => true
     @author_anon = Author.create! :user => @admin, :name => "Anonymous", :public => false
     # @author_blank = Author.create! :user => @admin, :name => "", :public => false
@@ -46,6 +47,7 @@ class SeedDatabase
     @root = create_node 0, "Critical Fallibilism Forum", nil
     self.create_initial_view_tags
     self.set_root_tags @root
+    slef.set_root_permissions @root
 
     @main = create_node 1, "Main", @root.id
     @meta = create_node 2, "Meta", @root.id
@@ -63,25 +65,29 @@ class SeedDatabase
     @reply4 = create_node nil, nil, @reply3.id, body: "4th level repy body", author: @author3
     @reply5 = create_node nil, "5th level", @reply4.id, body: "body 5th", author: @author_anon
     @reply2a = create_node nil, "Click 'To Parent' to go back up", @reply1a.id, body: "It's at the bottom"
+
+    puts "Admin | Email: #{admin_email} | Password: #{pw}"
+    gen_user "subscriber", "cfsub@xk.io", pw
+    gen_user "general-user", "cfsub@xk.io", pw
+  end
+
+  def gen_user(username, email, pw)
+    puts "Generating User: #{username} <#{email}> | pw: #{pw}"
+    Users.create! :username => username, :email => email, :password => pw
   end
 
   def create_node(id, title, parent, body: nil, author: @admin_author)
     puts "create_node: #{id}, #{title}, #{parent}, #{body}"
-    node_params = {}
+    node_params = { :author => author }
     if !id.nil?
       node_params[:id] = id
     end
     if !parent.nil?
-      p = Node.find(parent)
       node_params = node_params.merge(:parent_id => parent)
     end
     puts "creating node"
-    node = Node.create! **node_params.merge(:author => author)
+    node = Node.create! **node_params
     puts "node.parent: #{node.parent&.id}"
-    # if !parent.nil?
-    #   node.parent = Node.find(parent)
-    #   node.save!
-    # end
     cv = ContentVersion.create! :id => id, :node => node, :title => title, :author => author, :body => body
     node
   end
@@ -89,6 +95,9 @@ class SeedDatabase
   def set_root_tags(node)
     TagDecl.create! :anchored => node, :target => @t_root, :tag => :view, :user => nil
   end
+
+  def set_root_permissions(node, user)
+    TagDecl.create! :anchored => node, :target => user, :tag => AUTHZ
 
   def create_initial_view_tags
     @t_root = UserTag.create! :tag => :root
