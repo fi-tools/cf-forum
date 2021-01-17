@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_01_17_085835) do
+ActiveRecord::Schema.define(version: 2021_01_17_055157) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -128,6 +128,6 @@ ActiveRecord::Schema.define(version: 2021_01_17_085835) do
       tag_decls.created_at,
       tag_decls.updated_at
      FROM tag_decls
-    WHERE (((tag_decls.tag)::text ~~ 'authz_%s'::text) AND (tag_decls.user_id IS NULL));
+    WHERE (((tag_decls.tag)::text ~~ 'authz_%'::text) AND (tag_decls.user_id IS NULL));
   SQL
 end
