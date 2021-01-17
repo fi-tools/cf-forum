@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_01_16_160901) do
+ActiveRecord::Schema.define(version: 2021_01_17_050343) do
 
   create_table "authors", force: :cascade do |t|
     t.text "name", limit: 255, null: false
@@ -42,25 +42,29 @@ ActiveRecord::Schema.define(version: 2021_01_16_160901) do
     t.index ["parent_id"], name: "index_nodes_on_parent_id"
   end
 
-  create_table "tagged", force: :cascade do |t|
+  create_table "tag_decls", force: :cascade do |t|
     t.string "anchored_type"
     t.integer "anchored_id"
     t.string "target_type"
     t.integer "target_id"
     t.string "tag", null: false
     t.integer "user_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
     t.index "\"target_id\", \"target_type\", \"anchored_id\", \"anchored_type\", \"tag\", \"user\"", name: "index_tagged_on_target_and_anchored_and_user", unique: true
-    t.index ["anchored_id", "anchored_type"], name: "index_tagged_on_anchored_id_and_anchored_type"
-    t.index ["anchored_type", "anchored_id"], name: "index_tagged_on_anchored"
-    t.index ["tag"], name: "index_tagged_on_tag"
-    t.index ["target_id", "target_type"], name: "index_tagged_on_target_id_and_target_type"
-    t.index ["target_type", "target_id"], name: "index_tagged_on_target"
-    t.index ["user_id"], name: "index_tagged_on_user_id"
+    t.index ["anchored_id", "anchored_type"], name: "index_tag_decls_on_anchored_id_and_anchored_type"
+    t.index ["anchored_type", "anchored_id"], name: "index_tag_decls_on_anchored"
+    t.index ["tag"], name: "index_tag_decls_on_tag"
+    t.index ["target_id", "target_type"], name: "index_tag_decls_on_target_id_and_target_type"
+    t.index ["target_type", "target_id"], name: "index_tag_decls_on_target"
+    t.index ["user_id"], name: "index_tag_decls_on_user_id"
   end
 
   create_table "user_default_authors", force: :cascade do |t|
     t.integer "user_id", null: false
     t.integer "author_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
     t.index ["author_id"], name: "index_user_default_authors_on_author_id"
     t.index ["user_id"], name: "index_user_default_authors_on_user_id"
   end
@@ -68,6 +72,8 @@ ActiveRecord::Schema.define(version: 2021_01_16_160901) do
   create_table "user_tags", force: :cascade do |t|
     t.integer "user_id"
     t.string "tag", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
     t.index "\"tag\", \"user\"", name: "index_user_tags_on_tag_and_user"
     t.index ["tag"], name: "index_user_tags_on_tag"
     t.index ["user_id"], name: "index_user_tags_on_user_id"
@@ -93,4 +99,8 @@ ActiveRecord::Schema.define(version: 2021_01_16_160901) do
   add_foreign_key "nodes", "nodes", column: "parent_id"
   add_foreign_key "user_default_authors", "authors"
   add_foreign_key "user_default_authors", "users"
+
+  create_view "view_tag_decls", sql_definition: <<-SQL
+      SELECT * FROM tag_decls WHERE tag = 'view' AND user IS NULL
+  SQL
 end

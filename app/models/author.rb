@@ -14,6 +14,9 @@ class Author < ApplicationRecord
   has_many :nodes
   has_many :posts, class_name: "Node"
 
+  has_many :anchoring_tags, as: :anchored, class_name: "TagDecl"
+  has_many :targeting_tags, as: :target, class_name: "TagDecl"
+
   validates_with AuthorValidator
 
   def formatted_name

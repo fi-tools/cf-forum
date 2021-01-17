@@ -4,6 +4,8 @@ Rails.application.configure do
   config.hosts << "cff.ngrok.io"
   config.hosts << "cff.au.ngrok.io"
 
+  config.use_sqlite = true
+
   # Settings specified here will take precedence over those in config/application.rb.
   config.middleware.insert_after ActionDispatch::Static, Rack::LiveReload
 

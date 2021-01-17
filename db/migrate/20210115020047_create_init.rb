@@ -24,6 +24,7 @@ class CreateInit < ActiveRecord::Migration[6.1]
     create_table :user_default_authors do |t|
       t.belongs_to :user, null: false, unique: true, foreign_key: true
       t.belongs_to :author, null: false, unique: true, foreign_key: true
+      t.timestamps
     end
 
     create_table :content_versions do |t|
@@ -47,20 +48,22 @@ class CreateInit < ActiveRecord::Migration[6.1]
     create_table :user_tags do |t|
       t.belongs_to :user, index: true
       t.string :tag, index: true, null: false
+      t.timestamps
     end
 
     add_index :user_tags, [:tag, :user]
 
-    create_table :tagged do |t|
+    create_table :tag_decls do |t|
       t.belongs_to :anchored, index: true, polymorphic: true
       t.belongs_to :target, index: true, polymorphic: true
       t.string :tag, index: true, null: false
       t.belongs_to :user, index: true
+      t.timestamps
     end
 
-    add_index :tagged, [:anchored_id, :anchored_type]
-    add_index :tagged, [:target_id, :target_type]
-    add_index :tagged, [:target_id, :target_type, :anchored_id, :anchored_type, :tag, :user], unique: true, name: "index_tagged_on_target_and_anchored_and_user"
+    add_index :tag_decls, [:anchored_id, :anchored_type]
+    add_index :tag_decls, [:target_id, :target_type]
+    add_index :tag_decls, [:target_id, :target_type, :anchored_id, :anchored_type, :tag, :user], unique: true, name: "index_tagged_on_target_and_anchored_and_user"
 
     # execute "insert into content_versions (id, title, created_at, updated_at) values (0, 'Critical Fallibilism Forum', 0, 0)"
     # execute "insert into nodes (id, content_version_id, created_at, updated_at) values (0, 0, 0, 0)"
@@ -115,6 +118,8 @@ class CreateInit < ActiveRecord::Migration[6.1]
     # drop_table :tags_on_nodes
     # drop_table :tags
     # drop_table :node_links
+    drop_table :tag_decls
+    drop_table :user_tags
     drop_table :nodes
     drop_table :content_versions
     drop_table :authors

@@ -31,7 +31,7 @@
 
 class SeedDatabase
   def initialize
-    pw = SecureRandom.hex(20)
+    pw = SecureRandom.hex(12)
     puts "Admin Password: #{pw}"
     @admin = User.create! :username => "admin", :email => "m@xk.io", :password => pw
     @admin_author = Author.create! :user => @admin, :name => "Admin", :public => true
@@ -43,7 +43,8 @@ class SeedDatabase
     @author3 = Author.create! :user => @admin, :name => "name 3", :public => true
     # @author4 = Author.create! :user => @admin, :name => "Name 3", :public => true
 
-    @root = create_node 0, "Critical Fallibilism Forum"
+    @root = create_node 0, "Critical Fallibilism Forum", nil
+    self.create_initial_view_tags
     self.set_root_tags @root
 
     @main = create_node 1, "Main", @root.id
@@ -64,27 +65,40 @@ class SeedDatabase
     @reply2a = create_node nil, "Click 'To Parent' to go back up", @reply1a.id, body: "It's at the bottom"
   end
 
-  def create_node(id, title, parent = nil, body: nil, author: @admin_author)
+  def create_node(id, title, parent, body: nil, author: @admin_author)
     puts "create_node: #{id}, #{title}, #{parent}, #{body}"
     node_params = {}
     if !id.nil?
       node_params[:id] = id
     end
-    node = Node.create! **node_params.merge(:author => author)
     if !parent.nil?
-      node.parent = Node.find(parent)
-      node.save!
+      p = Node.find(parent)
+      node_params = node_params.merge(:parent_id => parent)
     end
+    puts "creating node"
+    node = Node.create! **node_params.merge(:author => author)
+    puts "node.parent: #{node.parent&.id}"
+    # if !parent.nil?
+    #   node.parent = Node.find(parent)
+    #   node.save!
+    # end
     cv = ContentVersion.create! :id => id, :node => node, :title => title, :author => author, :body => body
     node
   end
 
   def set_root_tags(node)
-    # @tag_v_root =
+    TagDecl.create! :anchored => node, :target => @t_root, :tag => :view, :user => nil
   end
 
-  def create_tag(tag)
+  def create_initial_view_tags
+    @t_root = UserTag.create! :tag => :root
+    @t_index = UserTag.create! :tag => :index
+    @t_topic = UserTag.create! :tag => :topic
+    @t_comment = UserTag.create! :tag => :comment
   end
+
+  #   def create_tag(tag)
+  #   end
 end
 
 SeedDatabase.new

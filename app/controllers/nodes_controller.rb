@@ -9,9 +9,6 @@ class NodesController < ApplicationController
   def index
     # TODO: permissions
     set_node_to_root
-    # @nodes = Node.where("created_at >= ?", Date.today)
-    # @top_level_nodes = Node.where("is_top_post = true")
-    # @nodes_under = Node.is_top_post(true)
   end
 
   # GET /nodes/1

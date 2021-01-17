@@ -5,10 +5,9 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :validatable
 
   has_many :authors
+  has_many :user_tags
 
   def public_authors
-    self.authors.select do |author|
-      author.public
-    end
+    self.authors.select { |author| author.public }
   end
 end

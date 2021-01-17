@@ -14,6 +14,12 @@ run:
 rails db:drop db:create db:migrate db:setup
 ```
 
+### create DB views
+
+```
+rails generate scenic:view view_tag_decls create db/views/view_tag_decls_v01.sql create 'db/migrate/[TIMESTAMP]_create_view_tag_decls.rb'
+```
+
 ### other
 
 * `rails db:migrate && dialog --yesno "Rollback?" 0 0 && rails db:rollback`
