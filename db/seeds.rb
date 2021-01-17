@@ -47,7 +47,7 @@ class SeedDatabase
     @root = create_node 0, "Critical Fallibilism Forum", nil
     self.create_initial_view_tags
     self.set_root_tags @root
-    slef.set_root_permissions @root
+    self.set_root_permissions @root, @admin
 
     @main = create_node 1, "Main", @root.id
     @meta = create_node 2, "Meta", @root.id
@@ -96,14 +96,24 @@ class SeedDatabase
     TagDecl.create! :anchored => node, :target => @t_root, :tag => :view, :user => nil
   end
 
-  def set_root_permissions(node, user)
-    TagDecl.create! :anchored => node, :target => user, :tag => AUTHZ
+  def set_root_permissions(node, admin)
+    TagDecl.create! :anchored => node, :target => @g_all, :tag => Authz::readNode
+    TagDecl.create! :anchored => node, :target => @g_admins, :tag => Authz::write
+    TagDecl.create! :anchored => admin, :target => @g_admins, :tag => Authz::userInGroup
+    # TagDecl.create! :anchored => @g_admins, :target => @g_subscribers, :tag => :group_in_group
+  end
 
   def create_initial_view_tags
     @t_root = UserTag.create! :tag => :root
     @t_index = UserTag.create! :tag => :index
     @t_topic = UserTag.create! :tag => :topic
     @t_comment = UserTag.create! :tag => :comment
+  end
+
+  def create_initial_groups
+    @g_all = UserTag.create! :tag => :all
+    @g_subscribers = UserTag.create! :tag => :subscribers
+    @g_admins = UserTag.create! :tag => :admins
   end
 
   #   def create_tag(tag)
