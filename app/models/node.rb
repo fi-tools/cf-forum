@@ -4,13 +4,14 @@ class Node < ApplicationRecord
   has_many :content_versions
 
   has_one :user, through: :author
+  has_many :direct_children, class_name: "Node", foreign_key: :parent_id
 
   # scope :is_top_post, -> (x) { where(is_top_post: x) }
   # scope :genesis, -> (x) { where(genesis_id: x.id) }
 
-  def children
-    Node.where(parent_id: self.id).all()
-  end
+  # def children
+  #   Node.where(parent_id: self.id).all()
+  # end
 
   def content
     c = content_versions.last
@@ -36,7 +37,7 @@ class Node < ApplicationRecord
 
   def children_rec(rec = false)
     if !rec
-      return children
+      return direct_children
     end
     Node.where("id in (#{self.children_rec_sql(self)}) AND id != ?", [self.id])
   end

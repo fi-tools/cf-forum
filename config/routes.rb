@@ -13,6 +13,7 @@ Rails.application.routes.draw do
   get "/users/authors", to: "authors#mine", as: "edit_user_authors"
 
   post "/nodes", to: "nodes#create", as: "nodes"
+  get "/subtree/:id", to: "nodes#subtree", as: "subtree"
 
   get "/:id", to: "nodes#show", as: "node"
 end

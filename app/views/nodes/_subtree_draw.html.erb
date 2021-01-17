@@ -1,0 +1,12 @@
+<%= link_to use_anchor ? "##{node.id}" : node_path(node) do %>
+  <%= node.id %>: <%= node.content.title %>
+<% end %>
+<% if max_depth > 0 && @node_id_to_children[node.id].count > 0 %>
+  <ul>
+    <% @node_id_to_children[node.id].each do |n2| %>
+      <li>
+        <%= render 'subtree_draw', node: n2, max_depth: max_depth - 1, use_anchor: use_anchor %>
+      </li>
+    <% end %>
+  </ul>
+<% end %>

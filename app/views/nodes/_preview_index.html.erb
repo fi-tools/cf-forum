@@ -4,7 +4,7 @@
       <%= node.content.title %>
     </div>
     <div class="subtitle is-4">
-      <%= link_to "View All Posts (#{node.children.count})", node %>
+      <%= link_to "View All Posts (#{node.direct_children.count})", node %>
     </div>
     <% if node.children_rec.count > 0 %>
       <div class="title is-5 mt-3">

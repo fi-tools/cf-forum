@@ -15,9 +15,7 @@
         </div>
         <div id="navbarMenuHeroA" class="navbar-menu">
           <div class="navbar-end">
-            <%# <a class="navbar-item is-active">
-              Home
-            </a>
+            <%= link_to "Full Tree", subtree_path(0), class: "navbar-item" %>
             <a class="navbar-item">
               Examples
             </a>
@@ -31,7 +29,7 @@
                 </span>
                 <span>Download</span>
               </a>
-            </span> %>
+            </span>
             <!--
             <span class="navbar-item">
               <%= link_to new_node_path, class: "button is-success" do %>

@@ -1,11 +1,13 @@
 class NodesController < ApplicationController
-  before_action :set_node, only: [:show, :edit, :update, :destroy]
+  before_action :set_node, only: [:show, :edit, :update, :destroy, :subtree]
   before_action :set_parent, only: [:new, :new_comment]
+  before_action :set_node_to_children_map, only: [:show, :subtree]
   before_action :authenticate_user!, only: [:new, :new_comment, :create]
 
   # GET /nodes
   # GET /nodes.json
   def index
+    # TODO: permissions
     set_node_to_root
     # @nodes = Node.where("created_at >= ?", Date.today)
     # @top_level_nodes = Node.where("is_top_post = true")
@@ -15,14 +17,21 @@ class NodesController < ApplicationController
   # GET /nodes/1
   # GET /nodes/1.json
   def show
+    # TODO: permissions
+  end
+
+  def subtree
+    # TODO: permissions
   end
 
   # GET /nodes/new
   def new
+    # TODO: permissions
     @node = Node.new
   end
 
   def new_comment
+    # TODO: permissions
     @node = Node.new
   end
 
@@ -33,6 +42,7 @@ class NodesController < ApplicationController
   # POST /nodes
   # POST /nodes.json
   def create
+    # TODO: permissions
     params = node_params
     @parent_id = params[:parent_id]
     node_params = params.slice(:parent_id)
@@ -91,6 +101,16 @@ class NodesController < ApplicationController
 
   def set_node_to_root
     @node = Node.find(0)
+  end
+
+  def set_node_to_children_map
+    tree = [@node] + @node.children_rec(true)
+    @node_id_to_children = Hash.new { |h, k| h[k] = Array.new }
+    puts tree.select
+    tree.each do |n|
+      @node_id_to_children[n.id] += (tree.select { |n2| n2.parent_id == n.id })
+      # n.direct_children = @tree.select(->(n2) { n2.parent.id == n.id })
+    end
   end
 
   def children_of(node_id)

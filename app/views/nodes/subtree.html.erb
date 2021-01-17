@@ -1,0 +1,12 @@
+<% content_for :title do %>
+  Subtree from node:<%= @node.id %>
+<% end %>
+<div class="content">
+  <!--
+  <p class="title">Subtree from /<%= @node.id %></p>
+  -->
+  <%= render 'subtree_full', node: @node %>
+  <div class="m-3">
+    <%= link_to "View /#{@node.id}", @node, class: "button is-info" %>
+  </div>
+</div>
