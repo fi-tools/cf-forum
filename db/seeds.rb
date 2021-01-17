@@ -47,6 +47,7 @@ class SeedDatabase
     @root = create_node 0, "Critical Fallibilism Forum", nil
     self.create_initial_view_tags
     self.set_root_tags @root
+    self.create_initial_groups
     self.set_root_permissions @root, @admin
 
     @main = create_node 1, "Main", @root.id
@@ -68,12 +69,12 @@ class SeedDatabase
 
     puts "Admin | Email: #{admin_email} | Password: #{pw}"
     gen_user "subscriber", "cfsub@xk.io", pw
-    gen_user "general-user", "cfsub@xk.io", pw
+    gen_user "general-user", "cfgen@xk.io", pw
   end
 
   def gen_user(username, email, pw)
     puts "Generating User: #{username} <#{email}> | pw: #{pw}"
-    Users.create! :username => username, :email => email, :password => pw
+    User.create! :username => username, :email => email, :password => pw
   end
 
   def create_node(id, title, parent, body: nil, author: @admin_author)

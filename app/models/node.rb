@@ -56,6 +56,7 @@ class Node < ApplicationRecord
   end
 
   def view
+    puts self.anchoring_view_tags.all
     self.anchored_view_tags.last.tag
   end
 
@@ -77,19 +78,12 @@ class Node < ApplicationRecord
     SQL
   end
 
-  DefaultViewProgression = {
-    "root" => :index,
-    "index" => :topic,
-    "topic" => :comment,
-    "comment" => :comment,
-  }
-
   def set_tags
     p = self.parent
     if !p.nil?
       # p_view = p.anchoring_tags.where(:tag => :view, :target_type => :UserTag, :user_id => nil).last
       # puts "expecting to find tags: #{p_view.to_json}"
-      view_tag = p.anchored_view_tags.all.last
+      view_tag = p.anchored_view_tags.last
       if view_tag.nil?
         throw "No tags :*( #{p.to_yaml}"
       end
@@ -105,8 +99,18 @@ class Node < ApplicationRecord
       #   else
       #     throw "Unrecognised view_tag: #{view_tag.to_json}"
       #   end
-      new_vt = DefaultViewProgression[view_tag.tag]
+      puts p.anchoring_view_tags.all.collect { |t| "#{t.tag}:#{t.to_json}" }
+      puts p.anchored_view_tags.all.collect { |t| t.tag }
+      new_vt = DEFAULT_VIEW_PROGRESSION[view_tag.tag]
+      puts "new_vt: #{new_vt} from #{view_tag.tag}"
       TagDecl.create! :tag => :view, :user => nil, :anchored => self, :target => UserTag.find_global(new_vt).first
     end
   end
 end
+
+DEFAULT_VIEW_PROGRESSION = {
+  "root" => :index,
+  "index" => :topic,
+  "topic" => :comment,
+  "comment" => :comment,
+}
