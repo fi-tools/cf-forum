@@ -44,25 +44,27 @@ class SeedDatabase
     # @author4 = Author.create! :user => @admin, :name => "Name 3", :public => true
 
     @root = create_node 0, "Critical Fallibilism Forum"
+    self.set_root_tags @root
+
     @main = create_node 1, "Main", @root.id
     @meta = create_node 2, "Meta", @root.id
     # should it be called *detailed* instead?
     @details = create_node 3, "Details", @root.id
     @other = create_node 4, "Other", @root.id
 
-    @post1 = create_node nil, "Post 1", @main.id, "post 1 body", @author2
-    @post2 = create_node nil, "Post 2", @main.id, "post 2 body", @author3
+    @post1 = create_node nil, "Post 1", @main.id, body: "post 1 body", author: @author2
+    @post2 = create_node nil, "Post 2", @main.id, body: "post 2 body", author: @author3
 
-    @reply1 = create_node nil, "Reply 1st", @post2.id, "reply 1st level", @author1
-    @reply2 = create_node nil, "Reply 2nd", @reply1.id, "reply 2nd level", @author2
-    @reply3 = create_node nil, nil, @reply2.id, "reply 3rd level", @author1
-    @reply1a = create_node nil, "Another Reply 1st L", @post2.id, "reply 1st level again", @author3
-    @reply4 = create_node nil, nil, @reply3.id, "4th level repy body", @author3
-    @reply5 = create_node nil, "5th level", @reply4.id, "body 5th", @author_anon
-    @reply2a = create_node nil, "Click 'To Parent' to go back up", @reply1a.id, "It's at the bottom"
+    @reply1 = create_node nil, "Reply 1st", @post2.id, body: "reply 1st level", author: @author1
+    @reply2 = create_node nil, "Reply 2nd", @reply1.id, body: "reply 2nd level", author: @author2
+    @reply3 = create_node nil, nil, @reply2.id, body: "reply 3rd level", author: @author1
+    @reply1a = create_node nil, "Another Reply 1st L", @post2.id, body: "reply 1st level again", author: @author3
+    @reply4 = create_node nil, nil, @reply3.id, body: "4th level repy body", author: @author3
+    @reply5 = create_node nil, "5th level", @reply4.id, body: "body 5th", author: @author_anon
+    @reply2a = create_node nil, "Click 'To Parent' to go back up", @reply1a.id, body: "It's at the bottom"
   end
 
-  def create_node(id, title, parent = nil, body = nil, author = @admin_author)
+  def create_node(id, title, parent = nil, body: nil, author: @admin_author)
     puts "create_node: #{id}, #{title}, #{parent}, #{body}"
     node_params = {}
     if !id.nil?
@@ -75,6 +77,13 @@ class SeedDatabase
     end
     cv = ContentVersion.create! :id => id, :node => node, :title => title, :author => author, :body => body
     node
+  end
+
+  def set_root_tags(node)
+    # @tag_v_root =
+  end
+
+  def create_tag(tag)
   end
 end
 
