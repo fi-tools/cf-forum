@@ -1,0 +1,2 @@
+class AuthzTagDecl < TagDecl
+end

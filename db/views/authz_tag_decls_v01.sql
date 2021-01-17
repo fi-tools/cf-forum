@@ -1,0 +1,1 @@
+SELECT * FROM tag_decls WHERE tag LIKE 'authz_%s' AND user IS NULL

@@ -14,6 +14,9 @@ class Node < ApplicationRecord
   has_many :anchoring_view_tags, as: :anchored, class_name: "ViewTagDecl"
   has_many :anchored_view_tags, through: :anchoring_view_tags, source: :target, source_type: "UserTag"
 
+  has_many :anchoring_authz_tags, as: :anchored, class_name: "AuthzTagDecl"
+  has_many :anchored_authz_tags, through: :anchoring_authz_tags, source: :target, source_type: "UserTag"
+
   after_create :set_tags
 
   # scope :is_top_post, -> (x) { where(is_top_post: x) }
@@ -74,6 +77,13 @@ class Node < ApplicationRecord
     SQL
   end
 
+  DefaultViewProgression = {
+    "root" => :index,
+    "index" => :topic,
+    "topic" => :comment,
+    "comment" => :comment,
+  }
+
   def set_tags
     p = self.parent
     if !p.nil?
@@ -83,19 +93,19 @@ class Node < ApplicationRecord
       if view_tag.nil?
         throw "No tags :*( #{p.to_yaml}"
       end
-      new_vt = case view_tag.tag
-        when "root"
-          :index
-        when "index"
-          :topic
-        when "topic"
-          :comment
-        when "comment"
-          :comment
-        else
-          throw "Unrecognised view_tag: #{view_tag.to_json}"
-        end
-
+      # new_vt = case view_tag.tag
+      #   when "root"
+      #     :index
+      #   when "index"
+      #     :topic
+      #   when "topic"
+      #     :comment
+      #   when "comment"
+      #     :comment
+      #   else
+      #     throw "Unrecognised view_tag: #{view_tag.to_json}"
+      #   end
+      new_vt = DefaultViewProgression[view_tag.tag]
       TagDecl.create! :tag => :view, :user => nil, :anchored => self, :target => UserTag.find_global(new_vt).first
     end
   end
