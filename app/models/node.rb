@@ -79,6 +79,11 @@ class Node < ApplicationRecord
   end
 
   def set_tags
+    self.set_view_tag_from_parent
+    self.set_permissions_from_parent
+  end
+
+  def set_view_tag_from_parent
     p = self.parent
     if !p.nil?
       # p_view = p.anchoring_tags.where(:tag => :view, :target_type => :UserTag, :user_id => nil).last
@@ -87,23 +92,19 @@ class Node < ApplicationRecord
       if view_tag.nil?
         throw "No tags :*( #{p.to_yaml}"
       end
-      # new_vt = case view_tag.tag
-      #   when "root"
-      #     :index
-      #   when "index"
-      #     :topic
-      #   when "topic"
-      #     :comment
-      #   when "comment"
-      #     :comment
-      #   else
-      #     throw "Unrecognised view_tag: #{view_tag.to_json}"
-      #   end
-      puts p.anchoring_view_tags.all.collect { |t| "#{t.tag}:#{t.to_json}" }
-      puts p.anchored_view_tags.all.collect { |t| t.tag }
       new_vt = DEFAULT_VIEW_PROGRESSION[view_tag.tag]
       puts "new_vt: #{new_vt} from #{view_tag.tag}"
       TagDecl.create! :tag => :view, :user => nil, :anchored => self, :target => UserTag.find_global(new_vt).first
+    end
+  end
+
+  def set_permissions_from_parent
+    p = self.parent
+    if !p.nil?
+      authz_tags = p.anchored_authz_tags.all
+      puts "authz_tags: ", authz_tags
+    else
+      puts "no parent"
     end
   end
 end
