@@ -27,6 +27,14 @@ class CreateInit < ActiveRecord::Migration[6.1]
       t.timestamps
     end
 
+    create_table :nodes do |t|
+      t.belongs_to :author, index: true
+      t.integer :parent_id, index: true
+      t.timestamps
+    end
+
+    add_foreign_key :nodes, :nodes, column: :parent_id
+
     create_table :content_versions do |t|
       t.belongs_to :author, foreign_key: true, index: true
       t.belongs_to :node, foreign_key: true, index: true
@@ -37,21 +45,13 @@ class CreateInit < ActiveRecord::Migration[6.1]
       t.timestamps
     end
 
-    create_table :nodes do |t|
-      t.belongs_to :author, index: true
-      t.integer :parent_id, index: true
-      t.timestamps
-    end
-
-    add_foreign_key :nodes, :nodes, column: :parent_id
-
     create_table :user_tags do |t|
       t.belongs_to :user, index: true
       t.string :tag, index: true, null: false
       t.timestamps
     end
 
-    add_index :user_tags, [:tag, :user]
+    add_index :user_tags, [:tag, :user_id]
 
     create_table :tag_decls do |t|
       t.belongs_to :anchored, index: true, polymorphic: true
@@ -63,7 +63,7 @@ class CreateInit < ActiveRecord::Migration[6.1]
 
     add_index :tag_decls, [:anchored_id, :anchored_type]
     add_index :tag_decls, [:target_id, :target_type]
-    add_index :tag_decls, [:target_id, :target_type, :anchored_id, :anchored_type, :tag, :user], unique: true, name: "index_tagged_on_target_and_anchored_and_user"
+    add_index :tag_decls, [:target_id, :target_type, :anchored_id, :anchored_type, :tag, :user_id], unique: true, name: "index_tagged_on_target_and_anchored_and_user"
 
     # execute "insert into content_versions (id, title, created_at, updated_at) values (0, 'Critical Fallibilism Forum', 0, 0)"
     # execute "insert into nodes (id, content_version_id, created_at, updated_at) values (0, 0, 0, 0)"

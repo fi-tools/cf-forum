@@ -50,11 +50,11 @@ class SeedDatabase
     self.create_initial_groups
     self.set_root_permissions @root, @admin
 
-    @main = create_node 1, "Main", @root.id
-    @meta = create_node 2, "Meta", @root.id
+    @main = create_node nil, "Main", @root.id
+    @meta = create_node nil, "Meta", @root.id
     # should it be called *detailed* instead?
-    @details = create_node 3, "Details", @root.id
-    @other = create_node 4, "Other", @root.id
+    @details = create_node nil, "Details", @root.id
+    @other = create_node nil, "Other", @root.id
 
     @post1 = create_node nil, "Post 1", @main.id, body: "post 1 body", author: @author2
     @post2 = create_node nil, "Post 2", @main.id, body: "post 2 body", author: @author3

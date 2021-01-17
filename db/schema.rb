@@ -10,11 +10,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_01_17_055157) do
+ActiveRecord::Schema.define(version: 2021_01_17_085835) do
+
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
 
   create_table "authors", force: :cascade do |t|
-    t.text "name", limit: 255, null: false
-    t.integer "user_id", null: false
+    t.text "name", null: false
+    t.bigint "user_id", null: false
     t.boolean "public", default: true, null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
@@ -23,8 +26,8 @@ ActiveRecord::Schema.define(version: 2021_01_17_055157) do
   end
 
   create_table "content_versions", force: :cascade do |t|
-    t.integer "author_id"
-    t.integer "node_id"
+    t.bigint "author_id"
+    t.bigint "node_id"
     t.text "title"
     t.text "body"
     t.datetime "created_at", precision: 6, null: false
@@ -34,7 +37,7 @@ ActiveRecord::Schema.define(version: 2021_01_17_055157) do
   end
 
   create_table "nodes", force: :cascade do |t|
-    t.integer "author_id"
+    t.bigint "author_id"
     t.integer "parent_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
@@ -44,25 +47,25 @@ ActiveRecord::Schema.define(version: 2021_01_17_055157) do
 
   create_table "tag_decls", force: :cascade do |t|
     t.string "anchored_type"
-    t.integer "anchored_id"
+    t.bigint "anchored_id"
     t.string "target_type"
-    t.integer "target_id"
+    t.bigint "target_id"
     t.string "tag", null: false
-    t.integer "user_id"
+    t.bigint "user_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.index "\"target_id\", \"target_type\", \"anchored_id\", \"anchored_type\", \"tag\", \"user\"", name: "index_tagged_on_target_and_anchored_and_user", unique: true
     t.index ["anchored_id", "anchored_type"], name: "index_tag_decls_on_anchored_id_and_anchored_type"
     t.index ["anchored_type", "anchored_id"], name: "index_tag_decls_on_anchored"
     t.index ["tag"], name: "index_tag_decls_on_tag"
+    t.index ["target_id", "target_type", "anchored_id", "anchored_type", "tag", "user_id"], name: "index_tagged_on_target_and_anchored_and_user", unique: true
     t.index ["target_id", "target_type"], name: "index_tag_decls_on_target_id_and_target_type"
     t.index ["target_type", "target_id"], name: "index_tag_decls_on_target"
     t.index ["user_id"], name: "index_tag_decls_on_user_id"
   end
 
   create_table "user_default_authors", force: :cascade do |t|
-    t.integer "user_id", null: false
-    t.integer "author_id", null: false
+    t.bigint "user_id", null: false
+    t.bigint "author_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["author_id"], name: "index_user_default_authors_on_author_id"
@@ -70,11 +73,11 @@ ActiveRecord::Schema.define(version: 2021_01_17_055157) do
   end
 
   create_table "user_tags", force: :cascade do |t|
-    t.integer "user_id"
+    t.bigint "user_id"
     t.string "tag", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.index "\"tag\", \"user\"", name: "index_user_tags_on_tag_and_user"
+    t.index ["tag", "user_id"], name: "index_user_tags_on_tag_and_user_id"
     t.index ["tag"], name: "index_user_tags_on_tag"
     t.index ["user_id"], name: "index_user_tags_on_user_id"
   end
@@ -88,7 +91,8 @@ ActiveRecord::Schema.define(version: 2021_01_17_055157) do
     t.string "reset_password_token"
     t.datetime "reset_password_sent_at"
     t.datetime "remember_created_at"
-    t.index "lower(email)", name: "user_email_lower_index", unique: true
+    t.index "lower((email)::text)", name: "user_email_lower_index", unique: true
+    t.index "lower((username)::text)", name: "user_username_lower_index", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["username"], name: "index_users_on_username"
   end
@@ -101,15 +105,29 @@ ActiveRecord::Schema.define(version: 2021_01_17_055157) do
   add_foreign_key "user_default_authors", "users"
 
   create_view "view_tag_decls", sql_definition: <<-SQL
-      -- the user_id here belongs to the person who created the tag declaration.
-    -- since were using tags created by the system, the user_id is null.
-
-    SELECT * FROM tag_decls WHERE tag = 'view' AND user_id IS NULL
+      SELECT tag_decls.id,
+      tag_decls.anchored_type,
+      tag_decls.anchored_id,
+      tag_decls.target_type,
+      tag_decls.target_id,
+      tag_decls.tag,
+      tag_decls.user_id,
+      tag_decls.created_at,
+      tag_decls.updated_at
+     FROM tag_decls
+    WHERE (((tag_decls.tag)::text = 'view'::text) AND (tag_decls.user_id IS NULL));
   SQL
   create_view "authz_tag_decls", sql_definition: <<-SQL
-      -- the user_id here belongs to the person who created the tag declaration.
-    -- since were using tags created by the system, the user_id is null.
-
-    SELECT * FROM tag_decls WHERE tag LIKE 'authz_%s' AND user_id IS NULL
+      SELECT tag_decls.id,
+      tag_decls.anchored_type,
+      tag_decls.anchored_id,
+      tag_decls.target_type,
+      tag_decls.target_id,
+      tag_decls.tag,
+      tag_decls.user_id,
+      tag_decls.created_at,
+      tag_decls.updated_at
+     FROM tag_decls
+    WHERE (((tag_decls.tag)::text ~~ 'authz_%s'::text) AND (tag_decls.user_id IS NULL));
   SQL
 end
