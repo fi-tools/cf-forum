@@ -12,12 +12,9 @@
 
 ActiveRecord::Schema.define(version: 2021_01_17_055157) do
 
-  # These are extensions that must be enabled in order to support this database
-  enable_extension "plpgsql"
-
   create_table "authors", force: :cascade do |t|
-    t.text "name", null: false
-    t.bigint "user_id", null: false
+    t.text "name", limit: 255, null: false
+    t.integer "user_id", null: false
     t.boolean "public", default: true, null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
@@ -26,8 +23,8 @@ ActiveRecord::Schema.define(version: 2021_01_17_055157) do
   end
 
   create_table "content_versions", force: :cascade do |t|
-    t.bigint "author_id"
-    t.bigint "node_id"
+    t.integer "author_id"
+    t.integer "node_id"
     t.text "title"
     t.text "body"
     t.datetime "created_at", precision: 6, null: false
@@ -37,7 +34,7 @@ ActiveRecord::Schema.define(version: 2021_01_17_055157) do
   end
 
   create_table "nodes", force: :cascade do |t|
-    t.bigint "author_id"
+    t.integer "author_id"
     t.integer "parent_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
@@ -47,11 +44,11 @@ ActiveRecord::Schema.define(version: 2021_01_17_055157) do
 
   create_table "tag_decls", force: :cascade do |t|
     t.string "anchored_type"
-    t.bigint "anchored_id"
+    t.integer "anchored_id"
     t.string "target_type"
-    t.bigint "target_id"
+    t.integer "target_id"
     t.string "tag", null: false
-    t.bigint "user_id"
+    t.integer "user_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["anchored_id", "anchored_type"], name: "index_tag_decls_on_anchored_id_and_anchored_type"
@@ -64,8 +61,8 @@ ActiveRecord::Schema.define(version: 2021_01_17_055157) do
   end
 
   create_table "user_default_authors", force: :cascade do |t|
-    t.bigint "user_id", null: false
-    t.bigint "author_id", null: false
+    t.integer "user_id", null: false
+    t.integer "author_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["author_id"], name: "index_user_default_authors_on_author_id"
@@ -73,7 +70,7 @@ ActiveRecord::Schema.define(version: 2021_01_17_055157) do
   end
 
   create_table "user_tags", force: :cascade do |t|
-    t.bigint "user_id"
+    t.integer "user_id"
     t.string "tag", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
@@ -91,8 +88,7 @@ ActiveRecord::Schema.define(version: 2021_01_17_055157) do
     t.string "reset_password_token"
     t.datetime "reset_password_sent_at"
     t.datetime "remember_created_at"
-    t.index "lower((email)::text)", name: "user_email_lower_index", unique: true
-    t.index "lower((username)::text)", name: "user_username_lower_index", unique: true
+    t.index "lower(email)", name: "user_email_lower_index", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["username"], name: "index_users_on_username"
   end
@@ -105,29 +101,15 @@ ActiveRecord::Schema.define(version: 2021_01_17_055157) do
   add_foreign_key "user_default_authors", "users"
 
   create_view "view_tag_decls", sql_definition: <<-SQL
-      SELECT tag_decls.id,
-      tag_decls.anchored_type,
-      tag_decls.anchored_id,
-      tag_decls.target_type,
-      tag_decls.target_id,
-      tag_decls.tag,
-      tag_decls.user_id,
-      tag_decls.created_at,
-      tag_decls.updated_at
-     FROM tag_decls
-    WHERE (((tag_decls.tag)::text = 'view'::text) AND (tag_decls.user_id IS NULL));
+      -- the user_id here belongs to the person who created the tag declaration.
+      -- since were using tags created by the system, the user_id is null.
+
+      SELECT * FROM tag_decls WHERE tag = 'view' AND user_id IS NULL
   SQL
   create_view "authz_tag_decls", sql_definition: <<-SQL
-      SELECT tag_decls.id,
-      tag_decls.anchored_type,
-      tag_decls.anchored_id,
-      tag_decls.target_type,
-      tag_decls.target_id,
-      tag_decls.tag,
-      tag_decls.user_id,
-      tag_decls.created_at,
-      tag_decls.updated_at
-     FROM tag_decls
-    WHERE (((tag_decls.tag)::text ~~ 'authz_%'::text) AND (tag_decls.user_id IS NULL));
+      -- the user_id here belongs to the person who created the tag declaration.
+      -- since were using tags created by the system, the user_id is null.
+
+      SELECT * FROM tag_decls WHERE tag LIKE 'authz_%' AND user_id IS NULL
   SQL
 end
