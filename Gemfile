@@ -47,6 +47,9 @@ group :development, :test do
   gem "guard-livereload", "~> 2.5", require: false
   # keep this in dev/test so we can use DB views in these environments
   gem "scenic_sqlite_adapter"
+
+  # generate fake data for dev/test
+  gem "faker"
 end
 
 group :development do
