@@ -20,6 +20,12 @@ or mb this is enough
 rake db:reset db:migrate db:seed
 ```
 
+and sometimes this, which seems reliable. the copying is for WSL
+
+```
+rm db/cff_dev.db ; rm db/schema.rb ; rake db:rollback VERSION=0 db:migrate ; rake db:migrate db:seed ; cp db/cff_dev.db /mnt/c/Users/xertrov/cff_dev.db
+```
+
 ### create DB views
 
 ```
@@ -55,6 +61,15 @@ rails generate scenic:view view_tag_decls create db/views/view_tag_decls_v01.sql
 you might need to run this first, but I think `create role` will create a user for you. 
 
 * `sudo -u postgres createuser -s cffdev`
+
+-----
+
+## todo
+
+* put authz on /admin
+* implement create_child permission stuff
+* write tests
+* 
 
 ----
 

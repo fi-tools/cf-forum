@@ -23,7 +23,7 @@ class Node < ApplicationRecord
   # scope :is_top_post, -> (x) { where(is_top_post: x) }
   # scope :genesis, -> (x) { where(genesis_id: x.id) }
 
-  def children(user_id = nil)
+  def children(user_id)
     user_id_comp = user_id.nil? ? 'IS' : '='
     Node.where("id in (
       SELECT nwc.id FROM nodes_user_sees nus
@@ -50,19 +50,23 @@ class Node < ApplicationRecord
   #   )")
   # end
 
-  def descendants
+  def descendants(user_id)
+    # todo: refactor this and .children into the same basic function - parameterized
+    user_id_comp = user_id.nil? ? 'IS' : '='
     Node.where("id in (
-      SELECT id FROM node_with_children WHERE base_node_id = #{self.id} AND rel_depth > 0
-    )")
+      SELECT nwc.id FROM nodes_user_sees nus
+      JOIN node_with_children nwc ON nwc.id = nus.base_node_id
+      WHERE nwc.base_node_id = ? AND rel_depth > 0 AND nus.user_id #{user_id_comp} ?
+    )", self.id, user_id)
   end
 
   def view
     self.anchored_view_tags.last.tag
   end
 
-  def descendants_map
+  def descendants_map(user_id)
     # get this node + children
-    tree = [self] + self.descendants
+    tree = [self] + self.descendants(user_id)
     # defaultdict where a key will return an empty array by defualt
     node_id_to_children = Hash.new { |h, k| h[k] = Array.new }
     tree.each do |n|

@@ -83,6 +83,10 @@ class SeedDatabase
     sub_user = gen_user "subscriber", "cfsub@xk.io", pw
     self.add_to_group sub_user, @g_subscribers
     gen_user "general-user", "cfgen@xk.io", pw
+
+    @s1 = create_node nil, "subs only test", @subs_node.id, body: "only subs should see this"
+    @s2a = create_node nil, "subs only reply", @s1.id, body: "only subs reply test"
+    @s2b = create_node nil, nil, @s1.id, body: "yarp"
   end
 
   def gen_user(username, email, pw)

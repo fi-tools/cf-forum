@@ -114,7 +114,7 @@ class NodesController < ApplicationController
   end
 
   def set_node_to_children_map
-    @node_id_to_children = @node.descendants_map
+    @node_id_to_children = @node.descendants_map(@user_id)
   end
 
   # Only allow a list of trusted parameters through.
