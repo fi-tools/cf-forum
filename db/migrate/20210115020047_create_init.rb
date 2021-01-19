@@ -2,12 +2,13 @@ class CreateInit < ActiveRecord::Migration[6.1]
   def up
     # stand-in; replace later or alter as needed
     create_table :users do |t|
-      # t.text :username, limit: 63, null: false
-      # t.text :hex_pw_hash, null: false, limit: 63
-      # t.text :email, unique: true, index: true
       t.string :username, limit: 63, null: false, unique: true, index: true
       t.timestamps
     end
+
+    execute <<-SQL
+      CREATE UNIQUE INDEX index_users_username_lower on users (lower(username));
+    SQL
 
     create_table :authors do |t|
       t.text :name, limit: 255
@@ -18,7 +19,7 @@ class CreateInit < ActiveRecord::Migration[6.1]
     end
 
     execute <<-SQL
-      CREATE UNIQUE INDEX author_name_lower_index on authors (lower(name));
+      CREATE UNIQUE INDEX index_authors_name_lower on authors (lower(name));
     SQL
 
     create_table :user_default_authors do |t|
@@ -51,6 +52,7 @@ class CreateInit < ActiveRecord::Migration[6.1]
       t.timestamps
     end
 
+    # todo: is this redundant?
     add_index :user_tags, [:tag, :user_id]
 
     create_table :tag_decls do |t|

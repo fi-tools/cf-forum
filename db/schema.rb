@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_01_19_102730) do
+ActiveRecord::Schema.define(version: 2021_01_19_134716) do
 
   create_table "authors", force: :cascade do |t|
     t.text "name", limit: 255
@@ -18,7 +18,7 @@ ActiveRecord::Schema.define(version: 2021_01_19_102730) do
     t.boolean "public", default: true, null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.index "lower(name)", name: "author_name_lower_index", unique: true
+    t.index "lower(name)", name: "index_authors_name_lower", unique: true
     t.index ["user_id"], name: "index_authors_on_user_id"
   end
 
@@ -89,6 +89,7 @@ ActiveRecord::Schema.define(version: 2021_01_19_102730) do
     t.datetime "reset_password_sent_at"
     t.datetime "remember_created_at"
     t.index "lower(email)", name: "user_email_lower_index", unique: true
+    t.index "lower(username)", name: "index_users_username_lower", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["username"], name: "index_users_on_username"
   end

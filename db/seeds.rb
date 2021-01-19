@@ -154,7 +154,7 @@ class SeedDatabase
   end
 
   def run_faker
-    n_topics_to_create = 1000
+    n_topics_to_create = 100
     node_choices = [@faker_root]
     puts node_choices
 
