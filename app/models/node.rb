@@ -49,10 +49,7 @@ class Node < ApplicationRecord
     end
   end
 
-  def children_rec(rec = false)
-    if !rec
-      return direct_children
-    end
+  def children_rec(rec = true)
     Node.where("id in (#{self.children_rec_sql}) AND id != ?", [self.id])
   end
 
@@ -81,7 +78,7 @@ class Node < ApplicationRecord
     ActiveRecord::Base.connection.execute self.get_all_tags_sql self, "authz_read"
   end
 
-  def with_parents
+  def with_parents2
     Node.where("id in (SELECT id FROM (#{self.node_and_parents_rec_sql}))")
   end
 
@@ -93,7 +90,7 @@ class Node < ApplicationRecord
 
   private
 
-  def children_rec_sql(node = self)
+  def children_rec_sql(node = self, user_id = -1)
     table_name = Node.table_name
     <<-SQL
         WITH RECURSIVE search_tree(id) AS (
@@ -101,11 +98,54 @@ class Node < ApplicationRecord
             FROM #{table_name}
             WHERE id = #{node.id}
           UNION ALL
-            SELECT id
+            SELECT o.id
             FROM search_tree, #{table_name} o
             WHERE search_tree.id = o.parent_id
+        ),
+        tag_combos(node_id, tag, ut_id, ut_tag) AS (
+          #{self.tag_combos_with_table_named("search_tree")}
+        ),
+        user_groups(group_name) AS (
+          #{self.user_groups_sql(user_id)}
+        ),
+        authz_read(id) AS (
+          SELECT id
+          FROM search_tree
+          JOIN tag_combos tc ON tc.node_id = id
+          JOIN user_groups ug ON tc.ut_tag = ug.group_name OR tc.ut_tag = 'all'
         )
-        SELECT * FROM search_tree
+        SELECT * FROM authz_read
+    SQL
+  end
+
+  def tag_combos_with_table_named(table_name)
+    <<-SQL
+      SELECT n.id, td.tag, ut.id, ut.tag
+      FROM #{table_name} n
+      JOIN tag_decls td ON td.anchored_id = n.id
+      JOIN user_tags ut ON td.target_id = ut.id
+      WHERE 1
+        AND td.tag = 'authz_read'
+        AND td.target_type = 'UserTag'
+        AND td.anchored_type = 'Node'
+        AND td.user_id IS NULL
+        AND ut.user_id IS NULL
+    SQL
+  end
+
+  def user_groups_sql(user_id)
+    <<-SQL
+      SELECT 'all'
+      UNION ALL
+      SELECT ut.tag
+      FROM tag_decls td
+      JOIN user_tags ut ON td.target_id = ut.id
+      WHERE 1
+        AND td.anchored_type = 'User'
+        AND td.anchored_id = #{user_id}
+        AND td.target_type = 'UserTag'
+        AND td.user_id IS NULL
+        AND ut.user_id IS NULL
     SQL
   end
 
@@ -124,7 +164,7 @@ class Node < ApplicationRecord
   def node_and_parents_rec_sql_inner(node = self)
     <<-SQL
         SELECT id, parent_id
-        FROM nodes 
+        FROM nodes
         WHERE id = #{node.id}
         UNION ALL
         SELECT n.id, n.parent_id
@@ -159,16 +199,14 @@ Returns a list of hashes with keys:
 
   def authz_read_sql(node = self)
     <<-SQL
-      WITH RECURSIVE 
-      node_and_parents(id, parent_id) AS (
-        #{self.node_and_parents_rec_sql_inner(node)}
-      ),
+      WITH
       tag_combos(node_id, tag, ut_id, ut_tag) AS (
         SELECT n.id, td.tag, ut.id, ut.tag
-        FROM node_and_parents n
+        FROM node_with_ancestors n
         JOIN tag_decls td ON td.anchored_id = n.id
         JOIN user_tags ut ON td.target_id = ut.id
         WHERE 1
+          AND n.base_node_id = #{node.id}
           AND td.tag = 'authz_read'
           AND td.target_type = 'UserTag'
           AND td.anchored_type = 'Node'

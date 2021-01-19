@@ -90,6 +90,14 @@ class NodesController < ApplicationController
   # Use callbacks to share common setup or constraints between actions.
   def set_node
     @node = Node.find(params[:id])
+    can_read = @node.who_can_read
+    unless can_read.include? "all"
+      authenticate_user!
+      overlap = can_read & current_user.groups
+      if overlap.count == 0
+        redirect_to login_path, :notice => "You must log in to view this node."
+      end
+    end
   end
 
   def set_parent(parent_id = params[:parent_id])

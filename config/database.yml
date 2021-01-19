@@ -19,15 +19,15 @@ default: &default
 
 development:
   <<: *default
-  database: cff_dev
+  database: db/cff_dev.db
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
 # Do not set this db to the same as development or production.
 test:
   <<: *default
-  database: cff_test
+  database: db/cff_test.db
 
 production:
   <<: *default
-  database: cff_prod
+  database: db/cff_prod.db

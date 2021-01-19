@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_01_17_055157) do
+ActiveRecord::Schema.define(version: 2021_01_19_074438) do
 
   create_table "authors", force: :cascade do |t|
     t.text "name", limit: 255
@@ -102,14 +102,67 @@ ActiveRecord::Schema.define(version: 2021_01_17_055157) do
 
   create_view "view_tag_decls", sql_definition: <<-SQL
       -- the user_id here belongs to the person who created the tag declaration.
-                    -- since were using tags created by the system, the user_id is null.
+  -- since were using tags created by the system, the user_id is null.
 
-                    SELECT * FROM tag_decls WHERE tag = 'view' AND user_id IS NULL
+  SELECT * FROM tag_decls WHERE tag = 'view' AND user_id IS NULL
   SQL
   create_view "authz_tag_decls", sql_definition: <<-SQL
       -- the user_id here belongs to the person who created the tag declaration.
-                    -- since were using tags created by the system, the user_id is null.
+  -- since were using tags created by the system, the user_id is null.
 
-                    SELECT * FROM tag_decls WHERE tag LIKE 'authz_%' AND user_id IS NULL
+  SELECT * FROM tag_decls WHERE tag LIKE 'authz_%' AND user_id IS NULL
+  SQL
+  create_view "node_with_ancestors", sql_definition: <<-SQL
+      WITH RECURSIVE nwa(orig_id, id, parent_id, rel_height) AS (
+          SELECT id, id, parent_id, 0
+          FROM nodes
+          UNION ALL
+          SELECT np.orig_id, n.id, n.parent_id, np.rel_height + 1
+          FROM nwa np, nodes n
+          WHERE np.parent_id = n.id
+  ) SELECT np.orig_id as base_node_id, np.rel_height, n.* FROM nodes n, nwa np WHERE n.id = np.id
+  SQL
+  create_view "node_with_children", sql_definition: <<-SQL
+      WITH RECURSIVE nwc(orig_id, id, parent_id, rel_depth) AS (
+          SELECT id, id, parent_id, 0
+          FROM nodes
+          UNION ALL
+          SELECT np.orig_id, n.id, n.parent_id, np.rel_depth + 1
+          FROM nwc np, nodes n
+          WHERE np.id = n.parent_id
+  ) SELECT np.orig_id as base_node_id, np.rel_depth, n.* FROM nodes n, nwc np WHERE n.id = np.id
+  SQL
+  create_view "user_groups", sql_definition: <<-SQL
+      -- everyone is part of 'all'
+  SELECT u.id, 'all' FROM users u
+
+  UNION ALL
+
+  SELECT td.anchored_id as user_id, ut.tag as group_name
+  FROM system_tag_decls td, users u
+  JOIN system_user_tags ut ON td.target_id = ut.id
+  WHERE 1
+      AND td.anchored_type = 'User'
+      AND td.target_type = 'UserTag'
+      AND td.anchored_id = u.id
+  SQL
+  create_view "system_user_tags", sql_definition: <<-SQL
+      SELECT ut.*
+  FROM user_tags ut
+  WHERE ut.user_id IS NULL
+  SQL
+  create_view "system_tag_decls", sql_definition: <<-SQL
+      SELECT td.*
+  FROM tag_decls td
+  WHERE td.user_id IS NULL
+  SQL
+  create_view "node_system_tag_combos", sql_definition: <<-SQL
+      SELECT n.id as node_id, td.tag as td_tag, ut.tag as ut_tag
+  FROM nodes n
+  JOIN system_tag_decls td ON td.anchored_id = n.id
+  JOIN system_user_tags ut ON td.target_id = ut.id
+  WHERE 1
+      AND td.target_type = 'UserTag'
+      AND td.anchored_type = 'Node'
   SQL
 end

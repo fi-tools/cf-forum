@@ -46,6 +46,7 @@ class SeedDatabase
 
     @root = create_node 0, "Critical Fallibilism Forum", nil
     self.create_initial_view_tags
+    self.create_some_other_tags
     self.set_root_tags @root
     self.create_initial_groups
     self.add_to_group @admin, @g_subscribers
@@ -126,6 +127,11 @@ class SeedDatabase
     @g_all = UserTag.create! :tag => :all
     @g_subscribers = UserTag.create! :tag => :subscribers
     @g_admins = UserTag.create! :tag => :admins
+  end
+
+  def create_some_other_tags
+    ut = UserTag.create! :tag => :custom_label, :user => @admin
+    TagDecl.create! :anchored => ut, :tag => :my_custom_tag, :target => ut, :user => @admin
   end
 
   def add_to_group(user, group)
