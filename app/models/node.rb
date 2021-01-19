@@ -15,7 +15,8 @@ class Node < ApplicationRecord
   has_many :anchored_view_tags, through: :anchoring_view_tags, source: :target, source_type: "UserTag"
 
   has_many :anchoring_authz_tags, as: :anchored, class_name: "AuthzTagDecl"
-  has_many :anchored_authz_tags, through: :anchoring_authz_tags, source: :target, source_type: "UserTag"
+  # we don't want to find just the UserTags associated with Authz; that's not v useful on its own.
+  # has_many :anchored_authz_tags, through: :anchoring_authz_tags, source: :target, source_type: "UserTag"
 
   after_create :set_tags
 
@@ -98,33 +99,36 @@ class Node < ApplicationRecord
 
   def set_tags
     self.set_view_tag_from_parent
-    self.set_permissions_from_parent
+    # let's not set default permissions like this. probs better to do inheretance properly.
+    # self.set_permissions_from_parent
   end
 
   def set_view_tag_from_parent
     p = self.parent
     if !p.nil?
-      # p_view = p.anchoring_tags.where(:tag => :view, :target_type => :UserTag, :user_id => nil).last
-      # puts "expecting to find tags: #{p_view.to_json}"
       view_tag = p.anchored_view_tags.last
       if view_tag.nil?
         throw "No tags :*( #{p.to_yaml}"
       end
       new_vt = DEFAULT_VIEW_PROGRESSION[view_tag.tag]
-      puts "new_vt: #{new_vt} from #{view_tag.tag}"
+      logger.debug "new_vt: #{new_vt} from #{view_tag.tag}"
       TagDecl.create! :tag => :view, :user => nil, :anchored => self, :target => UserTag.find_global(new_vt).first
     end
   end
 
-  def set_permissions_from_parent
-    p = self.parent
-    if !p.nil?
-      authz_tags = p.anchored_authz_tags.all
-      puts "authz_tags: ", authz_tags
-    else
-      puts "no parent"
-    end
-  end
+  # note: let's not do autosetting permissions like this. it is confusing and mb will do
+  # things ppl don't predict. rather we can just set up the top level permissions early
+  # and do inheretance right.
+  # def set_permissions_from_parent
+  #   p = self.parent
+  #   if !p.nil?
+  #     authz_tags = p.anchoring_authz_tags.all
+  #     logger.debug "authz_tags: #{authz_tags.to_json}"
+  #     crash!
+  #   else
+  #     logger.warn "set_permissions_from_parent > no parent"
+  #   end
+  # end
 end
 
 DEFAULT_VIEW_PROGRESSION = {
@@ -133,3 +137,7 @@ DEFAULT_VIEW_PROGRESSION = {
   "topic" => :comment,
   "comment" => :comment,
 }
+
+# PERMISSIONS_PROGRESSION = {
+#   "read_node" => :authz_write_children,
+# }

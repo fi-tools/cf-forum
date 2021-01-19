@@ -32,6 +32,16 @@ rails generate scenic:view view_tag_decls create db/views/view_tag_decls_v01.sql
 
 * `RAILS_ENV=development bin/rails db:fixtures:load`
 
+## test seeds.db in test env (best way to test migrations?)
+
+`rake RAILS_ENV=test db:reset db:migrate db:seed`
+
+## show test.log output in diff terminal
+
+`tail -f log/test.log`
+
+(there are some benefits to doing this vs mixing logging w/ stdout)
+
 ## local postgres config -- note used atm
 
 * `echo "create role cffdev with createdb login password 'hunter2';" | sudo -u postgres psql`
