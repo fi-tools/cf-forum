@@ -80,7 +80,8 @@ class SeedDatabase
     TagDecl.create! :anchored => @subs_node, :tag => Authz.writeChildren, :target => @g_subscribers
 
     puts "Admin | Email: #{admin_email} | Password: #{pw}"
-    gen_user "subscriber", "cfsub@xk.io", pw
+    sub_user = gen_user "subscriber", "cfsub@xk.io", pw
+    self.add_to_group sub_user, @g_subscribers
     gen_user "general-user", "cfgen@xk.io", pw
   end
 

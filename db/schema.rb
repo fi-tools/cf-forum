@@ -189,7 +189,7 @@ ActiveRecord::Schema.define(version: 2021_01_19_102730) do
   WHERE anar.rel_height = rh.height
   SQL
   create_view "nodes_user_sees", sql_definition: <<-SQL
-      SELECT base_node_id, user_id
+      SELECT nar.base_node_id, user_id
   FROM node_authz_reads nar
   JOIN user_groups ug ON ug.group_name = nar.group_name
   SQL
