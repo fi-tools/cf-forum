@@ -10,7 +10,9 @@ class User < ApplicationRecord
   has_many :anchoring_tags, as: :anchored, class_name: "TagDecl"
   has_many :targeting_tags, as: :target, class_name: "TagDecl"
 
-  has_many :groups, as: def public_authors
-                      self.authors.select { |author| author.public }
-                    end
+  # has_many :groups, as:
+
+  def public_authors
+    self.authors.select { |author| author.public }
+  end
 end
