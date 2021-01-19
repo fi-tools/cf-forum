@@ -32,6 +32,9 @@ gem "scenic"
 # functional support
 gem "functional-ruby"
 
+# admin panel
+gem "rails_admin", "~> 2.0"
+
 # Use Active Storage variant
 # gem 'image_processing', '~> 1.2'
 

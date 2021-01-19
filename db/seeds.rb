@@ -75,6 +75,8 @@ class SeedDatabase
     # create subscribers area
     @subs_node = create_node nil, "SubsOnly", @root.id
     TagDecl.create! :anchored => @subs_node, :tag => Authz.read, :target => @g_subscribers
+    TagDecl.create! :anchored => @subs_node, :tag => Authz.read, :target => @g_admins
+    TagDecl.create! :anchored => @subs_node, :tag => Authz.writeChildren, :target => @g_subscribers
 
     puts "Admin | Email: #{admin_email} | Password: #{pw}"
     gen_user "subscriber", "cfsub@xk.io", pw
