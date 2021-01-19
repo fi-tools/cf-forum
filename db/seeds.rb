@@ -48,13 +48,18 @@ class SeedDatabase
     self.create_initial_view_tags
     self.set_root_tags @root
     self.create_initial_groups
-    self.set_root_permissions @root, @admin
+    self.add_to_group @admin, @g_subscribers
+    self.set_root_node_authz @root, @admin
 
     @main = create_node nil, "Main", @root.id
     @meta = create_node nil, "Meta", @root.id
     # should it be called *detailed* instead?
     @details = create_node nil, "Details", @root.id
     @other = create_node nil, "Other", @root.id
+
+    [@main, @meta, @details, @other].each do |n|
+      TagDecl.create! :anchored => n, :tag => Authz.writeChildren, :target => @g_all
+    end
 
     @post1 = create_node nil, "Post 1", @main.id, body: "post 1 body", author: @author2
     @post2 = create_node nil, "Post 2", @main.id, body: "post 2 body", author: @author3
@@ -66,6 +71,10 @@ class SeedDatabase
     @reply4 = create_node nil, nil, @reply3.id, body: "4th level repy body", author: @author3
     @reply5 = create_node nil, "5th level", @reply4.id, body: "body 5th", author: @author_anon
     @reply2a = create_node nil, "Click 'To Parent' to go back up", @reply1a.id, body: "It's at the bottom"
+
+    # create subscribers area
+    @subs_node = create_node nil, "SubsOnly", @root.id
+    TagDecl.create! :anchored => @subs_node, :tag => Authz.read, :target => @g_subscribers
 
     puts "Admin | Email: #{admin_email} | Password: #{pw}"
     gen_user "subscriber", "cfsub@xk.io", pw
@@ -97,10 +106,10 @@ class SeedDatabase
     TagDecl.create! :anchored => node, :target => @t_root, :tag => :view, :user => nil
   end
 
-  def set_root_permissions(node, admin)
-    TagDecl.create! :anchored => node, :target => @g_all, :tag => Authz::readNode
-    TagDecl.create! :anchored => node, :target => @g_admins, :tag => Authz::write
-    TagDecl.create! :anchored => admin, :target => @g_admins, :tag => Authz::userInGroup
+  def set_root_node_authz(node, admin)
+    TagDecl.create! :anchored => node, :target => @g_all, :tag => Authz::read
+    # TagDecl.create! :anchored => node, :target => @g_admins, :tag => Authz::write
+    # TagDecl.create! :anchored => admin, :target => @g_admins, :tag => Authz::userInGroup
     # TagDecl.create! :anchored => @g_admins, :target => @g_subscribers, :tag => :group_in_group
   end
 
@@ -115,6 +124,10 @@ class SeedDatabase
     @g_all = UserTag.create! :tag => :all
     @g_subscribers = UserTag.create! :tag => :subscribers
     @g_admins = UserTag.create! :tag => :admins
+  end
+
+  def add_to_group(user, group)
+    TagDecl.create! :anchored => user, :tag => Authz::userInGroup, :target => @g_subscribers
   end
 
   #   def create_tag(tag)

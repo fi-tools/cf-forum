@@ -102,14 +102,14 @@ ActiveRecord::Schema.define(version: 2021_01_17_055157) do
 
   create_view "view_tag_decls", sql_definition: <<-SQL
       -- the user_id here belongs to the person who created the tag declaration.
-              -- since were using tags created by the system, the user_id is null.
+                  -- since were using tags created by the system, the user_id is null.
 
-              SELECT * FROM tag_decls WHERE tag = 'view' AND user_id IS NULL
+                  SELECT * FROM tag_decls WHERE tag = 'view' AND user_id IS NULL
   SQL
   create_view "authz_tag_decls", sql_definition: <<-SQL
       -- the user_id here belongs to the person who created the tag declaration.
-              -- since were using tags created by the system, the user_id is null.
+                  -- since were using tags created by the system, the user_id is null.
 
-              SELECT * FROM tag_decls WHERE tag LIKE 'authz_%' AND user_id IS NULL
+                  SELECT * FROM tag_decls WHERE tag LIKE 'authz_%' AND user_id IS NULL
   SQL
 end

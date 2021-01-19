@@ -14,6 +14,12 @@ run:
 rails db:drop db:create db:migrate db:setup
 ```
 
+or mb this is enough
+
+```
+rake db:reset db:migrate db:seed
+```
+
 ### create DB views
 
 ```
