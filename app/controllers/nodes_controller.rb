@@ -1,8 +1,11 @@
 class NodesController < ApplicationController
+  before_action :set_user_id
   before_action :set_node, only: [:show, :edit, :update, :destroy, :subtree]
   before_action :set_parent, only: [:new, :new_comment]
   before_action :set_node_to_children_map, only: [:show, :subtree]
   before_action :authenticate_user!, only: [:new, :new_comment, :create]
+
+  helper_method :current_user
 
   # GET /nodes
   # GET /nodes.json
@@ -88,6 +91,10 @@ class NodesController < ApplicationController
   private
 
   # Use callbacks to share common setup or constraints between actions.
+  def set_user_id
+    @user_id = current_user&.id
+  end
+
   def set_node
     @node = Node.find(params[:id])
     can_read = @node.who_can_read

@@ -4,7 +4,7 @@ class Node < ApplicationRecord
   has_many :content_versions
 
   has_one :user, through: :author
-  has_many :children, class_name: "Node", foreign_key: :parent_id
+  has_many :direct_children, class_name: "Node", foreign_key: :parent_id
 
   has_many :anchoring_tags, as: :anchored, class_name: "TagDecl"
   has_many :targeting_tags, as: :target, class_name: "TagDecl"
@@ -23,22 +23,17 @@ class Node < ApplicationRecord
   # scope :is_top_post, -> (x) { where(is_top_post: x) }
   # scope :genesis, -> (x) { where(genesis_id: x.id) }
 
-  # def children
-  #   Node.where(parent_id: self.id).all()
-  # end
-
-  def content
-    c = content_versions.last
-    # puts c
-    # puts c.title
-    # # puts content_versions.last.methods
-    # puts "^ content versions"
-    c
+  def children(user_id = nil)
+    user_id_comp = user_id.nil? ? 'IS' : '='
+    Node.where("id in (
+      SELECT nwc.id FROM nodes_user_sees nus
+      JOIN node_with_children nwc ON nwc.id = nus.base_node_id
+      WHERE nwc.base_node_id = ? AND rel_depth = 1 AND nus.user_id #{user_id_comp} ?
+    )", self.id, user_id)
   end
 
-  def content_version
-    warn "Deprecation: Node.content_version"
-    content
+  def content
+    content_versions.last
   end
 
   def depth

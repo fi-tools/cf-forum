@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_01_19_074438) do
+ActiveRecord::Schema.define(version: 2021_01_19_102730) do
 
   create_table "authors", force: :cascade do |t|
     t.text "name", limit: 255
@@ -163,12 +163,34 @@ ActiveRecord::Schema.define(version: 2021_01_19_074438) do
   WHERE td.user_id IS NULL
   SQL
   create_view "node_system_tag_combos", sql_definition: <<-SQL
-      SELECT ROW_NUMBER() as id, n.id as node_id, td.tag as td_tag, ut.tag as ut_tag
+      SELECT n.id as node_id, td.tag as td_tag, ut.tag as ut_tag
   FROM nodes n
   JOIN system_tag_decls td ON td.anchored_id = n.id
   JOIN system_user_tags ut ON td.target_id = ut.id
   WHERE 1
       AND td.target_type = 'UserTag'
       AND td.anchored_type = 'Node'
+  SQL
+  create_view "node_authz_reads", sql_definition: <<-SQL
+      WITH all_node_authz_read AS (
+      SELECT nwa.base_node_id, nwa.rel_height, nstc.node_id, nstc.ut_tag as group_name
+  FROM node_with_ancestors nwa
+  JOIN node_system_tag_combos as nstc ON nstc.node_id = nwa.id
+  WHERE nstc.td_tag = 'authz_read'
+  ),
+  rel_heights AS (
+      SELECT base_node_id, MIN(rel_height) AS height
+      FROM all_node_authz_read
+      GROUP BY base_node_id
+  )
+  SELECT anar.base_node_id, anar.rel_height, anar.node_id as authz_node_id, anar.group_name
+  FROM all_node_authz_read anar
+  JOIN rel_heights rh ON anar.base_node_id = rh.base_node_id
+  WHERE anar.rel_height = rh.height
+  SQL
+  create_view "nodes_user_sees", sql_definition: <<-SQL
+      SELECT base_node_id, user_id
+  FROM node_authz_reads nar
+  JOIN user_groups ug ON ug.group_name = nar.group_name
   SQL
 end
