@@ -151,17 +151,13 @@ class Node < ApplicationRecord
   #   SQL
   # end
 
-  def asdfasdfasdf
-  end
-
 =begin
 Find the authz_read tags for this node or the closest ancestor with an authz_read tag.
 Returns a list of hashes with keys:
 > node_id, tag, ut_id, ut_tag
 =end
 
-  def authz_read_sql(node = self, tag = "authz_read")
-    # WARNING: UNSAFE SUBSTITUTION FOR TESTING
+  def authz_read_sql(node = self)
     <<-SQL
       WITH RECURSIVE 
       node_and_parents(id, parent_id) AS (
@@ -172,7 +168,10 @@ Returns a list of hashes with keys:
         FROM node_and_parents n
         JOIN tag_decls td ON td.anchored_id = n.id
         JOIN user_tags ut ON td.target_id = ut.id
-        WHERE td.tag = '#{tag}'
+        WHERE 1
+          AND td.tag = 'authz_read'
+          AND td.target_type = 'UserTag'
+          AND td.anchored_type = 'Node'
       ),
       closest_node_id(node_id) AS (SELECT MAX(node_id) from tag_combos)
       SELECT tc.* FROM tag_combos tc, closest_node_id WHERE tc.node_id = closest_node_id.node_id
