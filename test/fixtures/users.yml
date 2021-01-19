@@ -1,4 +1,3 @@
 admin:
   username: admin
-  hex_pw_hash: 0011eeff
   email: asdf@example.com

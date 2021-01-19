@@ -20,13 +20,14 @@ class Author < ApplicationRecord
   validates_with AuthorValidator
 
   def formatted_name
-    if @name.nil? || @name.length == 0
-      if @name.public
-        return "u/#{@user.username}"
+    if self.name.nil? || self.name.length == 0
+      puts self.to_json
+      if self.public
+        return "u/#{self.user.username}"
       else
         return "Anonymous"
       end
     end
-    "a/#{@name}"
+    "a/#{self.name}"
   end
 end

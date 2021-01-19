@@ -32,10 +32,13 @@ rails generate scenic:view view_tag_decls create db/views/view_tag_decls_v01.sql
 
 * `RAILS_ENV=development bin/rails db:fixtures:load`
 
-## local postgres config
+## local postgres config -- note used atm
+
+* `echo "create role cffdev with createdb login password 'hunter2';" | sudo -u postgres psql`
+
+you might need to run this first, but I think `create role` will create a user for you. 
 
 * `sudo -u postgres createuser -s cffdev`
-* `echo "create role cffdev with createdb login password 'hunter2';" | sudo -u postgres psql`
 
 ----
 

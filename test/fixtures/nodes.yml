@@ -1,19 +1,17 @@
 p1:
   author: admin
-  content_version: c1a
-  is_top_post: true
+  # content_version: c1a
+  # is_top_post: true
   parent: 
 
 p1r1:
   author: admin
-  content_version: c1r1a
-  is_top_post: false
+  # content_version: c1r1a
+  # is_top_post: false
   parent: p1
-  genesis: p1
 
 p1r1r1:
   author: admin
-  content_version: c1r1r1a
-  is_top_post: false
+  # content_version: c1r1r1a
+  # is_top_post: false
   parent: p1r1
-  genesis: p1

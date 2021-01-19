@@ -10,7 +10,7 @@ class CreateInit < ActiveRecord::Migration[6.1]
     end
 
     create_table :authors do |t|
-      t.text :name, null: false, limit: 255
+      t.text :name, limit: 255
       t.belongs_to :user, null: false, foreign_key: true
       t.boolean :public, null: false, default: true
 

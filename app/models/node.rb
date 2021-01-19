@@ -60,6 +60,24 @@ class Node < ApplicationRecord
     self.anchored_view_tags.last.tag
   end
 
+  def family_map
+    # get this node + children
+    tree = [self] + self.children_rec(true)
+    # defaultdict where a key will return an empty array by defualt
+    node_id_to_children = Hash.new { |h, k| h[k] = Array.new }
+    tree.each do |n|
+      # for each node, append it's children to the corresponding array in the hash
+      node_id_to_children[n.id] += (tree.select { |n2| n2.parent_id == n.id })
+    end
+    return node_id_to_children
+  end
+
+  class << self
+    def root
+      Node.find(0)
+    end
+  end
+
   private
 
   def children_rec_sql(node)

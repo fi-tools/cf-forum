@@ -8,7 +8,7 @@ class NodesController < ApplicationController
   # GET /nodes.json
   def index
     # TODO: permissions
-    set_node_to_root
+    @node = Node.root
   end
 
   # GET /nodes/1
@@ -40,18 +40,18 @@ class NodesController < ApplicationController
   # POST /nodes.json
   def create
     # TODO: permissions
-    params = node_params
-    @parent_id = params[:parent_id]
-    node_params = params.slice(:parent_id)
-    cv_params = params.slice(:title, :body)
-    author_params = params.slice(:name)
+    safe_params = new_node_params
+    @parent_id = safe_params[:parent_id]
+    node_params = safe_params.slice(:parent_id)
+    cv_params = safe_params.slice(:title, :body)
+    author_params = safe_params.slice(:name)
 
     @author = Author.find_or_create_by(**author_params.merge(:user => current_user))
     @node = Node.new(node_params.merge :author => @author)
     @cv = ContentVersion.new(cv_params.merge :node => @node, :author => @author)
 
     respond_to do |format|
-      if @author.save! and @node.save! && @cv.save!
+      if @author.save! && @node.save! && @cv.save!
         format.html { redirect_to @node, notice: "Node was successfully created." }
         format.json { render :show, status: :created, location: @node }
       else
@@ -93,29 +93,17 @@ class NodesController < ApplicationController
   end
 
   def set_parent(parent_id = params[:parent_id])
+    # todo: is set_parent okay like this?
+    # i understand set_node is like okay in ruby/rails conventions - MK
     @parent_id = parent_id
   end
 
-  def set_node_to_root
-    @node = Node.find(0)
-  end
-
   def set_node_to_children_map
-    tree = [@node] + @node.children_rec(true)
-    @node_id_to_children = Hash.new { |h, k| h[k] = Array.new }
-    puts tree.select
-    tree.each do |n|
-      @node_id_to_children[n.id] += (tree.select { |n2| n2.parent_id == n.id })
-      # n.direct_children = @tree.select(->(n2) { n2.parent.id == n.id })
-    end
-  end
-
-  def children_of(node_id)
-    Node.find(node_id).children_rec
+    @node_id_to_children = @node.family_map
   end
 
   # Only allow a list of trusted parameters through.
-  def node_params
+  def new_node_params
     params.require(:node).permit(:parent_id, :title, :body, :name)
   end
 end

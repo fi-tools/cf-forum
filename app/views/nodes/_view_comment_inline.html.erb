@@ -8,13 +8,14 @@
     <%= node.content.body %>
   </div>
   <div class='comment-block is-small'>
-    <span class="mr-1">By:</span> <%= link_to node.author.name || "Anonymous", node.author %>, <%= node.created_at %>
+    <% anchor = "##{node.id}" %>
+    <%= link_to anchor, anchor, class: "" %>,
+    <span class="mr-1">By:</span> <%= link_to node.author.formatted_name || "Anonymous", node.author %>, <%= node.created_at %>
     <% if node.content_versions.count > 1 %>, <em>Updated at: <%= node.content.created_at %></em>
     <% end %>
     <span class="mx-2"></span>
     <%= link_to "Reply", reply_to_node_path(:parent_id => node.id), class: "button is-small is-link" %>
-    <%= link_to "Permalink", "##{node.id}", class: "button is-gray is-small ml-1" %>
-    <%= link_to "Direct Link", node, class: "button is-gray is-small ml-1" %>
+    <%= link_to "Permalink", node, class: "button is-gray is-small ml-1" %>
   </div>
   <div class="comment-children">
     <% if node.children_rec.count > 0 %>

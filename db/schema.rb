@@ -11,9 +11,8 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema.define(version: 2021_01_17_055157) do
-
   create_table "authors", force: :cascade do |t|
-    t.text "name", limit: 255, null: false
+    t.text "name", limit: 255
     t.integer "user_id", null: false
     t.boolean "public", default: true, null: false
     t.datetime "created_at", precision: 6, null: false
