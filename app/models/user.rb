@@ -10,9 +10,13 @@ class User < ApplicationRecord
   has_many :anchoring_tags, as: :anchored, class_name: "TagDecl"
   has_many :targeting_tags, as: :target, class_name: "TagDecl"
 
-  # has_many :groups, as:
+  has_many :group_associations, class_name: "UserGroup"
 
   def public_authors
     self.authors.select { |author| author.public }
+  end
+
+  def groups
+    self.group_associations.collect {|ga| ga.group_name}
   end
 end

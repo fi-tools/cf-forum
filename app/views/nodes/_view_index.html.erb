@@ -6,14 +6,14 @@
         <%= link_to "../", node.parent, class: "is-small" %>
       </div>
       <div class="subtitle is-4">
-        Children: <%= node.children_rec.count %>
+        Children: <%= node.children.count %>
       </div>
     </div>
     <div class="column has-text-right">
       <%= link_to "New Post", new_node_path(:parent_id => node.id), class: "button is-info" %>
     </div>
   </div>
-  <% node.children_rec.each do |child| %>
+  <% node.children.each do |child| %>
     <%= render 'preview_topic', node: child %>
   <% end %>
 </section>

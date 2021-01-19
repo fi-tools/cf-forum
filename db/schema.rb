@@ -134,17 +134,23 @@ ActiveRecord::Schema.define(version: 2021_01_19_074438) do
   SQL
   create_view "user_groups", sql_definition: <<-SQL
       -- everyone is part of 'all'
-  SELECT u.id, 'all' FROM users u
+  --SELECT IFNULL(user_id,'null') || '|' || group_name as id, * from ( 
+      SELECT u.id as user_id, 'all' as group_name FROM users u
 
-  UNION ALL
+      UNION ALL
 
-  SELECT td.anchored_id as user_id, ut.tag as group_name
-  FROM system_tag_decls td, users u
-  JOIN system_user_tags ut ON td.target_id = ut.id
-  WHERE 1
-      AND td.anchored_type = 'User'
-      AND td.target_type = 'UserTag'
-      AND td.anchored_id = u.id
+      SELECT NULL, 'all'
+
+      UNION ALL
+
+      SELECT td.anchored_id as user_id, ut.tag as group_name
+      FROM system_tag_decls td, users u
+      JOIN system_user_tags ut ON td.target_id = ut.id
+      WHERE 1
+          AND td.anchored_type = 'User'
+          AND td.target_type = 'UserTag'
+          AND td.anchored_id = u.id
+  --)
   SQL
   create_view "system_user_tags", sql_definition: <<-SQL
       SELECT ut.*
@@ -157,7 +163,7 @@ ActiveRecord::Schema.define(version: 2021_01_19_074438) do
   WHERE td.user_id IS NULL
   SQL
   create_view "node_system_tag_combos", sql_definition: <<-SQL
-      SELECT n.id as node_id, td.tag as td_tag, ut.tag as ut_tag
+      SELECT ROW_NUMBER() as id, n.id as node_id, td.tag as td_tag, ut.tag as ut_tag
   FROM nodes n
   JOIN system_tag_decls td ON td.anchored_id = n.id
   JOIN system_user_tags ut ON td.target_id = ut.id

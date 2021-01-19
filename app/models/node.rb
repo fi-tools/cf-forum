@@ -4,7 +4,7 @@ class Node < ApplicationRecord
   has_many :content_versions
 
   has_one :user, through: :author
-  has_many :direct_children, class_name: "Node", foreign_key: :parent_id
+  has_many :children, class_name: "Node", foreign_key: :parent_id
 
   has_many :anchoring_tags, as: :anchored, class_name: "TagDecl"
   has_many :targeting_tags, as: :target, class_name: "TagDecl"
@@ -49,17 +49,25 @@ class Node < ApplicationRecord
     end
   end
 
-  def children_rec(rec = true)
-    Node.where("id in (#{self.children_rec_sql}) AND id != ?", [self.id])
+  # def children
+  #   Node.where("id in (
+  #     SELECT id FROM node_with_children WHERE base_node_id = #{self.id} AND rel_depth = 1
+  #   )")
+  # end
+
+  def descendants
+    Node.where("id in (
+      SELECT id FROM node_with_children WHERE base_node_id = #{self.id} AND rel_depth > 0
+    )")
   end
 
   def view
     self.anchored_view_tags.last.tag
   end
 
-  def family_map
+  def descendants_map
     # get this node + children
-    tree = [self] + self.children_rec(true)
+    tree = [self] + self.descendants
     # defaultdict where a key will return an empty array by defualt
     node_id_to_children = Hash.new { |h, k| h[k] = Array.new }
     tree.each do |n|
@@ -90,7 +98,7 @@ class Node < ApplicationRecord
 
   private
 
-  def children_rec_sql(node = self, user_id = -1)
+  def children_rec_sql(node = self, user_id = nil)
     table_name = Node.table_name
     <<-SQL
         WITH RECURSIVE search_tree(id) AS (

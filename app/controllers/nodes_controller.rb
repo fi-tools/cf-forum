@@ -95,7 +95,7 @@ class NodesController < ApplicationController
       authenticate_user!
       overlap = can_read & current_user.groups
       if overlap.count == 0
-        redirect_to login_path, :notice => "You must log in to view this node."
+        redirect_to index_path, :notice => "No permissions to view."
       end
     end
   end
@@ -107,7 +107,7 @@ class NodesController < ApplicationController
   end
 
   def set_node_to_children_map
-    @node_id_to_children = @node.family_map
+    @node_id_to_children = @node.descendants_map
   end
 
   # Only allow a list of trusted parameters through.

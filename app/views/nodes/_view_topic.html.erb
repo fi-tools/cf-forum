@@ -29,10 +29,10 @@
               <a><%= node.created_at %> / <%= time_ago_in_words(node.created_at || DateTime.now) %> ago</a>
             </li>
             <li class="is-active">
-              <a>Children: <%= node.children_rec.count %></a>
+              <a>Children: <%= node.children.count %></a>
             </li>
             <li class="is-active">
-              <a>Descendants: <%= node.children_rec(true).count %></a>
+              <a>Descendants: <%= node.descendants.count %></a>
             </li>
           </ul>
         </nav>
@@ -40,17 +40,14 @@
     </nav>
   </div>
 </div>
-<% if @node.direct_children.length > 0 %>
+<% if @node.children.length > 0 %>
   <h3 class='title'>Replies:</h3>
   <h5 class='subtitle'>TOC:</h5>
-  <!-- <ul class="mb-6">
-    <% @node.children_rec(true).each do |r| %>
-      <li> <%= link_to "##{r.id}: #{r.content.title || 'untitled'}", "##{r.id}" %> </li>
-    <% end %>
-  </ul>
-  -->
   <%= render 'subtree_full', node: @node, use_anchor: true %>
-  <% @node.children_rec.each do |r| %>
+  <% @node.children.each do |r| %>
+    <div>
+      todo: is this recursive?
+    </div>
     <%= render 'view_comment_inline', node: r %>
   <% end %>
 <% else %>
