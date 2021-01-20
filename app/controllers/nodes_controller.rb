@@ -1,7 +1,7 @@
 class NodesController < ApplicationController
-  before_action :set_node, only: [:show, :edit, :update, :destroy, :subtree]
+  before_action :set_node, only: [:show, :edit, :update, :destroy, :subtree, :view_as]
   before_action :set_parent, only: [:new, :new_comment]
-  before_action :set_node_to_children_map, only: [:show, :subtree]
+  before_action :set_node_to_children_map, only: [:show, :subtree, :view_as]
   before_action :authenticate_user!, only: [:new, :new_comment, :create]
 
   # GET /nodes
@@ -15,6 +15,11 @@ class NodesController < ApplicationController
   # GET /nodes/1.json
   def show
     # TODO: permissions
+  end
+
+  # GET /view_as/:view_name/:id
+  def view_as
+    @view_type = params[:view_name]
   end
 
   def subtree
