@@ -102,7 +102,7 @@ class NodesController < ApplicationController
       authenticate_user!
       overlap = can_read & current_user.groups
       if overlap.count == 0
-        redirect_to index_path, :notice => "No permissions to view."
+        redirect_to root_path, :notice => "No permissions to view."
       end
     end
   end

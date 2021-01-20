@@ -62,6 +62,10 @@ you might need to run this first, but I think `create role` will create a user f
 
 * `sudo -u postgres createuser -s cffdev`
 
+### cmd to test postgres in the `devpg` env
+
+* `rm db/schema.rb ; rails db:environment:set RAILS_ENV=devpg ; RAILS_ENV=devpg rake db:drop db:create db:migrate db:setup`
+
 -----
 
 ## todo

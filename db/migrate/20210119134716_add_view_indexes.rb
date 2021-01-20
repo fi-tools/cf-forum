@@ -4,7 +4,8 @@ class AddViewIndexes < ActiveRecord::Migration[6.1]
     # alt method of checking: ActiveRecord::Base.connection.adapter_name == 'MySQL'
     # unless ActiveRecord::Base.connection.instance_of? ActiveRecord::ConnectionAdapters::SQLite3Adapter
     puts ActiveRecord::Base.connection.adapter_name, '^^^ -- ActiveRecord::Base.connection.adapter_name'
-    unless ActiveRecord::Base.connection.adapter_name == 'SQLite3'
+    # for the moment disable this for postgres too -- had issues with materialized views
+    unless ['SQLite', 'PostgreSQL'].include? ActiveRecord::Base.connection.adapter_name
       # hmm, in sqlite: indexes aren't supported on views
       add_index :node_with_ancestors, [:base_node_id, :rel_height], unique: true
       add_index :node_with_ancestors, [:id]

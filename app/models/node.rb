@@ -18,6 +18,8 @@ class Node < ApplicationRecord
   # we don't want to find just the UserTags associated with Authz; that's not v useful on its own.
   # has_many :anchored_authz_tags, through: :anchoring_authz_tags, source: :target, source_type: "UserTag"
 
+  has_many :node_authz_reads, foreign_key: :base_node_id 
+
   after_create :set_tags
 
   # scope :is_top_post, -> (x) { where(is_top_post: x) }
@@ -77,8 +79,9 @@ class Node < ApplicationRecord
   end
 
   def who_can_read
-    # return Node.where(self.authz_read_sql)
-    Node.connection.execute(self.authz_read_sql).collect { |xs| xs["ut_tag"] }
+    can_read = self.node_authz_reads.collect { |nar| nar.group_name }
+    puts self.node_authz_reads, can_read, "^^^ can read"
+    return can_read
   end
 
   def all_tags
