@@ -135,25 +135,15 @@ add other stuff if you can think of it and want to
 
 ----
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+## performance notes
 
-Things you may want to cover:
+### drawing subtree/0
 
-* Ruby version
+| database | total ms | views ms | activerecord ms | allocations |
+|---|---|---|---|---|
+| mysql | 530420 | 63520 | 22575 | 56137161 | 
 
-* System dependencies
+----
 
-* Configuration
+some other performance notes are on <http://curi.us/2396#162>
 
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
