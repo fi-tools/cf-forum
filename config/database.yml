@@ -12,14 +12,22 @@ default: &default
   # database: cff_dev
   # username: cffdev
   # password: hunter2
+  # host: localhost
   adapter: sqlite3
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  host: localhost
   timeout: 5000
 
 development:
   <<: *default
   database: db/cff_dev.db
+
+devpg:
+  <<: *default
+  adapter: postgresql
+  database: cff_dev2
+  username: cffdev
+  password: hunter2
+  host: localhost
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".

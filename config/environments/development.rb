@@ -79,4 +79,6 @@ Rails.application.configure do
   # Uncomment if you wish to allow Action Cable access from any origin.
   # config.action_cable.disable_request_forgery_protection = true
 
+  # run this in the dev env rb file only; it will fix warnings for devpg.rb
+  config.web_console.development_only = false
 end
