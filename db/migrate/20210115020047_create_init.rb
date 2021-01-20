@@ -63,12 +63,12 @@ class CreateInit < ActiveRecord::Migration[6.1]
       t.timestamps
     end
 
-    add_index :tag_decls, [:anchored_id, :anchored_type]
-    add_index :tag_decls, [:target_id, :target_type]
-    
+    add_index :tag_decls, [:anchored_type]
+    add_index :tag_decls, [:target_type]
+
     unless ActiveRecord::Base.connection.adapter_name == "Mysql2"
       # mysql complains `Mysql2::Error: Specified key was too long; max key length is 3072 bytes`
-    add_index :tag_decls, [:target_id, :target_type, :anchored_id, :anchored_type, :tag, :user_id], unique: true, name: "index_tagged_on_target_and_anchored_and_user"
+      add_index :tag_decls, [:target_id, :target_type, :anchored_id, :anchored_type, :tag, :user_id], unique: true, name: "index_tagged_on_target_and_anchored_and_user"
     end
   end
 

@@ -50,12 +50,12 @@ ActiveRecord::Schema.define(version: 2021_01_19_134716) do
     t.integer "user_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.index ["anchored_id", "anchored_type"], name: "index_tag_decls_on_anchored_id_and_anchored_type"
     t.index ["anchored_type", "anchored_id"], name: "index_tag_decls_on_anchored"
+    t.index ["anchored_type"], name: "index_tag_decls_on_anchored_type"
     t.index ["tag"], name: "index_tag_decls_on_tag"
     t.index ["target_id", "target_type", "anchored_id", "anchored_type", "tag", "user_id"], name: "index_tagged_on_target_and_anchored_and_user", unique: true
-    t.index ["target_id", "target_type"], name: "index_tag_decls_on_target_id_and_target_type"
     t.index ["target_type", "target_id"], name: "index_tag_decls_on_target"
+    t.index ["target_type"], name: "index_tag_decls_on_target_type"
     t.index ["user_id"], name: "index_tag_decls_on_user_id"
   end
 
