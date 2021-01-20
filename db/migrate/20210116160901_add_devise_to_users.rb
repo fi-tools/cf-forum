@@ -4,7 +4,7 @@ class AddDeviseToUsers < ActiveRecord::Migration[6.1]
   def self.up
     change_table :users do |t|
       ## Database authenticatable
-      t.string :email, null: false, default: ""
+      t.string :email, null: false, default: "", unique: true
       t.string :encrypted_password, null: false, default: ""
 
       ## Recoverable
@@ -41,11 +41,13 @@ class AddDeviseToUsers < ActiveRecord::Migration[6.1]
     # add_index :users, :confirmation_token,   unique: true
     # add_index :users, :unlock_token,         unique: true
 
-    # https://www.leighhalliday.com/requiring-uniqueness-in-rails
-    execute <<-SQL
-      CREATE UNIQUE INDEX user_email_lower_index on users (lower(email));
-      CREATE UNIQUE INDEX user_username_lower_index on users (lower(username));
-    SQL
+    unless ActiveRecord::Base.connection.adapter_name == "Mysql2"
+      # https://www.leighhalliday.com/requiring-uniqueness-in-rails
+      execute <<-SQL
+        CREATE UNIQUE INDEX user_email_lower_index on users (lower(email));
+        CREATE UNIQUE INDEX user_username_lower_index on users (lower(username));
+      SQL
+    end
   end
 
   def self.down

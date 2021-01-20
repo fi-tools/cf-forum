@@ -74,6 +74,9 @@ development: &development
 devpg:
   <<: *development
 
+devmysql:
+  <<: *development
+
 test:
   <<: *default
   compile: true

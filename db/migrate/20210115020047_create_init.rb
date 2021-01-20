@@ -6,10 +6,6 @@ class CreateInit < ActiveRecord::Migration[6.1]
       t.timestamps
     end
 
-    execute <<-SQL
-      CREATE UNIQUE INDEX index_users_username_lower on users (lower(username));
-    SQL
-
     create_table :authors do |t|
       t.text :name, limit: 255
       t.belongs_to :user, null: false, foreign_key: true
@@ -18,19 +14,23 @@ class CreateInit < ActiveRecord::Migration[6.1]
       t.timestamps
     end
 
-    execute <<-SQL
-      CREATE UNIQUE INDEX index_authors_name_lower on authors (lower(name));
-    SQL
-
-    create_table :user_default_authors do |t|
-      t.belongs_to :user, null: false, unique: true, foreign_key: true
-      t.belongs_to :author, null: false, unique: true, foreign_key: true
-      t.timestamps
+    unless ActiveRecord::Base.connection.adapter_name == "Mysql2"
+      execute <<-SQL
+        CREATE UNIQUE INDEX index_users_username_lower on users (lower(username));
+        CREATE UNIQUE INDEX index_authors_name_lower on authors (lower(name));
+      SQL
     end
+
+    # Note: not using this atm and the foreign key constraint causes an issue testing mysql
+    # create_table :user_default_authors do |t|
+    #   t.belongs_to :user, null: false, unique: true, foreign_key: true
+    #   t.belongs_to :author, null: false, unique: true, foreign_key: true
+    #   t.timestamps
+    # end
 
     create_table :nodes do |t|
       t.belongs_to :author, index: true
-      t.integer :parent_id, index: true
+      t.bigint :parent_id, index: true
       t.timestamps
     end
 
@@ -65,61 +65,14 @@ class CreateInit < ActiveRecord::Migration[6.1]
 
     add_index :tag_decls, [:anchored_id, :anchored_type]
     add_index :tag_decls, [:target_id, :target_type]
+    
+    unless ActiveRecord::Base.connection.adapter_name == "Mysql2"
+      # mysql complains `Mysql2::Error: Specified key was too long; max key length is 3072 bytes`
     add_index :tag_decls, [:target_id, :target_type, :anchored_id, :anchored_type, :tag, :user_id], unique: true, name: "index_tagged_on_target_and_anchored_and_user"
-
-    # execute "insert into content_versions (id, title, created_at, updated_at) values (0, 'Critical Fallibilism Forum', 0, 0)"
-    # execute "insert into nodes (id, content_version_id, created_at, updated_at) values (0, 0, 0, 0)"
-    # execute "update content_versions set node_id = 0 where id = 0"
-
-    # execute "insert into content_versions (id, title, created_at, updated_at) values (1, 'Main', 0, 0)"
-    # execute "insert into nodes (id, content_version_id, parent_id, created_at, updated_at) values (1, 1, 0, 0, 0)"
-    # execute "update content_versions set node_id = 1 where id = 1"
-
-    # create_table :node_links do |t|
-    #   t.integer :from, foreign_key: true, index: true
-    #   t.integer :to, foreign_key: true, index: true
-    # end
-
-    # add_foreign_key :node_links, :nodes, column: :from
-    # add_foreign_key :node_links, :nodes, column: :to
-
-    # create_table :tags do |t|
-    #   t.text :name
-    # end
-
-    # create_table :tags_on_nodes do |t|
-    #   t.belongs_to :tag, foreign_key: true, index: true
-    #   t.belongs_to :node, foreign_key: true, index: true
-    # end
-
-    # create_table :tags_on_tags_on_nodes do |t|
-    #   t.belongs_to :tag, foreign_key: true, index: true
-    #   t.belongs_to :tags_on_node, foreign_key: true, index: true
-    # end
-
-    # create_table :tags_on_users do |t|
-    #   t.belongs_to :tag, foreign_key: true, index: true
-    #   t.belongs_to :user, foreign_key: true, index: true
-    # end
-
-    # create_table :tags_on_tags_on_users do |t|
-    #   t.belongs_to :tag, foreign_key: true, index: true
-    #   t.belongs_to :tags_on_user, foreign_key: true, index: true
-    # end
-
-    # todo: create_table :tags_on_links do |t|
-    # todo: create_table :tags_on_tags_on_links do |t|
+    end
   end
 
   def down
-    # drop_table :tags_on_tags_on_links
-    # drop_table :tags_on_links
-    # drop_table :tags_on_tags_on_users
-    # drop_table :tags_on_users
-    # drop_table :tags_on_tags_on_nodes
-    # drop_table :tags_on_nodes
-    # drop_table :tags
-    # drop_table :node_links
     drop_table :tag_decls
     drop_table :user_tags
     drop_table :nodes

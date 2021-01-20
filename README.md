@@ -66,6 +66,19 @@ you might need to run this first, but I think `create role` will create a user f
 
 * `rm db/schema.rb ; rails db:environment:set RAILS_ENV=devpg ; RAILS_ENV=devpg rake db:drop db:create db:migrate db:setup`
 
+## mysql local
+
+```sql
+CREATE USER 'cffdev'@'localhost' IDENTIFIED BY 'hunter2';
+GRANT ALL PRIVILEGES ON * . * TO 'cffdev'@'localhost';
+```
+
+testing schemas:
+
+```
+rm db/schema.rb ; rails db:environment:set RAILS_ENV=devmysql ; RAILS_ENV=devmysql rake db:drop db:create db:migrate db:setup
+```
+
 -----
 
 ## todo
