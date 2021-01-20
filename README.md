@@ -142,8 +142,23 @@ add other stuff if you can think of it and want to
 | database | total ms | views ms | activerecord ms | allocations |
 |---|---|---|---|---|
 | mysql | 530420 | 63520 | 22575 | 56137161 | 
+| postgres | 326062 | 34266 | 35771 | 28341259 |
+| sqlite | 311967 | 39161 | 7005 | 28383508 |
 
 ----
 
 some other performance notes are on <http://curi.us/2396#162>
 
+### postgres?
+
+Here's a query from `rails s` logs
+
+```
+  Node Load (30684.2ms)  SELECT "nodes".* FROM "nodes" WHERE (id in (
+      SELECT nwc.id FROM nodes_user_sees nus
+      JOIN node_with_children nwc ON nwc.id = nus.base_node_id
+      WHERE nwc.base_node_id = 0 AND rel_depth > 0 AND nus.user_id IS NULL
+    ))
+```
+
+That query in sqlite and mysql takes < 2000ms, and usually 1000-1300ms. :/ Not sure what's going wrong there or if there's an easy way to solve via db schema or query structure. Could be e.g. lack of indexing or not using indexes.
