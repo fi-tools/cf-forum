@@ -88,15 +88,12 @@ class SeedDatabase
     @s2a = create_node nil, "subs only reply", @s1.id, body: "only subs reply test"
     @s2b = create_node nil, nil, @s1.id, body: "yarp"
 
-  
-
     # set up faker
     Faker::Config.random = Random.new(0)
     @faker_users = [@admin, sub_user, general_user]
     @faker_root = create_node nil, "Faker Root", @root.id, body: "All faker nodes will be created under this node."
 
     self.run_faker
-
   end
 
   def gen_user(username, email, pw)
@@ -154,16 +151,22 @@ class SeedDatabase
   end
 
   def run_faker
-    n_topics_to_create = 250
+    n_topics_to_create = 2500
+    # a list of all the fake nodes we create and a var to track the next one we'll take
     node_choices = [@faker_root]
-    puts node_choices
+    next_sample_index = 0
 
     n_topics_to_create.times do |i|
-      parent = node_choices.sample
+      parent = node_choices[next_sample_index]
+
       title = Faker::Lorem.sentence(word_count: 3, random_words_to_add: 4)
       body = Faker::Lorem.paragraph(sentence_count: 2, supplemental: false, random_sentences_to_add: 4)
       node_choices << create_node(nil, title, parent.id, body: body)
-    end 
+
+      # hopefully this is 'random' enough. 7 is prime and multiplying by primes can help
+      # make things look random; we shouldn't get bad resonances/bias.
+      next_sample_index = (next_sample_index + 1) ** node_choices.count * 7 % node_choices.count
+    end
   end
 
   #   def create_tag(tag)

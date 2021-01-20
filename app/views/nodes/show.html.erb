@@ -5,7 +5,7 @@
   <%= @node.content.title || "untitled" %>
 <% end %>
 <%= render 'view_node', node: @node %>
-<% if !@node.parent.nil? %>
+<% unless @node.parent.nil? %>
   <div class="columns is-centered mt-6">
     <%= link_to "To Parent", node_path(@node.parent), class: "button is-link is-outlined is-centered" %>
   </div>
