@@ -9,7 +9,7 @@
     <% @user.public_authors.each do |author| %>
       <div class="content pa-3">
         <div class="title is-size-4">
-          <%= link_to author.name, author %>
+          <%= link_to author.formatted_name, author %>
         </div>
         <p>Posts + Replies: <%= author.nodes.count %> </p>
       </div>

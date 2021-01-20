@@ -68,8 +68,53 @@ you might need to run this first, but I think `create role` will create a user f
 
 * put authz on /admin
 * implement create_child permission stuff
-* write tests
-* 
+* **write tests**
+* export everything (for migraiton and archive)
+* import from export
+* generic view-node-as feature
+
+### future todos
+
+* review efficiency of method of visibility/privacy enforcement? 
+
+-----
+
+## incremental goals
+
+### be capable of running discussion & issue tracking for dev of cf-forum on a dev instance of cf-forum
+
+Important things: 
+
+* create threads, nodes, etc
+* view-node-as feature (view node as index)
+* how to track stuff like done/not-done/etc?
+* can we use a plugin system to do stuff like a project mgmt addon?
+* rich-er text editing / markdown
+* image upload / attachments
+* what else??????
+
+----
+
+## feature notes
+
+### file storage
+
+* use s3 compatible api
+* wasabi storage looks good
+  * not AWS et al :thumbsup:
+* give use pre-signed upload URL so it doesn't go through the server?
+* use activestorage for tracking blobs
+  * can this be used with s3 presigned urls?
+
+### rich markdown editor thing
+
+should we consider swapping over to using vue.js (or something) for UI? How soon? How hard to make that swap?
+
+**todo** research
+
+### other?
+
+add other stuff if you can think of it and want to
 
 ----
 
