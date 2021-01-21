@@ -11,6 +11,7 @@ SELECT td.anchored_id as user_id, ut.tag as group_name
 FROM system_tag_decls td
 JOIN system_user_tags ut ON ut.id = td.target_id
 JOIN users u ON td.anchored_id = u.id
-WHERE 1=1
+WHERE 1=1 
+    AND td.tag = 'authz_user_in_group'
     AND td.anchored_type = 'User'
     AND td.target_type = 'UserTag'

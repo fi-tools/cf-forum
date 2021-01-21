@@ -33,6 +33,8 @@ gem "scenic"
 gem "scenic_sqlite_adapter"
 gem "scenic-mysql"
 
+gem 'activerecord-hierarchical_query', git: 'https://github.com/XertroV/activerecord-hierarchical_query', branch: 'rails-6-1'
+
 # db agnostic triggers
 gem 'hairtrigger'
 
