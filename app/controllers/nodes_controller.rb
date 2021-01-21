@@ -1,6 +1,6 @@
 class NodesController < ApplicationController
-  before_action :set_node, only: [:show, :edit, :update, :destroy, :subtree, :view_as]
   before_action :set_user_id
+  before_action :set_node, only: [:show, :edit, :update, :destroy, :subtree, :view_as]
   before_action :set_parent, only: [:new, :new_comment]
   before_action :set_node_to_children_map, only: [:show, :subtree, :view_as]
   before_action :authenticate_user!, only: [:new, :new_comment, :create]
