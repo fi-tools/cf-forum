@@ -37,7 +37,7 @@ gem "scenic-mysql"
 gem 'hairtrigger'
 
 # functional support - disabled bc we're not using it and it might be deprecated.
-#gem "functional-ruby"
+gem "functional-ruby"
 
 # admin panel
 gem "rails_admin", "~> 2.0"
