@@ -17,4 +17,6 @@ Rails.application.routes.draw do
   get "/subtree/:id", to: "nodes#subtree", as: "subtree"
 
   get "/:id", to: "nodes#show", as: "node"
+
+  get "/view_as/:view_name/:id", to: "nodes#view_as", as: "view_as"
 end
