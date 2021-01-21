@@ -17,6 +17,9 @@ class CffBench
 
     @test = {
       Node3 => [[:nodes_admin_can_read_with_parent_root], []],
+      Node => [[
+        :get_nodes_readable_by,
+      ], [1]],
       Node.first => [[
         #:children_elegaint,
         #:children_elegaint_parent,
@@ -36,9 +39,6 @@ class CffBench
         :all_descendants_via_arel,
         :all_ancestors_via_arel,
       ], []],
-      Node => [[
-        :get_nodes_readable_by,
-      ], [1]],
       # User.where(id: 1).includes(:anchored_system_tags)[0]
       User.first => [[:user_groups, :groups, :groups2], []],
     }
