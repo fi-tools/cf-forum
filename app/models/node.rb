@@ -18,7 +18,7 @@ class Node < ApplicationRecord
   # we don't want to find just the UserTags associated with Authz; that's not v useful on its own.
   # has_many :anchored_authz_tags, through: :anchoring_authz_tags, source: :target, source_type: "UserTag"
 
-  has_many :node_authz_reads, foreign_key: :base_node_id 
+  has_many :node_authz_reads, foreign_key: :base_node_id
 
   after_create :set_tags
 
@@ -26,11 +26,17 @@ class Node < ApplicationRecord
   # scope :genesis, -> (x) { where(genesis_id: x.id) }
 
   def children(user_id)
-    user_id_comp = user_id.nil? ? 'IS' : '='
+    user_id_comp = user_id.nil? ? "IS" : "="
+    # return Node.where("id in (
+    #   SELECT nwc.id FROM nodes_user_sees nus
+    #   JOIN node_with_children nwc ON nwc.id = nus.base_node_id
+    #   WHERE nwc.base_node_id = ? AND rel_depth = 1 AND nus.user_id #{user_id_comp} ?
+    # )", self.id, user_id)
+    # alt implementation that might/should be faster
     Node.where("id in (
-      SELECT nwc.id FROM nodes_user_sees nus
-      JOIN node_with_children nwc ON nwc.id = nus.base_node_id
-      WHERE nwc.base_node_id = ? AND rel_depth = 1 AND nus.user_id #{user_id_comp} ?
+      SELECT nus.base_node_id FROM nodes_user_sees nus
+      JOIN nodes n ON n.id = nus.base_node_id
+      WHERE n.parent_id = ? AND nus.user_id #{user_id_comp} ?
     )", self.id, user_id)
   end
 
@@ -54,7 +60,7 @@ class Node < ApplicationRecord
 
   def descendants(user_id)
     # todo: refactor this and .children into the same basic function - parameterized
-    user_id_comp = user_id.nil? ? 'IS' : '='
+    user_id_comp = user_id.nil? ? "IS" : "="
     Node.where("id in (
       SELECT nwc.id FROM nodes_user_sees nus
       JOIN node_with_children nwc ON nwc.id = nus.base_node_id

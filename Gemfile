@@ -33,8 +33,11 @@ gem "scenic"
 gem "scenic_sqlite_adapter"
 gem "scenic-mysql"
 
-# functional support
-gem "functional-ruby"
+# db agnostic triggers
+gem 'hairtrigger'
+
+# functional support - disabled bc we're not using it and it might be deprecated.
+#gem "functional-ruby"
 
 # admin panel
 gem "rails_admin", "~> 2.0"
