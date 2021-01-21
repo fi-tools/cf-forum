@@ -18,8 +18,8 @@
     <%= link_to "Permalink", node, class: "button is-gray is-small ml-1" %>
   </div>
   <div class="comment-children">
-    <% if node.children_rec.count > 0 %>
-      <% node.children_rec.each do |child| %>
+    <% if node.children(@user_id).count > 0 %>
+      <% node.children(@user_id).each do |child| %>
         <%= render 'view_comment_inline', node: child %>
       <% end %>
     <% end %>

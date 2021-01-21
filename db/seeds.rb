@@ -35,17 +35,18 @@ class SeedDatabase
     pw = "hunter2"
     admin_email = "asdf@xk.io"
     @admin = User.create! :username => "admin", :email => admin_email, :password => pw
-    @admin_author = Author.create! :user => @admin, :name => "Admin", :public => true
-    @author_anon = Author.create! :user => @admin, :name => "Anonymous", :public => false
-    # @author_blank = Author.create! :user => @admin, :name => "", :public => false
+    @admin_author = Author.find_or_create_by! :user => @admin, :name => "Admin", :public => true
+    @author_anon = Author.find_or_create_by! :user => @admin, :name => "Anonymous", :public => false
+    # @author_blank = Author.find_or_create_by! :user => @admin, :name => "", :public => false
 
-    @author1 = Author.create! :user => @admin, :name => "name 1", :public => true
-    @author2 = Author.create! :user => @admin, :name => "name 2 (secret)", :public => false
-    @author3 = Author.create! :user => @admin, :name => "name 3", :public => true
-    # @author4 = Author.create! :user => @admin, :name => "Name 3", :public => true
+    @author1 = Author.find_or_create_by! :user => @admin, :name => "name 1", :public => true
+    @author2 = Author.find_or_create_by! :user => @admin, :name => "name 2 (secret)", :public => false
+    @author3 = Author.find_or_create_by! :user => @admin, :name => "name 3", :public => true
+    # @author4 = Author.find_or_create_by! :user => @admin, :name => "Name 3", :public => true
 
     @root = create_node 0, "Critical Fallibilism Forum", nil
     self.create_initial_view_tags
+    self.create_some_other_tags
     self.set_root_tags @root
     self.create_initial_groups
     self.add_to_group @admin, @g_subscribers
@@ -58,7 +59,7 @@ class SeedDatabase
     @other = create_node nil, "Other", @root.id
 
     [@main, @meta, @details, @other].each do |n|
-      TagDecl.create! :anchored => n, :tag => Authz.writeChildren, :target => @g_all
+      TagDecl.find_or_create_by! :anchored => n, :tag => Authz.writeChildren, :target => @g_all
     end
 
     @post1 = create_node nil, "Post 1", @main.id, body: "post 1 body", author: @author2
@@ -74,11 +75,28 @@ class SeedDatabase
 
     # create subscribers area
     @subs_node = create_node nil, "SubsOnly", @root.id
-    TagDecl.create! :anchored => @subs_node, :tag => Authz.read, :target => @g_subscribers
+    TagDecl.find_or_create_by! :anchored => @subs_node, :tag => Authz.read, :target => @g_subscribers
+    TagDecl.find_or_create_by! :anchored => @subs_node, :tag => Authz.read, :target => @g_admins
+    TagDecl.find_or_create_by! :anchored => @subs_node, :tag => Authz.writeChildren, :target => @g_subscribers
 
     puts "Admin | Email: #{admin_email} | Password: #{pw}"
-    gen_user "subscriber", "cfsub@xk.io", pw
-    gen_user "general-user", "cfgen@xk.io", pw
+    sub_user = gen_user "subscriber", "cfsub@xk.io", pw
+    self.add_to_group sub_user, @g_subscribers
+    general_user = gen_user "general-user", "cfgen@xk.io", pw
+
+    @s1 = create_node nil, "subs only test", @subs_node.id, body: "only subs should see this"
+    @s2a = create_node nil, "subs only reply", @s1.id, body: "only subs reply test"
+    @s2b = create_node nil, nil, @s1.id, body: "yarp"
+
+  
+
+    # set up faker
+    Faker::Config.random = Random.new(0)
+    @faker_users = [@admin, sub_user, general_user]
+    @faker_root = create_node nil, "Faker Root", @root.id, body: "All faker nodes will be created under this node."
+
+    self.run_faker
+
   end
 
   def gen_user(username, email, pw)
@@ -103,31 +121,49 @@ class SeedDatabase
   end
 
   def set_root_tags(node)
-    TagDecl.create! :anchored => node, :target => @t_root, :tag => :view, :user => nil
+    TagDecl.find_or_create_by! :anchored => node, :target => @t_root, :tag => :view, :user => nil
   end
 
   def set_root_node_authz(node, admin)
-    TagDecl.create! :anchored => node, :target => @g_all, :tag => Authz::read
-    # TagDecl.create! :anchored => node, :target => @g_admins, :tag => Authz::write
-    # TagDecl.create! :anchored => admin, :target => @g_admins, :tag => Authz::userInGroup
-    # TagDecl.create! :anchored => @g_admins, :target => @g_subscribers, :tag => :group_in_group
+    TagDecl.find_or_create_by! :anchored => node, :target => @g_all, :tag => Authz::read
+    # TagDecl.find_or_create_by! :anchored => node, :target => @g_admins, :tag => Authz::write
+    # TagDecl.find_or_create_by! :anchored => admin, :target => @g_admins, :tag => Authz::userInGroup
+    # TagDecl.find_or_create_by! :anchored => @g_admins, :target => @g_subscribers, :tag => :group_in_group
   end
 
   def create_initial_view_tags
-    @t_root = UserTag.create! :tag => :root
-    @t_index = UserTag.create! :tag => :index
-    @t_topic = UserTag.create! :tag => :topic
-    @t_comment = UserTag.create! :tag => :comment
+    @t_root = UserTag.find_or_create_by! :tag => :root
+    @t_index = UserTag.find_or_create_by! :tag => :index
+    @t_topic = UserTag.find_or_create_by! :tag => :topic
+    @t_comment = UserTag.find_or_create_by! :tag => :comment
   end
 
   def create_initial_groups
-    @g_all = UserTag.create! :tag => :all
-    @g_subscribers = UserTag.create! :tag => :subscribers
-    @g_admins = UserTag.create! :tag => :admins
+    @g_all = UserTag.find_or_create_by! :tag => :all
+    @g_subscribers = UserTag.find_or_create_by! :tag => :subscribers
+    @g_admins = UserTag.find_or_create_by! :tag => :admins
+  end
+
+  def create_some_other_tags
+    ut = UserTag.find_or_create_by! :tag => :custom_label, :user => @admin
+    TagDecl.find_or_create_by! :anchored => ut, :tag => :my_custom_tag, :target => ut, :user => @admin
   end
 
   def add_to_group(user, group)
-    TagDecl.create! :anchored => user, :tag => Authz::userInGroup, :target => @g_subscribers
+    TagDecl.find_or_create_by! :anchored => user, :tag => Authz::userInGroup, :target => @g_subscribers
+  end
+
+  def run_faker
+    n_topics_to_create = 250
+    node_choices = [@faker_root]
+    puts node_choices
+
+    n_topics_to_create.times do |i|
+      parent = node_choices.sample
+      title = Faker::Lorem.sentence(word_count: 3, random_words_to_add: 4)
+      body = Faker::Lorem.paragraph(sentence_count: 2, supplemental: false, random_sentences_to_add: 4)
+      node_choices << create_node(nil, title, parent.id, body: body)
+    end 
   end
 
   #   def create_tag(tag)

@@ -3,6 +3,7 @@ require "active_support/core_ext/integer/time"
 Rails.application.configure do
   config.hosts << "cff.ngrok.io"
   config.hosts << "cff.au.ngrok.io"
+  config.hosts << "localhost"
 
   # Settings specified here will take precedence over those in config/application.rb.
   config.middleware.insert_after ActionDispatch::Static, Rack::LiveReload
@@ -79,4 +80,6 @@ Rails.application.configure do
   # Uncomment if you wish to allow Action Cable access from any origin.
   # config.action_cable.disable_request_forgery_protection = true
 
+  # run this in the dev env rb file only; it will fix warnings for devpg.rb
+  config.web_console.development_only = false
 end

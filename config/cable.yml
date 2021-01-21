@@ -1,5 +1,8 @@
 development:
   adapter: async
+  
+devpg:
+  adapter: async
 
 test:
   adapter: test

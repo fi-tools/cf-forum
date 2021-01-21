@@ -1,8 +1,11 @@
 class NodesController < ApplicationController
   before_action :set_node, only: [:show, :edit, :update, :destroy, :subtree, :view_as]
+  before_action :set_user_id
   before_action :set_parent, only: [:new, :new_comment]
   before_action :set_node_to_children_map, only: [:show, :subtree, :view_as]
   before_action :authenticate_user!, only: [:new, :new_comment, :create]
+
+  helper_method :current_user
 
   # GET /nodes
   # GET /nodes.json
@@ -93,8 +96,20 @@ class NodesController < ApplicationController
   private
 
   # Use callbacks to share common setup or constraints between actions.
+  def set_user_id
+    @user_id = current_user&.id
+  end
+
   def set_node
     @node = Node.find(params[:id])
+    can_read = @node.who_can_read
+    unless can_read.include? "all"
+      authenticate_user!
+      overlap = can_read & current_user.groups
+      if overlap.count == 0
+        redirect_to root_path, :notice => "No permissions to view."
+      end
+    end
   end
 
   def set_parent(parent_id = params[:parent_id])
@@ -104,7 +119,7 @@ class NodesController < ApplicationController
   end
 
   def set_node_to_children_map
-    @node_id_to_children = @node.family_map
+    @node_id_to_children = @node.descendants_map(@user_id)
   end
 
   # Only allow a list of trusted parameters through.

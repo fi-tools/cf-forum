@@ -20,6 +20,12 @@ or mb this is enough
 rake db:reset db:migrate db:seed
 ```
 
+and sometimes this, which seems reliable. the copying is for WSL
+
+```
+rm db/cff_dev.db ; rm db/schema.rb ; rake db:rollback VERSION=0 db:migrate ; rake db:migrate db:seed ; cp db/cff_dev.db /mnt/c/Users/xertrov/cff_dev.db
+```
+
 ### create DB views
 
 ```
@@ -56,27 +62,103 @@ you might need to run this first, but I think `create role` will create a user f
 
 * `sudo -u postgres createuser -s cffdev`
 
+### cmd to test postgres in the `devpg` env
+
+* `rm db/schema.rb ; rails db:environment:set RAILS_ENV=devpg ; RAILS_ENV=devpg rake db:drop db:create db:migrate db:setup`
+
+## mysql local
+
+```sql
+CREATE USER 'cffdev'@'localhost' IDENTIFIED BY 'hunter2';
+GRANT ALL PRIVILEGES ON * . * TO 'cffdev'@'localhost';
+```
+
+testing schemas:
+
+```
+rm db/schema.rb ; rails db:environment:set RAILS_ENV=devmysql ; RAILS_ENV=devmysql rake db:drop db:create db:migrate db:setup
+```
+
+-----
+
+## todo
+
+* put authz on /admin
+* implement create_child permission stuff
+* **write tests**
+* export everything (for migraiton and archive)
+* import from export
+* generic view-node-as feature
+
+### future todos
+
+* review efficiency of method of visibility/privacy enforcement? 
+
+-----
+
+## incremental goals
+
+### be capable of running discussion & issue tracking for dev of cf-forum on a dev instance of cf-forum
+
+Important things: 
+
+* create threads, nodes, etc
+* view-node-as feature (view node as index)
+* how to track stuff like done/not-done/etc?
+* can we use a plugin system to do stuff like a project mgmt addon?
+* rich-er text editing / markdown
+* image upload / attachments
+* what else??????
+
 ----
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+## feature notes
 
-Things you may want to cover:
+### file storage
 
-* Ruby version
+* use s3 compatible api
+* wasabi storage looks good
+  * not AWS et al :thumbsup:
+* give use pre-signed upload URL so it doesn't go through the server?
+* use activestorage for tracking blobs
+  * can this be used with s3 presigned urls?
 
-* System dependencies
+### rich markdown editor thing
 
-* Configuration
+should we consider swapping over to using vue.js (or something) for UI? How soon? How hard to make that swap?
 
-* Database creation
+**todo** research
 
-* Database initialization
+### other?
 
-* How to run the test suite
+add other stuff if you can think of it and want to
 
-* Services (job queues, cache servers, search engines, etc.)
+----
 
-* Deployment instructions
+## performance notes
 
-* ...
+### drawing subtree/0
+
+| database | total ms | views ms | activerecord ms | allocations |
+|---|---|---|---|---|
+| mysql | 530420 | 63520 | 22575 | 56137161 | 
+| postgres | 326062 | 34266 | 35771 | 28341259 |
+| sqlite | 311967 | 39161 | 7005 | 28383508 |
+
+----
+
+some other performance notes are on <http://curi.us/2396#162>
+
+### postgres?
+
+Here's a query from `rails s` logs
+
+```
+  Node Load (30684.2ms)  SELECT "nodes".* FROM "nodes" WHERE (id in (
+      SELECT nwc.id FROM nodes_user_sees nus
+      JOIN node_with_children nwc ON nwc.id = nus.base_node_id
+      WHERE nwc.base_node_id = 0 AND rel_depth > 0 AND nus.user_id IS NULL
+    ))
+```
+
+That query in sqlite and mysql takes < 2000ms, and usually 1000-1300ms. :/ Not sure what's going wrong there or if there's an easy way to solve via db schema or query structure. Could be e.g. lack of indexing or not using indexes.

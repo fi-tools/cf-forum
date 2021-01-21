@@ -8,6 +8,7 @@ gem "rails", "~> 6.1.0"
 # Use sqlite3 as the database for Active Record
 gem "sqlite3", "~> 1.4"
 gem "pg"
+gem "mysql2"
 # Use Puma as the app server
 gem "puma", "~> 5.0"
 # Use SCSS for stylesheets
@@ -28,9 +29,15 @@ gem "devise"
 
 # adds database views
 gem "scenic"
+# support adapters for scenic other than postgres (which is default and included)
+gem "scenic_sqlite_adapter"
+gem "scenic-mysql"
 
 # functional support
 gem "functional-ruby"
+
+# admin panel
+gem "rails_admin", "~> 2.0"
 
 # Use Active Storage variant
 # gem 'image_processing', '~> 1.2'
@@ -38,15 +45,17 @@ gem "functional-ruby"
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", ">= 1.4.4", require: false
 
-group :development, :test do
+
+group :development, :devpg, :devmysql, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem "byebug", platforms: [:mri, :mingw, :x64_mingw]
   gem "guard-livereload", "~> 2.5", require: false
-  # keep this in dev/test so we can use DB views in these environments
-  gem "scenic_sqlite_adapter"
+
+  # generate fake data for dev/test
+  gem "faker"
 end
 
-group :development do
+group :development, :devpg, :devmysql do
   # Access an interactive console on exception pages or by calling 'console' anywhere in the code.
   gem "web-console", ">= 4.1.0"
   # Display performance information such as SQL time and flame graphs for each request in your browser.
