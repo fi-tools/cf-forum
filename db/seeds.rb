@@ -30,7 +30,7 @@
 # execute "update content_versions set node_id = 1 where id = 1"
 
 class SeedDatabase
-  def initialize
+  def initialize(n_fake_nodes: nil)
     # pw = SecureRandom.hex(12)
     pw = "hunter2"
     admin_email = "asdf@xk.io"
@@ -93,7 +93,7 @@ class SeedDatabase
     @faker_users = [@admin, sub_user, general_user]
     @faker_root = create_node nil, "Faker Root", @root.id, body: "All faker nodes will be created under this node."
 
-    self.run_faker
+    self.run_faker(n_fake_nodes)
   end
 
   def gen_user(username, email, pw)
@@ -150,8 +150,8 @@ class SeedDatabase
     TagDecl.find_or_create_by! :anchored => user, :tag => Authz::userInGroup, :target => @g_subscribers
   end
 
-  def run_faker
-    n_topics_to_create = 25000
+  def run_faker(n_fake_nodes = nil)
+    n_topics_to_create = n_fake_nodes.nil? ? 250 : n_fake_nodes
     # a list of all the fake nodes we create and a var to track the next one we'll take
     node_choices = [@faker_root]
     next_sample_index = 0

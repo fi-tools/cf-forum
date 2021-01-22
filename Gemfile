@@ -38,7 +38,7 @@ gem 'activerecord-hierarchical_query', git: 'https://github.com/XertroV/activere
 # db agnostic triggers
 gem 'hairtrigger'
 
-# functional support - disabled bc we're not using it and it might be deprecated.
+# functional support ~~- disabled bc we're not using it and it might be deprecated.~~ 
 gem "functional-ruby"
 
 # admin panel

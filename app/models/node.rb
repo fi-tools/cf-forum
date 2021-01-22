@@ -27,14 +27,12 @@ class Node < ApplicationRecord
 
   after_create :set_tags
 
-  # scope :is_top_post, -> (x) { where(is_top_post: x) }
-  # scope :genesis, -> (x) { where(genesis_id: x.id) }
-
   def children(user, limit: 1000)
     nar = Arel::Table.new :nar
     Node.find_by_sql(Node.nodes_readable_by(user).where(nar[:parent_id].eq(id)).take(limit))
   end
 
+  # do not use unless you're benchmarking
   def children_elegaint(user)
     user_id_comp = user.nil? ? "IS" : "="
     Node.where("id in (
@@ -44,6 +42,7 @@ class Node < ApplicationRecord
     )", self.id, user.id)
   end
 
+  # do not use unless you're benchmarking
   def children_elegaint_parent(user)
     user_id_comp = user.nil? ? "IS" : "="
     Node.where("id in (
@@ -53,6 +52,7 @@ class Node < ApplicationRecord
     )", self.id, user.id)
   end
 
+  # do not use unless you're benchmarking
   def children_manual(user)
     user_groups = user.nil? ? ["all"] : user.groups
     Node.where(:parent_id => id)
@@ -70,16 +70,11 @@ class Node < ApplicationRecord
     end
   end
 
-  # def children
-  #   Node.where("id in (
-  #     SELECT id FROM node_with_children WHERE base_node_id = #{self.id} AND rel_depth = 1
-  #   )")
-  # end
-
   def descendants(user)
     Node.find_by_sql(Node.descendants_readable_by(id, user))
   end
 
+  # do not use unless you're benchmarking
   def descendants_elegaint(user)
     # todo: refactor this and .children into the same basic function - parameterized
     user_id_comp = user.nil? ? "IS" : "="
@@ -90,6 +85,7 @@ class Node < ApplicationRecord
     )", self.id, user.id)
   end
 
+  # do not use unless you're benchmarking
   def descendants_via_nwc_simple(user)
     Node.where("id in (
       SELECT nwc.id FROM node_with_children nwc
@@ -97,6 +93,7 @@ class Node < ApplicationRecord
     )", self.id)
   end
 
+  # do not use unless you're benchmarking
   def descendants_via_nwc_optimized(user)
     Node.where("id in (
       WITH RECURSIVE nwc(orig_id, id, parent_id, rel_depth) AS (
@@ -111,6 +108,7 @@ class Node < ApplicationRecord
     )", self.id)
   end
 
+  # do not use unless you're benchmarking
   def descendants_via_nwc2_arel(user)
     Node.where("id in (
       WITH RECURSIVE nwc(orig_id, id, parent_id, rel_depth) AS (
@@ -125,47 +123,17 @@ class Node < ApplicationRecord
     )", self.id)
   end
 
+  # do not use unless you're benchmarking
   def descendants_via_arel(user)
     self.class.find_by_sql(self.class.relatives_via_arel_mgr(false, id).to_sql)
   end
 
+  # do not use unless you're benchmarking
   def ancestors_via_arel(user)
     self.class.find_by_sql(self.class.relatives_via_arel_mgr(true, id).to_sql)
   end
 
-  def node_system_tag_combos
-  end
-
-  def descendants_via_arel_with_visibility(user)
-    hierarchy = Arel::Table.new :hierarchy
-    recursive_table = Arel::Table.new(table_name).alias :recursive
-    select_manager = Arel::SelectManager.new(ActiveRecord::Base).freeze
-
-    non_recursive_term = select_manager.dup.tap do |m|
-      m.from table_name
-      m.project Arel.star
-      m.where arel_table[:id].eq(id)
-    end
-
-    recursive_term = select_manager.dup.tap do |m|
-      m.from recursive_table
-      m.project recursive_table[Arel.star]
-      m.join hierarchy
-      m.on recursive_table[:parent_id].eq(hierarchy[:id])
-    end
-
-    union = non_recursive_term.union :all, recursive_term
-    as_statement = Arel::Nodes::As.new hierarchy, union
-
-    manager = select_manager.dup.tap do |m|
-      m.with :recursive, as_statement
-      m.from hierarchy
-      m.project hierarchy[:id]
-    end
-
-    self.class.find_by_sql(manager.to_sql)
-  end
-
+  # do not use unless you're benchmarking
   def descendants_via_arhq(user)
     _id = self.id
     Node.join_recursive do
@@ -174,6 +142,7 @@ class Node < ApplicationRecord
     end
   end
 
+  # do not use unless you're benchmarking
   def ancestors_via_arhq(user)
     Node.join_recursive do |q|
       q.start_with(id: self.id)
@@ -198,9 +167,10 @@ class Node < ApplicationRecord
   end
 
   def who_can_read
-    can_read = self.node_authz_reads.collect { |nar| nar.group_name }
-    puts self.node_authz_reads, can_read, "^^^ can read"
-    return can_read
+    gs_raw = ActiveRecord::Base.connection.execute Node.node_authz_groups_for(id).to_sql
+    gs = gs_raw.to_a.collect { |g| g[:group_name.to_s] }
+    # puts gs.join(","), gs_raw.to_a, "^^^ can read"
+    return gs
   end
 
   def all_tags
@@ -338,9 +308,7 @@ class Node < ApplicationRecord
     end
 
     def node_authz_read
-      anar = Arel::Table.new :anar
       wpp = Arel::Table.new :wpp
-      nwa = Arel::Table.new :nwa
       nstc = Arel::Table.new :nstc
 
       Arel::SelectManager.new
@@ -349,6 +317,18 @@ class Node < ApplicationRecord
         .on(nstc[:id].eq(wpp[:closest_permission_id]))
         .where(nstc[:td_tag].eq(Authz.read))
         .project(wpp[Arel.star], nstc[:ut_tag].as("group_name"))
+    end
+
+    def node_authz_read_for(node_id)
+      wpp = Arel::Table.new :wpp
+      node_authz_read.where(wpp[:id].eq(node_id))
+    end
+
+    def node_authz_groups_for(node_id)
+      narf = Arel::Table.new :narf
+      Arel::SelectManager.new
+        .from(node_authz_read_for(node_id).as("narf"))
+        .project(narf[:group_name])
     end
 
     def nodes_readable_by(maybe_user)

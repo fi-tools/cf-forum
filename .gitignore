@@ -45,3 +45,4 @@ yarn-debug.log*
 /cff_test*
 .irb_history
 .vscode
+db/cff_test.db*
