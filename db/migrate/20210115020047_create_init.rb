@@ -32,6 +32,7 @@ class CreateInit < ActiveRecord::Migration[6.1]
       t.belongs_to :author, index: true
       t.bigint :parent_id, index: true
       t.bigint :depth, index: true
+      t.bigint :children, index: true
       t.timestamps
     end
 
@@ -41,6 +42,25 @@ class CreateInit < ActiveRecord::Migration[6.1]
         SET depth = (
           SELECT n2.depth FROM nodes n2 WHERE n2.id = n.parent_id LIMIT 1
         ) + 1 WHERE n.id = NEW.id;
+      SQL
+    end
+    create_trigger(:compatibility => 1).on(:nodes).after(:insert) do
+      <<-SQL
+      with recursive ancestors as (
+        select id, parent_id
+        from nodes
+        where id = NEW.parent_id
+        union all
+        select ns.id, ns.parent_id
+        from nodes ns
+        inner join ancestors a
+          on a.parent_id = ns.id
+      )
+        UPDATE nodes n
+        SET children = n.children + 1
+        where id in (
+          select id from ancestors
+        );
       SQL
     end
     add_foreign_key :nodes, :nodes, column: :parent_id

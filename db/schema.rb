@@ -40,9 +40,11 @@ ActiveRecord::Schema.define(version: 2021_01_19_134716) do
     t.bigint "author_id"
     t.bigint "parent_id"
     t.bigint "depth"
+    t.bigint "children"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["author_id"], name: "index_nodes_on_author_id"
+    t.index ["children"], name: "index_nodes_on_children"
     t.index ["depth"], name: "index_nodes_on_depth"
     t.index ["parent_id"], name: "index_nodes_on_parent_id"
   end
@@ -144,6 +146,7 @@ ActiveRecord::Schema.define(version: 2021_01_19_134716) do
       n.author_id,
       n.parent_id,
       n.depth,
+      n.children,
       n.created_at,
       n.updated_at
      FROM nodes n,
@@ -172,6 +175,7 @@ ActiveRecord::Schema.define(version: 2021_01_19_134716) do
       n.author_id,
       n.parent_id,
       n.depth,
+      n.children,
       n.created_at,
       n.updated_at
      FROM nodes n,
@@ -257,10 +261,21 @@ ActiveRecord::Schema.define(version: 2021_01_19_134716) do
       on("nodes").
       after(:insert) do
     <<-SQL_ACTIONS
-        UPDATE nodes n 
-        SET depth = (
-          SELECT n2.depth FROM nodes n2 WHERE n2.id = n.parent_id LIMIT 1
-        ) + 1 WHERE n.id = NEW.id;
+      with recursive ancestors as (
+        select id, parent_id
+        from nodes 
+        where id = NEW.parent_id
+        union all
+        select ns.id, ns.parent_id
+        from nodes ns
+        inner join ancestors a
+          on a.parent_id = ns.id 
+      )
+        UPDATE nodes n
+        SET children = n.children + 1
+        where id in (
+          select id from ancestors
+        );
     SQL_ACTIONS
   end
 

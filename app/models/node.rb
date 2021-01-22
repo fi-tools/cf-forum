@@ -25,7 +25,7 @@ class Node < ApplicationRecord
 
   has_many :node_authz_reads, foreign_key: :base_node_id
 
-  before_create :set_depth
+  before_create :set_node_cache_init
   after_create :set_tags
 
   def children(user, limit: 1000)
@@ -620,11 +620,9 @@ Returns a list of hashes with keys:
     SQL
   end
 
-  def set_depth
-    puts self.to_json
-    if self.depth.nil? && !self.parent_id.nil?
-      self.depth = parent.depth + 1
-    elsif self.depth.nil? && self.parent_id.nil?
+  def set_node_cache_init
+    self.children = 0
+    if self.depth.nil? && self.parent_id.nil?
       self.depth = 0
     end
   end
