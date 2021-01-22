@@ -79,6 +79,11 @@ testing schemas:
 rm db/schema.rb ; rails db:environment:set RAILS_ENV=devmysql ; RAILS_ENV=devmysql rake db:drop db:create db:migrate db:setup
 ```
 
+## running dev server
+
+* `rails s -e devpg --log-to-stdout`
+* `bundle exec puma -t 5:5 -p ${PORT:-3000} -e devpg --log-to-stdout`
+
 -----
 
 ## todo
@@ -88,11 +93,12 @@ rm db/schema.rb ; rails db:environment:set RAILS_ENV=devmysql ; RAILS_ENV=devmys
 * **write tests**
 * export everything (for migraiton and archive)
 * import from export
-* generic view-node-as feature
+* postgres via docker/compose/something -- with dev scripts ideally
+  * note there are mb issues with docker for WSL
 
 ### future todos
 
-* review efficiency of method of visibility/privacy enforcement? 
+* review efficiency of method of visibility/privacy enforcement?
 
 -----
 

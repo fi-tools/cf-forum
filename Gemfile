@@ -33,11 +33,13 @@ gem "scenic"
 gem "scenic_sqlite_adapter"
 gem "scenic-mysql"
 
+gem 'activerecord-hierarchical_query', git: 'https://github.com/XertroV/activerecord-hierarchical_query', branch: 'rails-6-1'
+
 # db agnostic triggers
 gem 'hairtrigger'
 
-# functional support - disabled bc we're not using it and it might be deprecated.
-#gem "functional-ruby"
+# functional support ~~- disabled bc we're not using it and it might be deprecated.~~ 
+gem "functional-ruby"
 
 # admin panel
 gem "rails_admin", "~> 2.0"

@@ -8,5 +8,16 @@ class UserTag < ApplicationRecord
     def find_global(tag)
       self.where(:tag => tag, :user => nil)
     end
+
+    def table
+      arel_table
+    end
+
+    def is_system
+      # arel_table.project(arel_table[Arel.star]).where(arel_table[:user_id].eq(nil))
+      table[:user_id].eq(nil)
+    end
   end
+
+  private
 end

@@ -30,7 +30,7 @@
 # execute "update content_versions set node_id = 1 where id = 1"
 
 class SeedDatabase
-  def initialize
+  def initialize(n_fake_nodes: nil)
     # pw = SecureRandom.hex(12)
     pw = "hunter2"
     admin_email = "asdf@xk.io"
@@ -93,7 +93,7 @@ class SeedDatabase
     @faker_users = [@admin, sub_user, general_user]
     @faker_root = create_node nil, "Faker Root", @root.id, body: "All faker nodes will be created under this node."
 
-    self.run_faker
+    self.run_faker(n_fake_nodes)
   end
 
   def gen_user(username, email, pw)
@@ -102,7 +102,7 @@ class SeedDatabase
   end
 
   def create_node(id, title, parent, body: nil, author: @admin_author)
-    puts "create_node: #{id}, #{title}, #{parent}, #{body}"
+    puts "create_node: #{id}, #{parent}, #{title}"
     node_params = { :author => author }
     if !id.nil?
       node_params[:id] = id
@@ -110,9 +110,9 @@ class SeedDatabase
     if !parent.nil?
       node_params = node_params.merge(:parent_id => parent)
     end
-    puts "creating node"
+    #puts "creating node"
     node = Node.create! **node_params
-    puts "node.parent: #{node.parent&.id}"
+    #puts "node.parent: #{node.parent&.id}"
     cv = ContentVersion.create! :id => id, :node => node, :title => title, :author => author, :body => body
     node
   end
@@ -150,8 +150,8 @@ class SeedDatabase
     TagDecl.find_or_create_by! :anchored => user, :tag => Authz::userInGroup, :target => @g_subscribers
   end
 
-  def run_faker
-    n_topics_to_create = 2500
+  def run_faker(n_fake_nodes = nil)
+    n_topics_to_create = n_fake_nodes.nil? ? 250 : n_fake_nodes
     # a list of all the fake nodes we create and a var to track the next one we'll take
     node_choices = [@faker_root]
     next_sample_index = 0
