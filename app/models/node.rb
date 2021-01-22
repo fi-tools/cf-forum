@@ -214,6 +214,7 @@ class Node < ApplicationRecord
 
   class << self
     def root
+      throw "deprecated, use with_descendants or with_descendants_map instead"
       Node.find(0)
     end
 

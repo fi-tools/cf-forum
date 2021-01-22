@@ -116,10 +116,10 @@ class NodesController < ApplicationController
     @parent_id = parent_id
   end
 
+  # this sets both @node and @node_id_to_children
   def set_node_to_children_map(id = params[:id].to_i)
     @node_id_to_children = Node.with_descendants_map(id, @user)
     @node = @node_id_to_children[-1].first
-    puts "main_node: #{@node.to_json}"
   end
 
   # Only allow a list of trusted parameters through.
