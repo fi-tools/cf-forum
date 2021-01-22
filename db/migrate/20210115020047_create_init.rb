@@ -31,9 +31,18 @@ class CreateInit < ActiveRecord::Migration[6.1]
     create_table :nodes do |t|
       t.belongs_to :author, index: true
       t.bigint :parent_id, index: true
+      t.bigint :depth, index: true
       t.timestamps
     end
 
+    create_trigger(:compatibility => 1).on(:nodes).after(:insert) do
+      <<-SQL
+        UPDATE nodes n 
+        SET depth = (
+          SELECT n2.depth FROM nodes n2 WHERE n2.id = n.parent_id LIMIT 1
+        ) + 1 WHERE n.id = NEW.id;
+      SQL
+    end
     add_foreign_key :nodes, :nodes, column: :parent_id
 
     create_table :content_versions do |t|

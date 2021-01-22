@@ -104,10 +104,10 @@ class SeedDatabase
   def create_node(id, title, parent, body: nil, author: @admin_author)
     puts "create_node: #{id}, #{parent}, #{title}"
     node_params = { :author => author }
-    if !id.nil?
+    unless id.nil?
       node_params[:id] = id
     end
-    if !parent.nil?
+    unless parent.nil?
       node_params = node_params.merge(:parent_id => parent)
     end
     #puts "creating node"

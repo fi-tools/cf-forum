@@ -25,6 +25,7 @@ class Node < ApplicationRecord
 
   has_many :node_authz_reads, foreign_key: :base_node_id
 
+  before_create :set_depth
   after_create :set_tags
 
   def children(user, limit: 1000)
@@ -617,6 +618,15 @@ Returns a list of hashes with keys:
       closest_node_id(node_id) AS (SELECT MAX(node_id) from tag_combos)
       SELECT tc.* FROM tag_combos tc, closest_node_id WHERE tc.node_id = closest_node_id.node_id
     SQL
+  end
+
+  def set_depth
+    puts self.to_json
+    if self.depth.nil? && !self.parent_id.nil?
+      self.depth = parent.depth + 1
+    elsif self.depth.nil? && self.parent_id.nil?
+      self.depth = 0
+    end
   end
 
   def set_tags
