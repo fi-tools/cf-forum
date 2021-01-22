@@ -4,25 +4,25 @@
       <%= link_to node.title, node %>
     </p>
     <p class="border">
-      <%= node.content.body.slice(0, 200) %>
+      <%= node.body.slice(0, 200) %>
     </p>
     <nav class="breadcrumb">
       <ul>
-        <li><%= link_to node.author.formatted_name, node.author %></li>
-        <li><%= link_to node.user.username, node.user %></li>
+        <li><%= link_to node.formatted_name, node.author %></li>
+        <li><%= link_to node.username, node.user %></li>
         <li class="is-active">
           <a><%= node.created_at %> / <%= time_ago_in_words(node.created_at || DateTime.now) %> ago</a>
         </li>
         <li class="is-active">
-          <a>Children: <%= node.children(@user).count %></a>
+          <a>Children: <%= @node_id_to_children[node.id].count %></a>
         </li>
         <li class="is-active">
-          <a>Descendants: <%= node.descendants(@user).count %></a>
+          <a>Descendants: <%= count_descendants(node) %></a>
         </li>
       </ul>
     </nav>
   </div>
-  <div class="cart-footer">
+  <div class="card-footer">
     <!--
     <span><%= link_to 'Show', node, class: "card-footer-item" %></span>
     <span><%= link_to 'Edit', edit_node_path(node), class: "card-footer-item" %></span>

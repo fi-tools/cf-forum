@@ -111,6 +111,14 @@ class Node < ApplicationRecord
     return node_id_to_children
   end
 
+  def formatted_name
+    if @author_name
+      "a/#{@author_name}"
+    else
+      "u/#{@username}"
+    end
+  end
+
   # do not use unless you're benchmarking
   def descendants_elegaint(user)
     # todo: refactor this and .children into the same basic function - parameterized

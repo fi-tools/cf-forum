@@ -10,7 +10,7 @@ class NodesController < ApplicationController
   # GET /nodes
   # GET /nodes.json
   def index
-    @node = Node.root
+    set_node_to_children_map(0)
   end
 
   # GET /nodes/1
@@ -124,8 +124,7 @@ class NodesController < ApplicationController
     @parent_id = parent_id
   end
 
-  def set_node_to_children_map
-    id = params[:id].to_i
+  def set_node_to_children_map(id = params[:id].to_i)
     @node_id_to_children = Node.with_descendants_map(id, @user)
     @node = @node_id_to_children[-1].first
     puts "main_node: #{@node.to_json}"

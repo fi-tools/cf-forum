@@ -4,7 +4,7 @@
       <div class="panel-heading has-background-primary-light is-flex">
         <div class="is-flex-grow-5">
           <%= node.title %>
-          <%= link_to "../", node.parent, class: "is-small" %>
+          <%= link_to "../", node_path(node.parent_id), class: "is-small" %>
         </div>
         <div class="">
           <% if current_user && node.author_user_id == current_user.id %>
@@ -35,7 +35,7 @@
               <a>Descendants: <%= count_descendants node %></a>
             </li>
             <li class="is-active">
-              <a>Descendants: <%= node.descendants(@user).count %></a>
+              <a>Descendants: <%= count_descendants(node) %></a>
             </li>
           </ul>
         </nav>
