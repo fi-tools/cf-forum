@@ -1,7 +1,7 @@
 <section class="section">
   <div class="container grid">
     <div class="title is-2">
-      <%= node.content.title %>
+      <%= node.title %>
     </div>
     <div class="subtitle is-4">
       <%= link_to "View All Posts (#{node.children(@user).count})", node %>
@@ -12,7 +12,7 @@
       </div>
       <% node.children(@user).each do |child| %>
         <div class="content">
-          <%= link_to child.content.title, node_path(child), class: "is-link is-size-6" %>
+          <%= link_to child.title, node_path(child), class: "is-link is-size-6" %>
           / Posted: <%= child.created_at %>
         </div>
       <% end %>

@@ -1,5 +1,5 @@
 <%= link_to use_anchor ? "##{node.id}" : node_path(node) do %>
-  <%= node.id %>: <%= node.content.title %>
+  <%= node.id %>: <%= node.title %>
 <% end %>
 <% if max_depth > 0 && @node_id_to_children[node.id].count > 0 %>
   <ul>

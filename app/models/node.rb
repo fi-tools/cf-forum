@@ -29,7 +29,10 @@ class Node < ApplicationRecord
 
   def children(user, limit: 1000)
     nar = Arel::Table.new :nar
-    Node.find_by_sql(Node.nodes_readable_by(user).where(nar[:parent_id].eq(id)).take(limit))
+    q = Node.join_with_content(
+      Node.nodes_readable_by(user).where(nar[:parent_id].eq(id)).take(limit)
+    )
+    Node.find_by_sql(q)
   end
 
   # do not use unless you're benchmarking
@@ -70,8 +73,26 @@ class Node < ApplicationRecord
     end
   end
 
+  # def title
+  #   return @title || content.title
+  # end
+
   def descendants(user)
-    Node.find_by_sql(Node.descendants_readable_by(id, user))
+    Node.find_by_sql(
+      Node.join_with_content(Node.descendants_readable_by(id, user))
+    )
+  end
+
+  def descendants_map(user)
+    # get this node + children
+    tree = [self] + descendants(user)
+    # defaultdict where a key will return an empty array by defualt
+    node_id_to_children = Hash.new { |h, k| h[k] = Array.new }
+    tree.each do |n|
+      # for each node, append it's children to the corresponding array in the hash
+      node_id_to_children[n.id] += (tree.select { |n2| n2.parent_id == n.id })
+    end
+    return node_id_to_children
   end
 
   # do not use unless you're benchmarking
@@ -152,18 +173,6 @@ class Node < ApplicationRecord
 
   def view
     self.anchored_view_tags.last.tag
-  end
-
-  def descendants_map(user)
-    # get this node + children
-    tree = [self] + descendants(user)
-    # defaultdict where a key will return an empty array by defualt
-    node_id_to_children = Hash.new { |h, k| h[k] = Array.new }
-    tree.each do |n|
-      # for each node, append it's children to the corresponding array in the hash
-      node_id_to_children[n.id] += (tree.select { |n2| n2.parent_id == n.id })
-    end
-    return node_id_to_children
   end
 
   def who_can_read
@@ -357,6 +366,25 @@ class Node < ApplicationRecord
     def get_old_nodes_readable_by(user)
       find_by_sql old_nodes_readable_by(user)
     end
+
+    def join_with_content(nodes_query, on: :id)
+      cvs = ContentVersion.arel_table
+      n = Arel::Table.new :n
+      Arel::SelectManager.new
+        .project(n[Arel.star], cvs[:body], cvs[:title])
+        .from(nodes_query.as("n"))
+        .join(cvs)
+        .on(n[on].eq(cvs[:node_id]))
+        .order(cvs[:created_at])
+    end
+
+    def find_readable(id, user)
+      nar = Arel::Table.new :nar
+      q = Node.join_with_content(
+        nodes_readable_by(user).where(nar[:id].eq(id))
+      )
+      Node.find_by_sql(q).first
+    end
   end
 
   private
@@ -511,7 +539,7 @@ Returns a list of hashes with keys:
   end
 
   def set_tags
-    self.set_view_tag_from_parent
+    # self.set_view_tag_from_parent
     # let's not set default permissions like this. probs better to do inheretance properly.
     # self.set_permissions_from_parent
   end

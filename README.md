@@ -143,19 +143,16 @@ add other stuff if you can think of it and want to
 
 ## performance notes
 
-### drawing subtree/0
+* earlier: things looked grim for overhead with 25k nodes. queries^1 taking 2s (or 30s with postgres)
+* latest: refactoring via arel with some restructuring meant postgres queries started taking like 200-300ms with 25k nodes.
 
-| database | total ms | views ms | activerecord ms | allocations |
-|---|---|---|---|---|
-| mysql | 530420 | 63520 | 22575 | 56137161 | 
-| postgres | 326062 | 34266 | 35771 | 28341259 |
-| sqlite | 311967 | 39161 | 7005 | 28383508 |
+[1]: the partiular queries involve complex joins and things to account for permissions and inheritance
 
 ----
 
-some other performance notes are on <http://curi.us/2396#162>
+some other performance notes from earlier are on <http://curi.us/2396#162>
 
-### postgres?
+### postgres? (out of date)
 
 Here's a query from `rails s` logs
 
