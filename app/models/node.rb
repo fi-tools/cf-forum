@@ -30,15 +30,9 @@ class Node < ApplicationRecord
   # scope :is_top_post, -> (x) { where(is_top_post: x) }
   # scope :genesis, -> (x) { where(genesis_id: x.id) }
 
-  def children(user_id)
-    # user_id_comp = user_id.nil? ? "IS" : "="
-    # return Node.where("id in (
-    #   SELECT nwc.id FROM nodes_user_sees nus
-    #   JOIN node_with_children nwc ON nwc.id = nus.base_node_id
-    #   WHERE nwc.base_node_id = ? AND rel_depth = 1 AND nus.user_id #{user_id_comp} ?
-    # )", self.id, user_id)
-    # alt implementation that might/should be faster
-    self.children_elegaint(user_id)
+  def children(user_id, limit: 1000)
+    nar = Arel::Table.new :nar
+    Node.find_by_sql(Node.nodes_readable_by(user_id).where(nar[:parent_id].eq(id)).take(limit))
   end
 
   def children_elegaint(user_id)
@@ -82,11 +76,11 @@ class Node < ApplicationRecord
   #   )")
   # end
 
-  def descentands(user_id)
-    self.descentands_elegaint(user_id)
+  def descendants(user_id)
+    Node.find_by_sql(Node.descendants_readable_by(id, user_id))
   end
 
-  def descentands_elegaint(user_id)
+  def descendants_elegaint(user_id)
     # todo: refactor this and .children into the same basic function - parameterized
     user_id_comp = user_id.nil? ? "IS" : "="
     Node.where("id in (
@@ -193,7 +187,7 @@ class Node < ApplicationRecord
 
   def descendants_map(user_id)
     # get this node + children
-    tree = [self] + self.descendants(user_id)
+    tree = [self] + descendants(user_id)
     # defaultdict where a key will return an empty array by defualt
     node_id_to_children = Hash.new { |h, k| h[k] = Array.new }
     tree.each do |n|
@@ -226,6 +220,7 @@ class Node < ApplicationRecord
       arel_table
     end
 
+    # returns (base_id, ...node)
     def relatives_via_arel_mgr(direction_towards_root, base_node_id = nil)
       hierarchy = Arel::Table.new :hierarchy
       recursive_table = Arel::Table.new(table_name).alias :recursive
@@ -357,12 +352,22 @@ class Node < ApplicationRecord
         .project(wpp[Arel.star], nstc[:ut_tag].as("group_name"))
     end
 
-    def nodes_readable_by(user_or_user_id)
-      user = user_or_user_id.instance_of?(User) ? user_or_user_id : User.find(user_or_user_id)
+    def nodes_readable_by(maybe_user)
       nar = Arel::Table.new :nar
       Arel::SelectManager.new
         .from(node_authz_read.as("nar"))
-        .where(nar[:group_name].eq("all").or(nar[:group_name].in(user.groups_arel)))
+        .where(nar[:group_name].eq("all").or(nar[:group_name].in(maybe_user&.groups_arel)))
+        .project(nar[Arel.star])
+    end
+
+    def descendants_readable_by(node_id, maybe_user)
+      nar = Arel::Table.new :nar
+      nwc = Arel::Table.new :nwc
+      Arel::SelectManager.new
+        .from(node_authz_read.as("nar"))
+        .join(relatives_via_arel_mgr(false, node_id).as("nwc"))
+        .on(nar[:id].eq(nwc[:id]))
+        .where(nar[:group_name].eq("all").or(nar[:group_name].in(maybe_user&.groups_arel)))
         .project(nar[Arel.star])
     end
 

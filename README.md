@@ -88,11 +88,12 @@ rm db/schema.rb ; rails db:environment:set RAILS_ENV=devmysql ; RAILS_ENV=devmys
 * **write tests**
 * export everything (for migraiton and archive)
 * import from export
-* generic view-node-as feature
+* postgres via docker/compose/something -- with dev scripts ideally
+  * note there are mb issues with docker for WSL
 
 ### future todos
 
-* review efficiency of method of visibility/privacy enforcement? 
+* review efficiency of method of visibility/privacy enforcement?
 
 -----
 

@@ -4,19 +4,19 @@
       <%= node.content.title %>
     </div>
     <div class="subtitle is-4">
-      <%= link_to "View All Posts (#{node.children(@user_id).count})", node %>
+      <%= link_to "View All Posts (#{node.children(@user).count})", node %>
     </div>
-    <% if node.children(@user_id).count > 0 %>
+    <% if node.children(@user).count > 0 %>
       <div class="title is-5 mt-3">
         Recent Threads:
       </div>
-      <% node.children(@user_id).limit(10).each do |child| %>
+      <% node.children(@user).each do |child| %>
         <div class="content">
           <%= link_to child.content.title, node_path(child), class: "is-link is-size-6" %>
           / Posted: <%= child.created_at %>
         </div>
       <% end %>
-      <% if node.children(@user_id).count > 10 %>
+      <% if node.children(@user).count > 10 %>
         todo: some 'see more' type thing
       <% end %>
     <% end %>

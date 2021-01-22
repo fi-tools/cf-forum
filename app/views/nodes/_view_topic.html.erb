@@ -29,10 +29,10 @@
               <a><%= node.created_at %> / <%= time_ago_in_words(node.created_at || DateTime.now) %> ago</a>
             </li>
             <li class="is-active">
-              <a>Children: <%= node.children(@user_id).count %></a>
+              <a>Children: <%= node.children(@user).count %></a>
             </li>
             <li class="is-active">
-              <a>Descendants: <%= node.descendants(@user_id).count %></a>
+              <a>Descendants: <%= node.descendants(@user).count %></a>
             </li>
           </ul>
         </nav>
@@ -40,11 +40,11 @@
     </nav>
   </div>
 </div>
-<% if @node.children(@user_id).length > 0 %>
+<% if @node.children(@user).length > 0 %>
   <h3 class='title'>Replies:</h3>
   <h5 class='subtitle'>TOC:</h5>
   <%= render 'subtree_full', node: @node, use_anchor: true %>
-  <% @node.children(@user_id).each do |r| %>
+  <% @node.children(@user).each do |r| %>
     <div>
       todo: is this recursive?
     </div>

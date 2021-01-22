@@ -102,7 +102,7 @@ class SeedDatabase
   end
 
   def create_node(id, title, parent, body: nil, author: @admin_author)
-    puts "create_node: #{id}, #{title}, #{parent}, #{body}"
+    puts "create_node: #{id}, #{parent}, #{title}"
     node_params = { :author => author }
     if !id.nil?
       node_params[:id] = id
@@ -110,9 +110,9 @@ class SeedDatabase
     if !parent.nil?
       node_params = node_params.merge(:parent_id => parent)
     end
-    puts "creating node"
+    #puts "creating node"
     node = Node.create! **node_params
-    puts "node.parent: #{node.parent&.id}"
+    #puts "node.parent: #{node.parent&.id}"
     cv = ContentVersion.create! :id => id, :node => node, :title => title, :author => author, :body => body
     node
   end
@@ -151,7 +151,7 @@ class SeedDatabase
   end
 
   def run_faker
-    n_topics_to_create = 2500
+    n_topics_to_create = 25000
     # a list of all the fake nodes we create and a var to track the next one we'll take
     node_choices = [@faker_root]
     next_sample_index = 0

@@ -12,7 +12,7 @@ end
 
 class CffBench
   def initialize
-    @n_runs = 1
+    @n_runs = 10
     # @n_runs = 1
 
     @test = {

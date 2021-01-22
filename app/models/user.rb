@@ -42,4 +42,12 @@ class User < ApplicationRecord
       .where(UserTag.is_system.and(TagDecl.is_system.and(tds[:target_type].eq(UserTag.name))))
       .project(uts[:tag].as("group_name"))
   end
+
+  class << self
+    def from_id_or_nil(id)
+      unless id.nil?
+        User.from(id)
+      end
+    end
+  end
 end

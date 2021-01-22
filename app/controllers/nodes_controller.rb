@@ -97,7 +97,7 @@ class NodesController < ApplicationController
 
   # Use callbacks to share common setup or constraints between actions.
   def set_user_id
-    @user_id = current_user&.id
+    @user = current_user
   end
 
   def set_node
@@ -119,7 +119,7 @@ class NodesController < ApplicationController
   end
 
   def set_node_to_children_map
-    @node_id_to_children = @node.descendants_map(@user_id)
+    @node_id_to_children = @node.descendants_map(@user)
   end
 
   # Only allow a list of trusted parameters through.

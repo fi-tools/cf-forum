@@ -14,10 +14,10 @@
           <a><%= node.created_at %> / <%= time_ago_in_words(node.created_at || DateTime.now) %> ago</a>
         </li>
         <li class="is-active">
-          <a>Children: <%= node.children(@user_id).count %></a>
+          <a>Children: <%= node.children(@user).count %></a>
         </li>
         <li class="is-active">
-          <a>Descendants: <%= node.descendants(@user_id).count %></a>
+          <a>Descendants: <%= node.descendants(@user).count %></a>
         </li>
       </ul>
     </nav>

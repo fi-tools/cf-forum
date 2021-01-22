@@ -43,3 +43,5 @@ yarn-debug.log*
 /cff_dev
 /cff_test
 /cff_test*
+.irb_history
+.vscode
