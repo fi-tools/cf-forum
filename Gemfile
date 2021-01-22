@@ -36,7 +36,7 @@ gem "scenic-mysql"
 gem 'activerecord-hierarchical_query', git: 'https://github.com/XertroV/activerecord-hierarchical_query', branch: 'rails-6-1'
 
 # db agnostic triggers
-gem 'hairtrigger'
+gem 'hairtrigger', git: 'https://github.com/XertroV/hair_trigger'
 
 # functional support ~~- disabled bc we're not using it and it might be deprecated.~~ 
 gem "functional-ruby"

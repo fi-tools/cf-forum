@@ -39,9 +39,11 @@ ActiveRecord::Schema.define(version: 2021_01_19_134716) do
   create_table "nodes", force: :cascade do |t|
     t.bigint "author_id"
     t.bigint "parent_id"
+    t.bigint "depth"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["author_id"], name: "index_nodes_on_author_id"
+    t.index ["depth"], name: "index_nodes_on_depth"
     t.index ["parent_id"], name: "index_nodes_on_parent_id"
   end
 
@@ -141,6 +143,7 @@ ActiveRecord::Schema.define(version: 2021_01_19_134716) do
       n.id,
       n.author_id,
       n.parent_id,
+      n.depth,
       n.created_at,
       n.updated_at
      FROM nodes n,
@@ -168,6 +171,7 @@ ActiveRecord::Schema.define(version: 2021_01_19_134716) do
       n.id,
       n.author_id,
       n.parent_id,
+      n.depth,
       n.created_at,
       n.updated_at
      FROM nodes n,
@@ -249,4 +253,15 @@ ActiveRecord::Schema.define(version: 2021_01_19_134716) do
      FROM (node_authz_reads nar
        JOIN user_groups ug ON ((ug.group_name = (nar.group_name)::text)));
   SQL
+  create_trigger("nodes_after_insert_row_tr", :compatibility => 1).
+      on("nodes").
+      after(:insert) do
+    <<-SQL_ACTIONS
+        UPDATE nodes n 
+        SET depth = (
+          SELECT n2.depth FROM nodes n2 WHERE n2.id = n.parent_id LIMIT 1
+        ) + 1 WHERE n.id = NEW.id;
+    SQL_ACTIONS
+  end
+
 end
