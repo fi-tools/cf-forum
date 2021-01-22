@@ -5,7 +5,7 @@ class Node3 < Node
   class << self
     def nodes_admin_can_read_with_parent_root
       nar = Arel::Table.new :nar
-      Node.find_by_sql(Node.nodes_readable_by(1).where(nar[:parent_id].eq 0))
+      Node.find_by_sql(Node.nodes_readable_by(User.find(1)).where(nar[:parent_id].eq 0))
     end
   end
 end
@@ -19,7 +19,7 @@ class CffBench
       Node3 => [[:nodes_admin_can_read_with_parent_root], []],
       Node => [[
         :get_nodes_readable_by,
-      ], [1]],
+      ], [User.find(1)]],
       Node.first => [[
         #:children_elegaint,
         #:children_elegaint_parent,
