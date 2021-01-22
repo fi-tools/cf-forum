@@ -10,7 +10,7 @@
   <div class='comment-block is-small'>
     <% anchor = "##{node.id}" %>
     <%= link_to anchor, anchor, class: "" %>,
-    <span class="mr-1">By:</span> <%= link_to node.author.formatted_name || "Anonymous", node.author %>, <%= node.created_at %>
+    <span class="mr-1">By:</span> <%= link_to node.author_name || "Anonymous", author_path(node.content_author_id) %>, <%= node.created_at %>
     <% if false && node.content_versions.count > 1 %>, <em>Updated at: <%= node.content.created_at %></em>
     <% end %>
     <span class="mx-2"></span>

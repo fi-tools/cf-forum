@@ -3,18 +3,18 @@
     <nav class="panel">
       <div class="panel-heading has-background-primary-light is-flex">
         <div class="is-flex-grow-5">
-          <%= @node.title %>
+          <%= node.title %>
           <%= link_to "../", node.parent, class: "is-small" %>
         </div>
         <div class="">
-          <% if current_user && node.user.id == current_user.id %>
-            <%= link_to 'Edit', edit_node_path(@node), class: "button is-small" %>
+          <% if current_user && node.author_user_id == current_user.id %>
+            <%= link_to 'Edit', edit_node_path(node), class: "button is-small" %>
           <% end %>
-          <%= link_to 'Reply', reply_to_node_path(:parent_id => @node.id), class: "button is-success is-small" %>
+          <%= link_to 'Reply', reply_to_node_path(:parent_id => node.id), class: "button is-success is-small" %>
         </div>
       </div>
       <div class="panel-block">
-        <%= @node.body %>
+        <%= node.body %>
       </div>
       <!-- <p class="panel-tabs has-text-left is-flex pl-1">
         <%# <%= link_to 'Delete', node_path(@node), class: "button is-warning", method: :delete, data: { confirm: "Are you sure?" } %>
@@ -23,13 +23,16 @@
       <div class="panel-block">
         <nav class="breadcrumb">
           <ul>
-            <li><%= link_to node.author.formatted_name, node.author %></li>
-            <li><%= link_to node.user.username, node.user %></li>
+            <li><%= link_to node.author_name, author_path(node.content_author_id) %></li>
+            <li><%= link_to node.username, user_path(node.author_user_id) %></li>
             <li class="is-active">
               <a><%= node.created_at %> / <%= time_ago_in_words(node.created_at || DateTime.now) %> ago</a>
             </li>
             <li class="is-active">
-              <a>Children: <%= node.children(@user).count %></a>
+              <a>Children: <%= @node_id_to_children[node.id].count %></a>
+            </li>
+            <li class="is-active">
+              <a>Descendants: <%= count_descendants node %></a>
             </li>
             <li class="is-active">
               <a>Descendants: <%= node.descendants(@user).count %></a>

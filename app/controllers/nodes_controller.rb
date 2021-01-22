@@ -1,6 +1,6 @@
 class NodesController < ApplicationController
   before_action :set_user
-  before_action :set_node, only: [:show, :edit, :update, :destroy, :subtree, :view_as]
+  before_action :set_node, only: []
   before_action :set_parent, only: [:new, :new_comment]
   before_action :set_node_to_children_map, only: [:show, :subtree, :view_as]
   before_action :authenticate_user!, only: [:new, :new_comment, :create]
@@ -92,6 +92,13 @@ class NodesController < ApplicationController
   #   end
   # end
 
+  def count_descendants(node)
+    cs = @node_id_to_children[node.id]
+    cs.count + (cs.map { |c| count_descendants(c) }).sum
+  end
+
+  helper_method :count_descendants
+
   private
 
   # Use callbacks to share common setup or constraints between actions.
@@ -118,7 +125,10 @@ class NodesController < ApplicationController
   end
 
   def set_node_to_children_map
-    @node_id_to_children = @node.descendants_map(@user)
+    id = params[:id]
+    @node_id_to_children = Node.with_descendants_map(params[:id], @user)
+    @node = @node_id_to_children[-1].first
+    puts "main_node: #{@node.to_json}"
   end
 
   # Only allow a list of trusted parameters through.
