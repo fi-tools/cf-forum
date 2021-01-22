@@ -39,8 +39,8 @@ ActiveRecord::Schema.define(version: 2021_01_19_134716) do
   create_table "nodes", force: :cascade do |t|
     t.bigint "author_id"
     t.bigint "parent_id"
-    t.bigint "depth"
-    t.bigint "children"
+    t.bigint "depth", default: 0
+    t.bigint "children", default: 0
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["author_id"], name: "index_nodes_on_author_id"
@@ -263,13 +263,13 @@ ActiveRecord::Schema.define(version: 2021_01_19_134716) do
     <<-SQL_ACTIONS
       with recursive ancestors as (
         select id, parent_id
-        from nodes 
+        from nodes
         where id = NEW.parent_id
         union all
         select ns.id, ns.parent_id
         from nodes ns
         inner join ancestors a
-          on a.parent_id = ns.id 
+          on a.parent_id = ns.id
       )
         UPDATE nodes n
         SET children = n.children + 1

@@ -54,7 +54,7 @@ rails generate scenic:view view_tag_decls create db/views/view_tag_decls_v01.sql
 
 (there are some benefits to doing this vs mixing logging w/ stdout)
 
-## local postgres config -- note used atm
+## local postgres config
 
 * `echo "create role cffdev with createdb login password 'hunter2';" | sudo -u postgres psql`
 * then **NOT ON PRODUCTION - JUST FOR TEST** `echo "ALTER USER cffdev WITH SUPERUSER;" | sudo -u postgres psql` **NOT ON PRODUCTION - JUST FOR TEST**
@@ -62,6 +62,12 @@ rails generate scenic:view view_tag_decls create db/views/view_tag_decls_v01.sql
 you might need to run this first, but I think `create role` will create a user for you. 
 
 * `sudo -u postgres createuser -s cffdev`
+
+### ActiveRecord::NoDatabaseError: FATAL:  database "cff_dev2" does not exist
+
+* `rake db:environment:set RAILS_ENV=development`
+* `rake db:create`
+* this resolved it for me but ymmv
 
 ### cmd to test postgres in the `devpg` env
 

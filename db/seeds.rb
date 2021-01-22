@@ -93,7 +93,7 @@ class SeedDatabase
     @faker_users = [@admin, sub_user, general_user]
     @faker_root = create_node nil, "Faker Root", @root.id, body: "All faker nodes will be created under this node."
 
-    self.run_faker(n_fake_nodes)
+    self.run_faker(ENV["n_fake_nodes"]&.to_i || n_fake_nodes)
   end
 
   def gen_user(username, email, pw)

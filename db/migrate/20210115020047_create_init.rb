@@ -31,8 +31,8 @@ class CreateInit < ActiveRecord::Migration[6.1]
     create_table :nodes do |t|
       t.belongs_to :author, index: true
       t.bigint :parent_id, index: true
-      t.bigint :depth, index: true
-      t.bigint :children, index: true
+      t.bigint :depth, index: true, default: 0
+      t.bigint :children, index: true, default: 0
       t.timestamps
     end
 
