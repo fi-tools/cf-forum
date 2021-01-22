@@ -1,5 +1,5 @@
 class NodesController < ApplicationController
-  before_action :set_user_id
+  before_action :set_user
   before_action :set_node, only: [:show, :edit, :update, :destroy, :subtree, :view_as]
   before_action :set_parent, only: [:new, :new_comment]
   before_action :set_node_to_children_map, only: [:show, :subtree, :view_as]
@@ -10,7 +10,6 @@ class NodesController < ApplicationController
   # GET /nodes
   # GET /nodes.json
   def index
-    # TODO: permissions
     @node = Node.root
   end
 
@@ -96,7 +95,7 @@ class NodesController < ApplicationController
   private
 
   # Use callbacks to share common setup or constraints between actions.
-  def set_user_id
+  def set_user
     @user = current_user
   end
 
@@ -106,7 +105,7 @@ class NodesController < ApplicationController
     unless can_read.include? "all"
       authenticate_user!
       overlap = can_read & current_user.groups
-      if overlap.count == 0
+      if overlap.empty?
         redirect_to root_path, :notice => "No permissions to view."
       end
     end

@@ -361,6 +361,7 @@ class Node < ApplicationRecord
 
   private
 
+  # warning: i don't think this works properly/completely.
   def children_rec_sql(node = self, user = nil)
     table_name = Node.table_name
     <<-SQL
