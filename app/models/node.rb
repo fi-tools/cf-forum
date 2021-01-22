@@ -101,8 +101,13 @@ class Node < ApplicationRecord
     node_id_to_children = Hash.new { |h, k| h[k] = Array.new }
     tree.each do |n|
       # for each node, append it's children to the corresponding array in the hash
-      node_id_to_children[n.id] += (tree.select { |n2| n2.parent_id == n.id })
+      node_id_to_children[n.parent_id] << n
+      if n.id == self.id
+        node_id_to_children[-1] << n
+      end
     end
+    # if this fails with .count == 2 it means we should remove [self] from tree= line
+    assert node_id_to_children[-1].count == 1
     return node_id_to_children
   end
 
@@ -223,8 +228,12 @@ class Node < ApplicationRecord
     end
 
     def with_descendants_map(node_id, user)
+      node_id = node_id.to_i
       # get this node + children
       nodes = with_descendants(node_id, user)
+      unless nodes.count > 0
+        throw "no nodes?"
+      end
       # defaultdict where a key will return an empty array by defualt
       node_id_to_children = Hash.new { |h, k| h[k] = Array.new }
       nodes.each do |n|
@@ -232,9 +241,16 @@ class Node < ApplicationRecord
         node_id_to_children[n.parent_id] << n
         if n.id == node_id
           node_id_to_children[-1] << n
-          puts "FOUND SELF"
-          sleep 4
         end
+      end
+      unless (nodes.select { |n| n.id == node_id }).count == 1
+        puts node_id.inspect
+        puts (nodes.map { |n| n.id.inspect }).join(", ")
+        puts (nodes.select { |n| n.id == node_id }).join(",") + " <<---"
+        throw "nodes did not contain a node with the supplied id"
+      end
+      unless node_id_to_children.count > 0 && node_id_to_children[-1].count == 1
+        throw "either no nodes (#{node_id_to_children.count}) or bad number of magic -1 nodes (#{node_id_to_children[-1].count})"
       end
       return node_id_to_children
     end

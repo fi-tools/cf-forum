@@ -48,7 +48,7 @@ class NodesController < ApplicationController
   def create
     # TODO: permissions
     safe_params = new_node_params
-    @parent_id = safe_params[:parent_id]
+    @parent_id = safe_params[:parent_id].to_i
     node_params = safe_params.slice(:parent_id)
     cv_params = safe_params.slice(:title, :body)
     author_params = safe_params.slice(:name)
@@ -107,7 +107,7 @@ class NodesController < ApplicationController
   end
 
   def set_node
-    @node = Node.find_readable(params[:id], current_user)
+    @node = Node.find_readable(params[:id].to_i, current_user)
     # can_read = @node.who_can_read
     # unless can_read.include? "all"
     #   authenticate_user!
@@ -118,15 +118,15 @@ class NodesController < ApplicationController
     # end
   end
 
-  def set_parent(parent_id = params[:parent_id])
+  def set_parent(parent_id = params[:parent_id].to_i)
     # todo: is set_parent okay like this?
     # i understand set_node is like okay in ruby/rails conventions - MK
     @parent_id = parent_id
   end
 
   def set_node_to_children_map
-    id = params[:id]
-    @node_id_to_children = Node.with_descendants_map(params[:id], @user)
+    id = params[:id].to_i
+    @node_id_to_children = Node.with_descendants_map(id, @user)
     @node = @node_id_to_children[-1].first
     puts "main_node: #{@node.to_json}"
   end
