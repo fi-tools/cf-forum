@@ -33,7 +33,7 @@ class CffBench
         :ancestors_via_arhq,
         :descendants_via_arel,
         :ancestors_via_arel,
-      ], [1]],
+      ], [User.find(1)]],
       Node2 => [[
         :all_node_system_tag_combos,
         :all_descendants_via_arel,
