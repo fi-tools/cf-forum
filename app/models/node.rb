@@ -29,7 +29,15 @@ class Node < ApplicationRecord
 
   def children(user, limit: 1000)
     nar = Arel::Table.new :nar
-    Node.find_by_sql(Node.nodes_readable_by(user).where(nar[:parent_id].eq(id)).take(limit))
+    q =
+      Node.join_with_author_username(
+        Node.join_with_author(
+          Node.join_with_content(
+            Node.nodes_readable_by(user).where(nar[:parent_id].eq(id)).take(limit)
+          )
+        )
+      )
+    Node.find_by_sql(q)
   end
 
   # do not use unless you're benchmarking
@@ -70,8 +78,43 @@ class Node < ApplicationRecord
     end
   end
 
+  # def title
+  #   return @title || content.title
+  # end
+
   def descendants(user)
-    Node.find_by_sql(Node.descendants_readable_by(id, user))
+    Node.find_by_sql(
+      Node.join_with_author_username(
+        Node.join_with_author(
+          Node.join_with_content(
+            Node.descendants_readable_by(id, user)
+          )
+        )
+      )
+    )
+  end
+
+  def descendants_map(user)
+    # get this node + children
+    tree = [self] + descendants(user)
+    # defaultdict where a key will return an empty array by defualt
+    node_id_to_children = Hash.new { |h, k| h[k] = Array.new }
+    tree.each do |n|
+      # for each node, append it's children to the corresponding array in the hash
+      node_id_to_children[n.parent_id] << n
+      if n.id == self.id
+        node_id_to_children[-1] << n
+      end
+    end
+    return node_id_to_children
+  end
+
+  def formatted_name
+    if @author_name
+      "a/#{@author_name}"
+    else
+      "u/#{@username}"
+    end
   end
 
   # do not use unless you're benchmarking
@@ -151,19 +194,7 @@ class Node < ApplicationRecord
   end
 
   def view
-    self.anchored_view_tags.last.tag
-  end
-
-  def descendants_map(user)
-    # get this node + children
-    tree = [self] + descendants(user)
-    # defaultdict where a key will return an empty array by defualt
-    node_id_to_children = Hash.new { |h, k| h[k] = Array.new }
-    tree.each do |n|
-      # for each node, append it's children to the corresponding array in the hash
-      node_id_to_children[n.id] += (tree.select { |n2| n2.parent_id == n.id })
-    end
-    return node_id_to_children
+    anchored_view_tags&.last&.tag || "topic"
   end
 
   def who_can_read
@@ -183,11 +214,40 @@ class Node < ApplicationRecord
 
   class << self
     def root
+      throw "deprecated, use with_descendants or with_descendants_map instead"
       Node.find(0)
     end
 
     def table
       arel_table
+    end
+
+    def with_descendants(node_id, user)
+      Node.find_by_sql(
+        Node.join_with_author_username(
+          Node.join_with_author(
+            Node.join_with_content(
+              Node.descendants_readable_by(node_id, user)
+            )
+          )
+        )
+      )
+    end
+
+    def with_descendants_map(node_id, user)
+      node_id = node_id.to_i
+      # get this node + children
+      nodes = with_descendants(node_id, user)
+      # defaultdict where a key will return an empty array by defualt
+      node_id_to_children = Hash.new { |h, k| h[k] = Array.new }
+      nodes.each do |n|
+        # for each node, append it's children to the corresponding array in the hash
+        node_id_to_children[n.parent_id] << n
+        if n.id == node_id
+          node_id_to_children[-1] << n
+        end
+      end
+      return node_id_to_children
     end
 
     # returns (base_id, ...node)
@@ -200,7 +260,7 @@ class Node < ApplicationRecord
         m.from table_name
         m.project table[:id].as("base_id"), Arel.star
         unless base_node_id.nil?
-          m.where arel_table[:id].eq(base_node_id)
+          m.where table[:id].eq(base_node_id)
         end
       end
 
@@ -310,7 +370,6 @@ class Node < ApplicationRecord
     def node_authz_read
       wpp = Arel::Table.new :wpp
       nstc = Arel::Table.new :nstc
-
       Arel::SelectManager.new
         .from(with_permissioned_parent.as("wpp"))
         .join(node_system_tag_combos.as("nstc"))
@@ -346,7 +405,7 @@ class Node < ApplicationRecord
         .from(node_authz_read.as("nar"))
         .join(relatives_via_arel_mgr(false, node_id).as("nwc"))
         .on(nar[:id].eq(nwc[:id]))
-        .where(nar[:group_name].eq("all").or(nar[:group_name].in(maybe_user&.groups_arel)))
+        .where(nar[:group_name].eq("all").or(nar[:group_name].in(maybe_user&.groups_arel || [])))
         .project(nar[Arel.star])
     end
 
@@ -356,6 +415,56 @@ class Node < ApplicationRecord
 
     def get_old_nodes_readable_by(user)
       find_by_sql old_nodes_readable_by(user)
+    end
+
+    def join_with_content(nodes_query, on: :id)
+      cvs = ContentVersion.arel_table
+      n = Arel::Table.new :n
+      Arel::SelectManager.new
+        .project(n[Arel.star], cvs[:body], cvs[:title], cvs[:author_id].as(:content_author_id.to_s))
+        .from(nodes_query.as("n"))
+        .join(cvs)
+        .on(n[on].eq(cvs[:node_id]))
+        .order(cvs[:created_at])
+    end
+
+    def join_with_author(nodes_query, on: :content_author_id)
+      authors = Author.arel_table
+      n = Arel::Table.new :n
+      Arel::SelectManager.new
+        .project(n[Arel.star], authors[:name].as("author_name"), authors[:user_id].as("author_user_id"))
+        .from(nodes_query.as("n"))
+        .join(authors)
+        .on(n[on].eq(authors[:id]))
+    end
+
+    def join_with(nodes_query, cls, on, foreign_key: :id, project: [])
+      f = cls.arel_table
+      n = Arel::Table.new :n
+      to_project = project.map { |p| f[p] }
+      q = Arel::SelectManager.new
+        .project(n[Arel.star], *to_project)
+        .from(nodes_query.as("n"))
+        .join(f)
+        .on(n[on].eq(f[foreign_key]))
+      q
+    end
+
+    def join_with_author_username(q)
+      join_with(q, User, :author_user_id, project: [:username])
+    end
+
+    def find_readable(id, user)
+      nar = Arel::Table.new :nar
+      q =
+        join_with_author_username(
+          join_with_author(
+            join_with_content(
+              nodes_readable_by(user).where(nar[:id].eq(id))
+            )
+          )
+        )
+      find_by_sql(q).first
     end
   end
 
@@ -511,7 +620,7 @@ Returns a list of hashes with keys:
   end
 
   def set_tags
-    self.set_view_tag_from_parent
+    # self.set_view_tag_from_parent
     # let's not set default permissions like this. probs better to do inheretance properly.
     # self.set_permissions_from_parent
   end

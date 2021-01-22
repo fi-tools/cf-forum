@@ -2,11 +2,11 @@
   Critical Fallibilism Forum
 <% end %>
 <% content_for :subtitle do %>
-  <%= @node.content.title || "untitled" %>
+  <%= @node.title || "untitled" %>
 <% end %>
 <%= render 'view_node', node: @node %>
-<% unless @node.parent.nil? %>
+<% unless @node.parent_id.nil? %>
   <div class="columns is-centered mt-6">
-    <%= link_to "To Parent", node_path(@node.parent), class: "button is-link is-outlined is-centered" %>
+    <%= link_to "To Parent", node_path(@node.parent_id), class: "button is-link is-outlined is-centered" %>
   </div>
 <% end %>

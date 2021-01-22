@@ -1,6 +1,6 @@
 class NodesController < ApplicationController
   before_action :set_user
-  before_action :set_node, only: [:show, :edit, :update, :destroy, :subtree, :view_as]
+  before_action :set_node, only: []
   before_action :set_parent, only: [:new, :new_comment]
   before_action :set_node_to_children_map, only: [:show, :subtree, :view_as]
   before_action :authenticate_user!, only: [:new, :new_comment, :create]
@@ -10,7 +10,7 @@ class NodesController < ApplicationController
   # GET /nodes
   # GET /nodes.json
   def index
-    @node = Node.root
+    set_node_to_children_map(0)
   end
 
   # GET /nodes/1
@@ -48,7 +48,7 @@ class NodesController < ApplicationController
   def create
     # TODO: permissions
     safe_params = new_node_params
-    @parent_id = safe_params[:parent_id]
+    @parent_id = safe_params[:parent_id].to_i
     node_params = safe_params.slice(:parent_id)
     cv_params = safe_params.slice(:title, :body)
     author_params = safe_params.slice(:name)
@@ -92,6 +92,13 @@ class NodesController < ApplicationController
   #   end
   # end
 
+  def count_descendants(node)
+    cs = @node_id_to_children[node.id]
+    cs.count + (cs.map { |c| count_descendants(c) }).sum
+  end
+
+  helper_method :count_descendants
+
   private
 
   # Use callbacks to share common setup or constraints between actions.
@@ -100,25 +107,19 @@ class NodesController < ApplicationController
   end
 
   def set_node
-    @node = Node.find(params[:id])
-    can_read = @node.who_can_read
-    unless can_read.include? "all"
-      authenticate_user!
-      overlap = can_read & current_user.groups
-      if overlap.empty?
-        redirect_to root_path, :notice => "No permissions to view."
-      end
-    end
+    @node = Node.find_readable(params[:id].to_i, current_user)
   end
 
-  def set_parent(parent_id = params[:parent_id])
+  def set_parent(parent_id = params[:parent_id].to_i)
     # todo: is set_parent okay like this?
     # i understand set_node is like okay in ruby/rails conventions - MK
     @parent_id = parent_id
   end
 
-  def set_node_to_children_map
-    @node_id_to_children = @node.descendants_map(@user)
+  # this sets both @node and @node_id_to_children
+  def set_node_to_children_map(id = params[:id].to_i)
+    @node_id_to_children = Node.with_descendants_map(id, @user)
+    @node = @node_id_to_children[-1].first
   end
 
   # Only allow a list of trusted parameters through.

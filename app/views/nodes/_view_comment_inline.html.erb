@@ -1,25 +1,25 @@
 <div class='comment' id='<%= node.id %>'>
-  <% if node.content.title %>
+  <% if node.title %>
     <div class='comment-heading'>
-      <%= node.content.title %>
+      <%= node.title %>
     </div>
   <% end %>
   <div class='comment-block'>
-    <%= node.content.body %>
+    <%= node.body %>
   </div>
   <div class='comment-block is-small'>
     <% anchor = "##{node.id}" %>
     <%= link_to anchor, anchor, class: "" %>,
-    <span class="mr-1">By:</span> <%= link_to node.author.formatted_name || "Anonymous", node.author %>, <%= node.created_at %>
-    <% if node.content_versions.count > 1 %>, <em>Updated at: <%= node.content.created_at %></em>
+    <span class="mr-1">By:</span> <%= link_to node.author_name || "Anonymous", author_path(node.content_author_id) %>, <%= node.created_at %>
+    <% if false && node.content_versions.count > 1 %>, <em>Updated at: <%= node.content.created_at %></em>
     <% end %>
     <span class="mx-2"></span>
     <%= link_to "Reply", reply_to_node_path(:parent_id => node.id), class: "button is-small is-link" %>
     <%= link_to "Permalink", node, class: "button is-gray is-small ml-1" %>
   </div>
   <div class="comment-children">
-    <% if node.children(@user).count > 0 %>
-      <% node.children(@user).each do |child| %>
+    <% if @node_id_to_children[node.id].count > 0 %>
+      <% @node_id_to_children[node.id].each do |child| %>
         <%= render 'view_comment_inline', node: child %>
       <% end %>
     <% end %>
