@@ -108,14 +108,6 @@ class NodesController < ApplicationController
 
   def set_node
     @node = Node.find_readable(params[:id].to_i, current_user)
-    # can_read = @node.who_can_read
-    # unless can_read.include? "all"
-    #   authenticate_user!
-    #   overlap = can_read & current_user.groups
-    #   if overlap.empty?
-    #     redirect_to root_path, :notice => "No permissions to view."
-    #   end
-    # end
   end
 
   def set_parent(parent_id = params[:parent_id].to_i)
