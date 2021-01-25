@@ -71,13 +71,13 @@ class Node < ApplicationRecord
     content_versions.last
   end
 
-  def depth
-    if self.parent == nil
-      0
-    else
-      self.parent.depth + 1
-    end
-  end
+  # def depth
+  #   if self.parent == nil
+  #     0
+  #   else
+  #     self.parent.depth + 1
+  #   end
+  # end
 
   # def title
   #   return @title || content.title
@@ -111,10 +111,10 @@ class Node < ApplicationRecord
   end
 
   def formatted_name
-    if @author_name
-      "a/#{@author_name}"
+    if self.author_name
+      "a/#{self.author_name}"
     else
-      "u/#{@username}"
+      "u/#{self.username}"
     end
   end
 
@@ -195,7 +195,15 @@ class Node < ApplicationRecord
   end
 
   def view
-    anchored_view_tags&.last&.tag || "topic"
+    case self.depth
+    when 0
+      "root"
+    when 1
+      "index"
+    else
+      "topic"
+    end
+    # anchored_view_tags&.last&.tag || "topic"
   end
 
   def who_can_read

@@ -4,12 +4,12 @@
       <%= link_to node.title, node %>
     </p>
     <p class="border">
-      <%= node.body.slice(0, 200) %>
+      <%= node.body.slice(0, 200) if node.body %>
     </p>
     <nav class="breadcrumb">
       <ul>
-        <li><%= link_to node.formatted_name, node.author %></li>
-        <li><%= link_to node.username, node.user %></li>
+        <li><%= link_to node.formatted_name, author_path(node.author_id) %></li>
+        <li><%= link_to node.username, user_path(node.user) %></li>
         <li class="is-active">
           <a><%= node.created_at %> / <%= time_ago_in_words(node.created_at || DateTime.now) %> ago</a>
         </li>
