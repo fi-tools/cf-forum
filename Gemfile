@@ -38,9 +38,6 @@ gem 'activerecord-hierarchical_query', git: 'https://github.com/XertroV/activere
 # db agnostic triggers
 gem 'hairtrigger', git: 'https://github.com/XertroV/hair_trigger'
 
-# graph db stuff
-gem 'activegraph', '~> 10.0.0'
-
 # functional support ~~- disabled bc we're not using it and it might be deprecated.~~ 
 gem "functional-ruby"
 
