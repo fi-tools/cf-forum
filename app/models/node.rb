@@ -25,7 +25,7 @@ class Node < ApplicationRecord
 
   has_many :node_authz_reads, foreign_key: :base_node_id
 
-  before_create :set_depth
+  before_create :set_node_cache_init
   after_create :set_tags
 
   def children(user, limit: 1000)
@@ -71,13 +71,13 @@ class Node < ApplicationRecord
     content_versions.last
   end
 
-  def depth
-    if self.parent == nil
-      0
-    else
-      self.parent.depth + 1
-    end
-  end
+  # def depth
+  #   if self.parent == nil
+  #     0
+  #   else
+  #     self.parent.depth + 1
+  #   end
+  # end
 
   # def title
   #   return @title || content.title
@@ -111,10 +111,10 @@ class Node < ApplicationRecord
   end
 
   def formatted_name
-    if @author_name
-      "a/#{@author_name}"
+    if self.author_name
+      "a/#{self.author_name}"
     else
-      "u/#{@username}"
+      "u/#{self.username}"
     end
   end
 
@@ -195,7 +195,15 @@ class Node < ApplicationRecord
   end
 
   def view
-    anchored_view_tags&.last&.tag || "topic"
+    case self.depth
+    when 0
+      "root"
+    when 1
+      "index"
+    else
+      "topic"
+    end
+    # anchored_view_tags&.last&.tag || "topic"
   end
 
   def who_can_read
@@ -223,15 +231,15 @@ class Node < ApplicationRecord
       arel_table
     end
 
-    def with_descendants(node_id, user)
+    def with_descendants(node_id, user, max_branch_depth = 999)
       Node.find_by_sql(
         Node.join_with_author_username(
           Node.join_with_author(
             Node.join_with_content(
-              Node.descendants_readable_by(node_id, user)
+              Node.descendants_readable_by(node_id, user, max_branch_depth)
             )
           )
-        )
+        ).order(:id)
       )
     end
 
@@ -252,14 +260,14 @@ class Node < ApplicationRecord
     end
 
     # returns (base_id, ...node)
-    def relatives_via_arel_mgr(direction_towards_root, base_node_id = nil)
+    def relatives_via_arel_mgr(direction_towards_root, base_node_id = nil, max_rel_depth = nil)
       hierarchy = Arel::Table.new :hierarchy
       recursive_table = Arel::Table.new(table_name).alias :recursive
       select_manager = Arel::SelectManager.new(ActiveRecord::Base).freeze
 
       non_recursive_term = select_manager.dup.tap do |m|
         m.from table_name
-        m.project table[:id].as("base_id"), Arel.star
+        m.project table[:id].as("base_id"), Arel.star, Arel::Nodes::SqlLiteral.new("0").as("rel_depth")
         unless base_node_id.nil?
           m.where table[:id].eq(base_node_id)
         end
@@ -267,7 +275,7 @@ class Node < ApplicationRecord
 
       recursive_term = select_manager.dup.tap do |m|
         m.from recursive_table
-        m.project hierarchy[:base_id], recursive_table[Arel.star]
+        m.project hierarchy[:base_id], recursive_table[Arel.star], hierarchy[:rel_depth] + 1
         m.join hierarchy
         if direction_towards_root
           # take parent_id from results and match to id of node; add node to results
@@ -275,6 +283,7 @@ class Node < ApplicationRecord
         else
           m.on recursive_table[:parent_id].eq(hierarchy[:id])
         end
+        (m.where hierarchy[:rel_depth].lteq(max_rel_depth)) unless max_rel_depth.nil?
       end
 
       union = non_recursive_term.union :all, recursive_term
@@ -397,14 +406,15 @@ class Node < ApplicationRecord
         .from(node_authz_read.as("nar"))
         .where(nar[:group_name].eq("all").or(nar[:group_name].in(maybe_user&.groups_arel)))
         .project(nar[Arel.star])
+        .order(nar[:id])
     end
 
-    def descendants_readable_by(node_id, maybe_user)
+    def descendants_readable_by(node_id, maybe_user, max_branch_depth = 3)
       nar = Arel::Table.new :nar
       nwc = Arel::Table.new :nwc
       Arel::SelectManager.new
         .from(node_authz_read.as("nar"))
-        .join(relatives_via_arel_mgr(false, node_id).as("nwc"))
+        .join(relatives_via_arel_mgr(false, node_id, max_branch_depth).as("nwc"))
         .on(nar[:id].eq(nwc[:id]))
         .where(nar[:group_name].eq("all").or(nar[:group_name].in(maybe_user&.groups_arel || [])))
         .project(nar[Arel.star])
@@ -620,11 +630,8 @@ Returns a list of hashes with keys:
     SQL
   end
 
-  def set_depth
-    puts self.to_json
-    if self.depth.nil? && !self.parent_id.nil?
-      self.depth = parent.depth + 1
-    elsif self.depth.nil? && self.parent_id.nil?
+  def set_node_cache_init
+    if self.depth.nil? && self.parent_id.nil?
       self.depth = 0
     end
   end

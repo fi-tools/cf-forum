@@ -39,11 +39,15 @@ ActiveRecord::Schema.define(version: 2021_01_19_134716) do
   create_table "nodes", force: :cascade do |t|
     t.bigint "author_id"
     t.bigint "parent_id"
-    t.bigint "depth"
+    t.bigint "depth", default: 0
+    t.bigint "children", default: 0
+    t.bigint "descendants", default: 0
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["author_id"], name: "index_nodes_on_author_id"
+    t.index ["children"], name: "index_nodes_on_children"
     t.index ["depth"], name: "index_nodes_on_depth"
+    t.index ["descendants"], name: "index_nodes_on_descendants"
     t.index ["parent_id"], name: "index_nodes_on_parent_id"
   end
 
@@ -144,6 +148,8 @@ ActiveRecord::Schema.define(version: 2021_01_19_134716) do
       n.author_id,
       n.parent_id,
       n.depth,
+      n.children,
+      n.descendants,
       n.created_at,
       n.updated_at
      FROM nodes n,
@@ -172,6 +178,8 @@ ActiveRecord::Schema.define(version: 2021_01_19_134716) do
       n.author_id,
       n.parent_id,
       n.depth,
+      n.children,
+      n.descendants,
       n.created_at,
       n.updated_at
      FROM nodes n,
@@ -257,10 +265,31 @@ ActiveRecord::Schema.define(version: 2021_01_19_134716) do
       on("nodes").
       after(:insert) do
     <<-SQL_ACTIONS
-        UPDATE nodes n 
-        SET depth = (
-          SELECT n2.depth FROM nodes n2 WHERE n2.id = n.parent_id LIMIT 1
-        ) + 1 WHERE n.id = NEW.id;
+      
+      --with parent_depth as (select n2.depth FROM nodes n2 WHERE n2.id = NEW.parent_id)
+      UPDATE nodes n
+      SET depth = (select n2.depth FROM nodes n2 WHERE n2.id = NEW.parent_id) + 1 
+      WHERE n.id = NEW.id AND NEW.parent_id IS NOT NULL;
+
+      UPDATE nodes n 
+      SET children = n.children + 1
+      WHERE n.id = NEW.parent_id;
+
+      with recursive ancestors as (
+        select id, parent_id
+        from nodes
+        where id = NEW.parent_id
+        union all
+        select ns.id, ns.parent_id
+        from nodes ns
+        inner join ancestors a
+          on a.parent_id = ns.id
+      )
+      UPDATE nodes n
+      SET descendants = n.descendants + 1
+      where id in (
+        select id from ancestors
+      );
     SQL_ACTIONS
   end
 

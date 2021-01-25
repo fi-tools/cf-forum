@@ -31,16 +31,57 @@ class CreateInit < ActiveRecord::Migration[6.1]
     create_table :nodes do |t|
       t.belongs_to :author, index: true
       t.bigint :parent_id, index: true
-      t.bigint :depth, index: true
+      t.bigint :depth, index: true, default: 0
+      t.bigint :children, index: true, default: 0
+      t.bigint :descendants, index: true, default: 0
       t.timestamps
     end
 
+    # create_trigger(:compatibility => 1).on(:nodes).after(:insert) do
+    #   <<-SQL
+    #     UPDATE nodes n
+    #     SET depth = (
+    #       SELECT n2.depth FROM nodes n2 WHERE n2.id = n.parent_id LIMIT 1
+    #     ) + 1 WHERE n.id = NEW.id;
+    #   SQL
+    # end
+
+    # create_trigger(:compatibility => 1).on(:nodes).after(:insert) do
+    #   <<-SQL
+    #     UPDATE nodes n
+    #     SET children = n.children + 1
+    #     WHERE n.id = NEW.parent_id;
+    #   SQL
+    # end
+
     create_trigger(:compatibility => 1).on(:nodes).after(:insert) do
       <<-SQL
-        UPDATE nodes n 
-        SET depth = (
-          SELECT n2.depth FROM nodes n2 WHERE n2.id = n.parent_id LIMIT 1
-        ) + 1 WHERE n.id = NEW.id;
+      
+      --with parent_depth as (select n2.depth FROM nodes n2 WHERE n2.id = NEW.parent_id)
+      UPDATE nodes n
+      SET depth = (select n2.depth FROM nodes n2 WHERE n2.id = NEW.parent_id) + 1 
+      WHERE n.id = NEW.id AND NEW.parent_id IS NOT NULL;
+
+      UPDATE nodes n 
+      SET children = n.children + 1
+      WHERE n.id = NEW.parent_id;
+
+      with recursive ancestors as (
+        select id, parent_id
+        from nodes
+        where id = NEW.parent_id
+        union all
+        select ns.id, ns.parent_id
+        from nodes ns
+        inner join ancestors a
+          on a.parent_id = ns.id
+      )
+      UPDATE nodes n
+      SET descendants = n.descendants + 1
+      where id in (
+        select id from ancestors
+      );
+
       SQL
     end
     add_foreign_key :nodes, :nodes, column: :parent_id

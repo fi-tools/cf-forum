@@ -16,26 +16,18 @@ default: &default
   adapter: sqlite3
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   timeout: 5000
-  database: db/cff_dev.db
+  # database: db/cff_dev.db
 
 devsqlite:
   <<: *default
 
 devpg: &devpg
-  <<: *default
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   adapter: postgresql
-  database: cff_dev2
+  database: cffdev
   username: cffdev
   password: hunter2
-  host: localhost
-
-devmysql:
-  <<: *default
-  adapter: mysql2
-  database: cff_dev2
-  username: cffdev
-  password: hunter2
-  host: localhost
+  host: host.docker.internal
 
 development:
   <<: *devpg
@@ -47,6 +39,13 @@ test:
   <<: *devpg
   database: cff_test
 
+devmysql:
+  <<: *default
+  adapter: mysql2
+  database: cff_dev2
+  username: cffdev
+  password: hunter2
+  host: localhost
 # todo: fix config, secrets, etc and decide on prod config
 # production:
 #   <<: *devpg

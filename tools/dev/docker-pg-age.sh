@@ -1,0 +1,1 @@
+docker run -it -e POSTGRES_PASSWORD=hunter2 -e POSTGRES_USER=cffdev -e PGDATA=/var/lib/postgresql/data/pgdata -v pg-age-docker-vol:/var/lib/postgresql/data -p 0.0.0.0:5432:5432 --rm sorrell/agensgraph-extension
