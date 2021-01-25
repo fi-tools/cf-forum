@@ -54,6 +54,10 @@ rails generate scenic:view view_tag_decls create db/views/view_tag_decls_v01.sql
 
 (there are some benefits to doing this vs mixing logging w/ stdout)
 
+## postgres via docker
+
+* `./tools/dev/docker-pg-age.sh`
+
 ## local postgres config
 
 * `echo "create role cffdev with createdb login password 'hunter2';" | sudo -u postgres psql`

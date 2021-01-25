@@ -2,6 +2,7 @@ require_relative "boot"
 
 require "rails/all"
 require "functional"
+# require "arel/g_table"
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -15,6 +16,7 @@ module CfForum
     # default to using postgres, not sqlite. This is set to true in dev/test config rb files.
     config.use_sqlite = false
 
+    config.autoload_paths << "lib"
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files
