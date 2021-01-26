@@ -1,11 +1,12 @@
 class NodeSystemTag < ApplicationRecord
-  attr_reader :id, :td_tag, :ut_tag
+  attr_reader :node_id, :td_tag, :ut_tag
+  belongs_to :node
 
   def readonly?
     true
   end
 
   def self.refresh
-    Scenic.database.refresh_materialized_view(table_name, concurrently: false, cascade: true)
+    Scenic.database.refresh_materialized_view(table_name, concurrently: true, cascade: true)
   end
 end

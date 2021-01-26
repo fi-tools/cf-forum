@@ -1,4 +1,4 @@
-SELECT td.id as node_id, td.tag as td_tag, td.anchored_type, td.anchored_id, ut.tag as ut_tag
+SELECT td.id, td.tag as td_tag, td.anchored_type, td.anchored_id, ut.tag as ut_tag
 FROM tag_decls as td
 INNER JOIN user_tags as ut
 ON td.target_id = ut.id

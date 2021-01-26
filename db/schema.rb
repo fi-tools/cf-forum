@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_01_19_134716) do
+ActiveRecord::Schema.define(version: 2021_01_26_082339) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -100,178 +100,146 @@ ActiveRecord::Schema.define(version: 2021_01_19_134716) do
   add_foreign_key "content_versions", "nodes"
   add_foreign_key "nodes", "nodes", column: "parent_id"
 
-  create_view "view_tag_decls", sql_definition: <<-SQL
-      SELECT tag_decls.id,
-      tag_decls.anchored_type,
-      tag_decls.anchored_id,
-      tag_decls.target_type,
-      tag_decls.target_id,
-      tag_decls.tag,
-      tag_decls.user_id,
-      tag_decls.created_at,
-      tag_decls.updated_at
-     FROM tag_decls
-    WHERE (((tag_decls.tag)::text = 'view'::text) AND (tag_decls.user_id IS NULL));
-  SQL
-  create_view "authz_tag_decls", sql_definition: <<-SQL
-      SELECT tag_decls.id,
-      tag_decls.anchored_type,
-      tag_decls.anchored_id,
-      tag_decls.target_type,
-      tag_decls.target_id,
-      tag_decls.tag,
-      tag_decls.user_id,
-      tag_decls.created_at,
-      tag_decls.updated_at
-     FROM tag_decls
-    WHERE (((tag_decls.tag)::text ~~ 'authz_%'::text) AND (tag_decls.user_id IS NULL));
-  SQL
-  create_view "node_with_ancestors", sql_definition: <<-SQL
-      WITH RECURSIVE nwa(orig_id, id, parent_id, rel_height) AS (
-           SELECT nodes.id,
-              nodes.id,
-              nodes.parent_id,
-              0
-             FROM nodes
-          UNION ALL
-           SELECT np_1.orig_id,
-              n_1.id,
-              n_1.parent_id,
-              (np_1.rel_height + 1)
-             FROM nwa np_1,
-              nodes n_1
-            WHERE (np_1.parent_id = n_1.id)
-          )
-   SELECT np.orig_id AS base_node_id,
-      np.rel_height,
-      n.id,
-      n.author_id,
-      n.parent_id,
-      n.depth,
-      n.n_children,
-      n.n_descendants,
-      n.created_at,
-      n.updated_at
-     FROM nodes n,
-      nwa np
-    WHERE (n.id = np.id);
-  SQL
-  create_view "node_with_children", sql_definition: <<-SQL
-      WITH RECURSIVE nwc(orig_id, id, parent_id, rel_depth) AS (
-           SELECT nodes.id,
-              nodes.id,
-              nodes.parent_id,
-              0
-             FROM nodes
-          UNION ALL
-           SELECT np_1.orig_id,
-              n_1.id,
-              n_1.parent_id,
-              (np_1.rel_depth + 1)
-             FROM nwc np_1,
-              nodes n_1
-            WHERE (np_1.id = n_1.parent_id)
-          )
-   SELECT np.orig_id AS base_node_id,
-      np.rel_depth,
-      n.id,
-      n.author_id,
-      n.parent_id,
-      n.depth,
-      n.n_children,
-      n.n_descendants,
-      n.created_at,
-      n.updated_at
-     FROM nodes n,
-      nwc np
-    WHERE (n.id = np.id);
-  SQL
-  create_view "system_user_tags", sql_definition: <<-SQL
-      SELECT ut.id,
-      ut.user_id,
-      ut.tag,
-      ut.created_at,
-      ut.updated_at
-     FROM user_tags ut
-    WHERE (ut.user_id IS NULL);
-  SQL
-  create_view "system_tag_decls", sql_definition: <<-SQL
+  create_view "system_tags", materialized: true, sql_definition: <<-SQL
       SELECT td.id,
+      td.tag AS td_tag,
       td.anchored_type,
       td.anchored_id,
-      td.target_type,
-      td.target_id,
-      td.tag,
-      td.user_id,
-      td.created_at,
-      td.updated_at
-     FROM tag_decls td
-    WHERE (td.user_id IS NULL);
-  SQL
-  create_view "user_groups", sql_definition: <<-SQL
-      SELECT u.id AS user_id,
-      'all'::text AS group_name
-     FROM users u
-  UNION ALL
-   SELECT NULL::bigint AS user_id,
-      'all'::text AS group_name
-  UNION ALL
-   SELECT td.anchored_id AS user_id,
-      ut.tag AS group_name
-     FROM ((system_tag_decls td
-       JOIN system_user_tags ut ON ((ut.id = td.target_id)))
-       JOIN users u ON ((td.anchored_id = u.id)))
-    WHERE ((1 = 1) AND ((td.tag)::text = 'authz_user_in_group'::text) AND ((td.anchored_type)::text = 'User'::text) AND ((td.target_type)::text = 'UserTag'::text));
-  SQL
-  create_view "node_system_tag_combos", sql_definition: <<-SQL
-      SELECT n.id AS node_id,
-      td.tag AS td_tag,
       ut.tag AS ut_tag
-     FROM ((nodes n
-       JOIN system_tag_decls td ON ((td.anchored_id = n.id)))
-       JOIN system_user_tags ut ON ((td.target_id = ut.id)))
-    WHERE ((1 = 1) AND ((td.target_type)::text = 'UserTag'::text) AND ((td.anchored_type)::text = 'Node'::text));
+     FROM (tag_decls td
+       JOIN user_tags ut ON ((td.target_id = ut.id)))
+    WHERE (((td.target_type)::text = 'UserTag'::text) AND (ut.user_id IS NULL) AND (td.user_id IS NULL));
   SQL
-  create_view "node_authz_reads", sql_definition: <<-SQL
-      WITH all_node_authz_read AS (
-           SELECT nwa.base_node_id,
-              nwa.rel_height,
-              nstc.node_id,
-              nstc.ut_tag AS group_name
-             FROM (node_with_ancestors nwa
-               JOIN node_system_tag_combos nstc ON ((nstc.node_id = nwa.id)))
-            WHERE ((nstc.td_tag)::text = 'authz_read'::text)
-          ), rel_heights AS (
-           SELECT all_node_authz_read.base_node_id,
-              min(all_node_authz_read.rel_height) AS height
-             FROM all_node_authz_read
-            GROUP BY all_node_authz_read.base_node_id
+  add_index "system_tags", ["id"], name: "index_system_tags_on_id", unique: true
+
+  create_view "node_system_tags", materialized: true, sql_definition: <<-SQL
+      SELECT nodes.id AS node_id,
+      st.id AS st_id,
+      st.td_tag,
+      st.ut_tag
+     FROM (nodes
+       JOIN system_tags st ON ((nodes.id = st.anchored_id)))
+    WHERE ((st.anchored_type)::text = 'Node'::text);
+  SQL
+  add_index "node_system_tags", ["node_id", "st_id"], name: "index_node_system_tags_on_node_id_and_st_id", unique: true
+
+  create_view "node_ancestors", materialized: true, sql_definition: <<-SQL
+      WITH RECURSIVE hierarchy AS (
+           SELECT nodes.id AS base_id,
+              nodes.id,
+              nodes.parent_id,
+              0 AS distance
+             FROM nodes
+          UNION ALL
+           SELECT hierarchy_1.base_id,
+              recursive.id,
+              recursive.parent_id,
+              (hierarchy_1.distance + 1)
+             FROM (nodes recursive
+               JOIN hierarchy hierarchy_1 ON ((recursive.id = hierarchy_1.parent_id)))
           )
-   SELECT anar.base_node_id,
-      anar.rel_height,
-      anar.node_id AS authz_node_id,
-      anar.group_name
-     FROM (all_node_authz_read anar
-       JOIN rel_heights rh ON ((anar.base_node_id = rh.base_node_id)))
-    WHERE (anar.rel_height = rh.height);
+   SELECT hierarchy.base_id,
+      hierarchy.id,
+      hierarchy.parent_id,
+      hierarchy.distance
+     FROM hierarchy;
   SQL
-  create_view "nodes_user_sees", sql_definition: <<-SQL
-      SELECT nar.base_node_id,
-      ug.user_id
-     FROM (node_authz_reads nar
-       JOIN user_groups ug ON ((ug.group_name = (nar.group_name)::text)));
+  add_index "node_ancestors", ["base_id", "id", "distance"], name: "index_node_ancestors_on_base_id_and_id_and_distance", unique: true
+  add_index "node_ancestors", ["distance"], name: "index_node_ancestors_on_distance"
+  add_index "node_ancestors", ["id"], name: "index_node_ancestors_on_id"
+
+  create_view "node_descendants", materialized: true, sql_definition: <<-SQL
+      WITH RECURSIVE hierarchy AS (
+           SELECT nodes.id AS base_id,
+              nodes.id,
+              nodes.parent_id,
+              0 AS distance
+             FROM nodes
+          UNION ALL
+           SELECT hierarchy_1.base_id,
+              recursive.id,
+              recursive.parent_id,
+              (hierarchy_1.distance + 1)
+             FROM (nodes recursive
+               JOIN hierarchy hierarchy_1 ON ((recursive.parent_id = hierarchy_1.id)))
+          )
+   SELECT hierarchy.base_id,
+      hierarchy.id,
+      hierarchy.parent_id,
+      hierarchy.distance
+     FROM hierarchy;
+  SQL
+  add_index "node_descendants", ["base_id", "id", "distance"], name: "index_node_descendants_on_base_id_and_id_and_distance", unique: true
+  add_index "node_descendants", ["distance"], name: "index_node_descendants_on_distance"
+  add_index "node_descendants", ["id"], name: "index_node_descendants_on_id"
+
+  create_view "node_inherited_authz_reads", materialized: true, sql_definition: <<-SQL
+      WITH node_all_ancestor_authz(base_id, id, groups) AS (
+           SELECT na.base_id,
+              na.id,
+              array_agg(nst.ut_tag) AS groups
+             FROM (node_ancestors na
+               JOIN node_system_tags nst ON ((na.id = nst.node_id)))
+            WHERE ((nst.td_tag)::text = 'authz_read'::text)
+            GROUP BY na.base_id, na.id
+          ), closest_parent(base_id, closest_ancestor_id) AS (
+           SELECT node_all_ancestor_authz.base_id,
+              max(node_all_ancestor_authz.id) AS closest_ancestor_id
+             FROM node_all_ancestor_authz
+            GROUP BY node_all_ancestor_authz.base_id
+          ), node_to_permissions(node_id, groups) AS (
+           SELECT naaa.base_id,
+              naaa.groups
+             FROM (node_all_ancestor_authz naaa
+               JOIN closest_parent cp ON (((cp.base_id = naaa.base_id) AND (cp.closest_ancestor_id = naaa.id))))
+          )
+   SELECT node_to_permissions.node_id,
+      node_to_permissions.groups
+     FROM node_to_permissions;
+  SQL
+  add_index "node_inherited_authz_reads", ["node_id"], name: "index_node_inherited_authz_reads_on_node_id", unique: true
+
+  create_view "users_groups", materialized: true, sql_definition: <<-SQL
+      WITH raw_groups AS (
+           SELECT u.id AS user_id,
+              st.ut_tag
+             FROM (users u
+               JOIN system_tags st ON ((st.anchored_id = u.id)))
+            WHERE ((st.anchored_type)::text = 'User'::text)
+          UNION ALL
+           SELECT u.id AS user_id,
+              'all'::character varying AS ut_tag
+             FROM users u
+          UNION ALL
+           SELECT NULL::bigint,
+              'all'::character varying
+          )
+   SELECT raw_groups.user_id,
+      array_agg(raw_groups.ut_tag) AS groups
+     FROM raw_groups
+    GROUP BY raw_groups.user_id;
+  SQL
+  add_index "users_groups", ["user_id"], name: "index_users_groups_on_user_id", unique: true
+
+  create_view "nodes_readables", sql_definition: <<-SQL
+      SELECT niar.node_id,
+      ug.user_id,
+      niar.groups AS node_groups,
+      ug.groups AS user_groups
+     FROM (node_inherited_authz_reads niar
+       JOIN users_groups ug ON ((niar.groups && ug.groups)));
   SQL
   create_trigger("nodes_after_insert_row_tr", :compatibility => 1).
       on("nodes").
       after(:insert) do
     <<-SQL_ACTIONS
-      
+
       --with parent_depth as (select n2.depth FROM nodes n2 WHERE n2.id = NEW.parent_id)
       UPDATE nodes n
-      SET depth = (select n2.depth FROM nodes n2 WHERE n2.id = NEW.parent_id) + 1 
+      SET depth = (select n2.depth FROM nodes n2 WHERE n2.id = NEW.parent_id) + 1
       WHERE n.id = NEW.id AND NEW.parent_id IS NOT NULL;
 
-      UPDATE nodes n 
+      UPDATE nodes n
       SET n_children = n.n_children + 1
       WHERE n.id = NEW.parent_id;
 

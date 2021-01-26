@@ -95,9 +95,7 @@ class SeedDatabase
 
     n_fake_nodes ||= 500
     puts "n_fake_nodes set to #{n_fake_nodes}. set env var 'n_fake_nodes' to overwrite."
-    ActiveRecord::Base.transaction do
-      self.run_faker(ENV["n_fake_nodes"]&.to_i || n_fake_nodes)
-    end
+    self.run_faker(ENV["n_fake_nodes"]&.to_i || n_fake_nodes)
   end
 
   def gen_user(username, email, pw)
@@ -166,22 +164,26 @@ class SeedDatabase
     child_c = branching_f
     next_sample_index = 0
     Benchmark.bm do |m|
-      m.report("creating #{n_topics_to_create} nodes") {
+      m.report("creating #{n_topics_to_create} nodes\n") {
         parent = @faker_root
-        n_topics_to_create.times do |i|
-          if child_c >= branching_f
-            parent = queue[next_sample_index]
-            next_sample_index += 1
-            child_c = 0
-          end
+        n_topics_to_create.times.to_a.in_groups_of(100) do |i_chunk|
+          ActiveRecord::Base.transaction do
+            i_chunk.each do |i|
+              if child_c >= branching_f
+                parent = queue[next_sample_index]
+                next_sample_index += 1
+                child_c = 0
+              end
 
-          title = Faker::Lorem.sentence(word_count: 3, random_words_to_add: 4)
-          body = Faker::Lorem.paragraph(sentence_count: 2, supplemental: false, random_sentences_to_add: 4)
-          queue << create_node(nil, title, parent.id, body: body, quiet: true)
+              title = Faker::Lorem.sentence(word_count: 3, random_words_to_add: 4)
+              body = Faker::Lorem.paragraph(sentence_count: 2, supplemental: false, random_sentences_to_add: 4)
+              queue << create_node(nil, title, parent.id, body: body, quiet: true)
 
-          child_c += 1
-          if i % 100 == 0
-            puts "created node #{i}/#{n_topics_to_create}"
+              child_c += 1
+              if i % 100 == 0
+                puts "created node #{i}/#{n_topics_to_create}"
+              end
+            end
           end
         end
       }

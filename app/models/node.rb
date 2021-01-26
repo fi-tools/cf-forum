@@ -40,14 +40,14 @@ class Node < ApplicationRecord
   has_many :system_tag_decls, as: :anchored
   has_many :system_user_tags, through: :system_tag_decls, source: :target, source_type: "UserTag"
 
-  # has_many :node_authz_reads, foreign_key: :base_node_id
+  has_one :readable_by_groups, class_name: "NodeInheritedAuthzRead"
 
   before_create :set_node_cache_init
   after_create :refresh_node_views
 
   def refresh_node_views
-    NodeAncestor.refresh
     NodeDescendant.refresh
+    NodeInheritedAuthzRead.refresh
   end
 
   def children(user, limit: 1000)

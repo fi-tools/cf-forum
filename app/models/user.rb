@@ -16,10 +16,14 @@ class User < ApplicationRecord
 
   has_many :user_groups
 
-  after_create :create_user_author
+  after_create :create_user_author, :refresh_users_groups
 
   def create_user_author
     self.authors << Author.create(user: self)
+  end
+
+  def refresh_users_groups
+    UsersGroup.refresh
   end
 
   def public_authors
