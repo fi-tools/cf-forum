@@ -98,13 +98,14 @@ class Node < ApplicationRecord
     end
   end
 
-  def title
-    if @title
-      @title
-    elsif self.body
-      self.body.slice(0, 100)
+  def title_w_default
+    if self[:title]
+      self[:title]
+    elsif self[:body]
+      n_chars = 40
+      self[:body].slice(0, n_chars) + (self[:body].length > n_chars ? "..." : "")
     else
-      self.content.title
+      self.content&.title
     end
   end
 

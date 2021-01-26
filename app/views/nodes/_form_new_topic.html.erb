@@ -15,7 +15,7 @@
   <% end %>
   <div class="field">
     <%= form.label :title, class: "label" %>
-    <%= form.text_field :title, class: "input", value: "garfield" %>
+    <%= form.text_field :title, class: "input" %>
   </div>
   <%= form.label :author_name, class: "label" %>
   <div class="select">
@@ -25,7 +25,7 @@
   </div>
   <div class="field">
     <%= form.label :body, class: "label" %>
-    <%= form.text_area :body, class: "textarea", size: "80x10", value: "### i hate mondays" %>
+    <%= form.text_area :body, class: "textarea", size: "80x10" %>
     (markdown support planned)
   </div>
   <%= form.hidden_field :parent_id, value: parent_id %>
