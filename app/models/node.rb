@@ -26,7 +26,6 @@ class Node < ApplicationRecord
   has_many :node_authz_reads, foreign_key: :base_node_id
 
   before_create :set_node_cache_init
-  after_create :set_tags
 
   def children(user, limit: 1000)
     nar = Arel::Table.new :nar
@@ -41,47 +40,9 @@ class Node < ApplicationRecord
     Node.find_by_sql(q)
   end
 
-  # do not use unless you're benchmarking
-  def children_elegaint(user)
-    user_id_comp = user.nil? ? "IS" : "="
-    Node.where("id in (
-      SELECT nwc.id FROM nodes_user_sees nus
-      JOIN node_with_children nwc ON nwc.id = nus.base_node_id
-      WHERE nwc.base_node_id = ? AND rel_depth = 1 AND nus.user_id #{user_id_comp} ?
-    )", self.id, user.id)
-  end
-
-  # do not use unless you're benchmarking
-  def children_elegaint_parent(user)
-    user_id_comp = user.nil? ? "IS" : "="
-    Node.where("id in (
-      SELECT nus.base_node_id FROM nodes_user_sees nus
-      JOIN nodes n ON n.id = nus.base_node_id
-      WHERE n.parent_id = ? AND nus.user_id #{user_id_comp} ?
-    )", self.id, user.id)
-  end
-
-  # do not use unless you're benchmarking
-  def children_manual(user)
-    user_groups = user.nil? ? ["all"] : user.groups
-    Node.where(:parent_id => id)
-  end
-
   def content
     content_versions.last
   end
-
-  # def depth
-  #   if self.parent == nil
-  #     0
-  #   else
-  #     self.parent.depth + 1
-  #   end
-  # end
-
-  # def title
-  #   return @title || content.title
-  # end
 
   def descendants(user)
     Node.find_by_sql(
@@ -107,91 +68,33 @@ class Node < ApplicationRecord
         node_id_to_children[-1] << n
       end
     end
-    return node_id_to_children
+    node_id_to_children
   end
 
   def formatted_name
     if self.author_name
       "a/#{self.author_name}"
-    else
+    elsif self.username
       "u/#{self.username}"
+    else
+      self.author.formatted_name
     end
   end
 
   # do not use unless you're benchmarking
-  def descendants_elegaint(user)
-    # todo: refactor this and .children into the same basic function - parameterized
-    user_id_comp = user.nil? ? "IS" : "="
-    Node.where("id in (
-      SELECT nwc.id FROM nodes_user_sees nus
-      JOIN node_with_children nwc ON nwc.id = nus.base_node_id
-      WHERE nwc.base_node_id = ? AND rel_depth > 0 AND nus.user_id #{user_id_comp} ?
-    )", self.id, user.id)
+  def descendants_via_arhq
+    Node.join_recursive do |q|
+      q.start_with(id: self.id)
+       .connect_by(id: :parent_id)
+    end if Rails.env.development?
   end
 
   # do not use unless you're benchmarking
-  def descendants_via_nwc_simple(user)
-    Node.where("id in (
-      SELECT nwc.id FROM node_with_children nwc
-      WHERE nwc.base_node_id = ?
-    )", self.id)
-  end
-
-  # do not use unless you're benchmarking
-  def descendants_via_nwc_optimized(user)
-    Node.where("id in (
-      WITH RECURSIVE nwc(orig_id, id, parent_id, rel_depth) AS (
-        SELECT id, id, parent_id, 0
-        FROM nodes
-        WHERE id = ?
-        UNION ALL
-        SELECT np.orig_id, n.id, n.parent_id, np.rel_depth + 1
-        FROM nwc np, nodes n
-        WHERE np.id = n.parent_id
-      ) SELECT id FROM nwc
-    )", self.id)
-  end
-
-  # do not use unless you're benchmarking
-  def descendants_via_nwc2_arel(user)
-    Node.where("id in (
-      WITH RECURSIVE nwc(orig_id, id, parent_id, rel_depth) AS (
-        SELECT id, id, parent_id, 0
-        FROM nodes
-        WHERE id = ?
-        UNION ALL
-        SELECT orig_id, n.id, n.parent_id, rel_depth + 1
-        FROM nodes n
-        INNER JOIN nwc ON nwc.id = n.parent_id
-      ) SELECT id FROM nwc
-    )", self.id)
-  end
-
-  # do not use unless you're benchmarking
-  def descendants_via_arel(user)
-    self.class.find_by_sql(self.class.relatives_via_arel_mgr(false, id).to_sql)
-  end
-
-  # do not use unless you're benchmarking
-  def ancestors_via_arel(user)
-    self.class.find_by_sql(self.class.relatives_via_arel_mgr(true, id).to_sql)
-  end
-
-  # do not use unless you're benchmarking
-  def descendants_via_arhq(user)
-    _id = self.id
-    Node.join_recursive do
-      start_with(id: _id).
-        connect_by(id: :parent_id)
-    end
-  end
-
-  # do not use unless you're benchmarking
-  def ancestors_via_arhq(user)
+  def ancestors_via_arhq
     Node.join_recursive do |q|
       q.start_with(id: self.id)
         .connect_by(parent_id: :id)
-    end
+    end if Rails.env.development?
   end
 
   def view
@@ -208,17 +111,7 @@ class Node < ApplicationRecord
 
   def who_can_read
     gs_raw = ActiveRecord::Base.connection.execute Node.node_authz_groups_for(id).to_sql
-    gs = gs_raw.to_a.collect { |g| g[:group_name.to_s] }
-    # puts gs.join(","), gs_raw.to_a, "^^^ can read"
-    return gs
-  end
-
-  def all_tags
-    ActiveRecord::Base.connection.execute self.get_all_tags_sql self, "authz_read"
-  end
-
-  def with_parents2
-    Node.where("id in (SELECT id FROM (#{self.node_and_parents_rec_sql}))")
+    gs_raw.to_a.collect { |g| g[:group_name.to_s] }
   end
 
   class << self
@@ -231,7 +124,7 @@ class Node < ApplicationRecord
       arel_table
     end
 
-    def with_descendants(node_id, user, max_branch_depth = 999)
+    def with_descendants(node_id, user, max_branch_depth: 999)
       Node.find_by_sql(
         Node.join_with_author_username(
           Node.join_with_author(
@@ -243,10 +136,10 @@ class Node < ApplicationRecord
       )
     end
 
-    def with_descendants_map(node_id, user)
+    def with_descendants_map(node_id, user, max_branch_depth: 999)
       node_id = node_id.to_i
       # get this node + children
-      nodes = with_descendants(node_id, user)
+      nodes = with_descendants(node_id, user, max_branch_depth: max_branch_depth)
       # defaultdict where a key will return an empty array by defualt
       node_id_to_children = Hash.new { |h, k| h[k] = Array.new }
       nodes.each do |n|
@@ -256,11 +149,11 @@ class Node < ApplicationRecord
           node_id_to_children[-1] << n
         end
       end
-      return node_id_to_children
+      node_id_to_children
     end
 
     # returns (base_id, ...node)
-    def relatives_via_arel_mgr(direction_towards_root, base_node_id = nil, max_rel_depth = nil)
+    def relatives_via_arel_mgr(ascending, base_node_id = nil, max_rel_depth = nil)
       hierarchy = Arel::Table.new :hierarchy
       recursive_table = Arel::Table.new(table_name).alias :recursive
       select_manager = Arel::SelectManager.new(ActiveRecord::Base).freeze
@@ -277,7 +170,7 @@ class Node < ApplicationRecord
         m.from recursive_table
         m.project hierarchy[:base_id], recursive_table[Arel.star], hierarchy[:rel_depth] + 1
         m.join hierarchy
-        if direction_towards_root
+        if ascending
           # take parent_id from results and match to id of node; add node to results
           m.on recursive_table[:id].eq(hierarchy[:parent_id])
         else
@@ -358,10 +251,8 @@ class Node < ApplicationRecord
     end
 
     def old_node_authz_read
-      n = table
       acp = Arel::Table.new :acp
       anar = Arel::Table.new :anar
-
       Arel::SelectManager.new
         .project(acp[:base_id], anar[:ut_tag].as("group_name"))
         .from(anar_closest_parent.as("acp"))
@@ -453,12 +344,11 @@ class Node < ApplicationRecord
       f = cls.arel_table
       n = Arel::Table.new :n
       to_project = project.map { |p| f[p] }
-      q = Arel::SelectManager.new
+      Arel::SelectManager.new
         .project(n[Arel.star], *to_project)
         .from(nodes_query.as("n"))
         .join(f)
         .on(n[on].eq(f[foreign_key]))
-      q
     end
 
     def join_with_author_username(q)
@@ -481,202 +371,10 @@ class Node < ApplicationRecord
 
   private
 
-  # warning: i don't think this works properly/completely.
-  def children_rec_sql(node = self, user = nil)
-    table_name = Node.table_name
-    <<-SQL
-        WITH RECURSIVE search_tree(id) AS (
-            SELECT id
-            FROM #{table_name}
-            WHERE id = #{node.id}
-          UNION ALL
-            SELECT o.id
-            FROM search_tree, #{table_name} o
-            WHERE search_tree.id = o.parent_id
-        ),
-        tag_combos(node_id, tag, ut_id, ut_tag) AS (
-          #{self.tag_combos_with_table_named("search_tree")}
-        ),
-        user_groups(group_name) AS (
-          #{self.user_groups_sql(user)}
-        ),
-        authz_read(id) AS (
-          SELECT id
-          FROM search_tree
-          JOIN tag_combos tc ON tc.node_id = id
-          JOIN user_groups ug ON tc.ut_tag = ug.group_name OR tc.ut_tag = 'all'
-        )
-        SELECT * FROM authz_read
-    SQL
-  end
-
-  def tag_combos_with_table_named(table_name)
-    <<-SQL
-      SELECT n.id, td.tag, ut.id, ut.tag
-      FROM #{table_name} n
-      JOIN tag_decls td ON td.anchored_id = n.id
-      JOIN user_tags ut ON td.target_id = ut.id
-      WHERE 1
-        AND td.tag = 'authz_read'
-        AND td.target_type = 'UserTag'
-        AND td.anchored_type = 'Node'
-        AND td.user_id IS NULL
-        AND ut.user_id IS NULL
-    SQL
-  end
-
-  def user_groups_sql(user)
-    <<-SQL
-      SELECT 'all'
-      UNION ALL
-      SELECT ut.tag
-      FROM tag_decls td
-      JOIN user_tags ut ON td.target_id = ut.id
-      WHERE 1
-        AND td.anchored_type = 'User'
-        AND td.anchored_id = #{user.id}
-        AND td.target_type = 'UserTag'
-        AND td.user_id IS NULL
-        AND ut.user_id IS NULL
-    SQL
-  end
-
-  # node_and_parents_rec
-  def node_and_parents_rec_sql(node = self)
-    <<-SQL
-      WITH RECURSIVE 
-      node_and_parents(id, parent_id) AS (
-        #{self.node_and_parents_rec_sql_inner(node)}
-      )
-      SELECT n.* FROM nodes n, node_and_parents np WHERE n.id = np.id 
-    SQL
-  end
-
-  # node_and_parents_rec
-  def node_and_parents_rec_sql_inner(node = self)
-    <<-SQL
-        SELECT id, parent_id
-        FROM nodes
-        WHERE id = #{node.id}
-        UNION ALL
-        SELECT n.id, n.parent_id
-        FROM node_and_parents np, nodes n
-        WHERE np.parent_id = n.id
-    SQL
-  end
-
-  # # node_and_parents_rec
-  # def node_and_parents_rec_sql_copy(node = self)
-  #   <<-SQL
-  #     WITH RECURSIVE
-  #     node_and_parents(id, parent_id) AS (
-  #       SELECT id, parent_id
-  #       FROM nodes
-  #       WHERE id = #{node.id}
-  #       UNION ALL
-  #       SELECT n.id, n.parent_id
-  #       FROM node_and_parents np, nodes n
-  #       WHERE np.parent_id = n.id
-  #     )
-  #     --SELECT * FROM node_and_parents
-  #     SELECT * FROM nodes n, node_and_parents np WHERE n.id = np.id
-  #   SQL
-  # end
-
-=begin
-Find the authz_read tags for this node or the closest ancestor with an authz_read tag.
-Returns a list of hashes with keys:
-> node_id, tag, ut_id, ut_tag
-=end
-
-  def authz_read_sql(node = self)
-    <<-SQL
-      WITH
-      tag_combos(node_id, tag, ut_id, ut_tag) AS (
-        SELECT n.id, td.tag, ut.id, ut.tag
-        FROM node_with_ancestors n
-        JOIN tag_decls td ON td.anchored_id = n.id
-        JOIN user_tags ut ON td.target_id = ut.id
-        WHERE 1
-          AND n.base_node_id = #{node.id}
-          AND td.tag = 'authz_read'
-          AND td.target_type = 'UserTag'
-          AND td.anchored_type = 'Node'
-      ),
-      closest_node_id(node_id) AS (SELECT MAX(node_id) from tag_combos)
-      SELECT tc.* FROM tag_combos tc, closest_node_id WHERE tc.node_id = closest_node_id.node_id
-    SQL
-  end
-
-  def get_all_tags_sql(node = self, tag)
-    # WARNING: UNSAFE SUBSTITUTION FOR TESTING
-    <<-SQL
-      WITH RECURSIVE 
-      node_and_parents(id, parent_id) AS (
-        #{self.node_and_parents_rec_sql_inner(node)}
-      ),
-      tag_combos(node_id, tag, target_type, target_id, ut_tag) AS (
-        SELECT n.id, td.tag, td.target_type, td.target_id, ut.tag
-        FROM node_and_parents n
-        JOIN tag_decls td ON td.anchored_id = n.id
-        JOIN user_tags ut ON td.target_id = ut.id
-        WHERE 1
-          AND td.tag = '#{tag}'
-          AND td.target_type = 'UserTag'
-          AND td.anchored_type = 'Node'
-      ),
-      closest_node_id(node_id) AS (SELECT MAX(node_id) from tag_combos)
-      SELECT tc.* FROM tag_combos tc, closest_node_id WHERE tc.node_id = closest_node_id.node_id
-    SQL
-  end
-
   def set_node_cache_init
     if self.depth.nil? && self.parent_id.nil?
       self.depth = 0
     end
   end
 
-  def set_tags
-    # self.set_view_tag_from_parent
-    # let's not set default permissions like this. probs better to do inheretance properly.
-    # self.set_permissions_from_parent
-  end
-
-  def set_view_tag_from_parent
-    p = self.parent
-    if !p.nil?
-      view_tag = p.anchored_view_tags.last
-      if view_tag.nil?
-        throw "No tags :*( #{p.to_yaml}"
-      end
-      new_vt = DEFAULT_VIEW_PROGRESSION[view_tag.tag]
-      logger.debug "new_vt: #{new_vt} from #{view_tag.tag}"
-      TagDecl.create! :tag => :view, :user => nil, :anchored => self, :target => UserTag.find_global(new_vt).first
-    end
-  end
-
-  # note: let's not do autosetting permissions like this. it is confusing and mb will do
-  # things ppl don't predict. rather we can just set up the top level permissions early
-  # and do inheretance right.
-  # def set_permissions_from_parent
-  #   p = self.parent
-  #   if !p.nil?
-  #     authz_tags = p.anchoring_authz_tags.all
-  #     logger.debug "authz_tags: #{authz_tags.to_json}"
-  #     crash!
-  #   else
-  #     logger.warn "set_permissions_from_parent > no parent"
-  #   end
-  # end
 end
-
-DEFAULT_VIEW_PROGRESSION = {
-  "root" => :index,
-  "index" => :topic,
-  "topic" => :comment,
-  "comment" => :comment,
-}
-
-# PERMISSIONS_PROGRESSION = {
-#   "read_node" => :authz_write_children,
-# }

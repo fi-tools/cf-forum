@@ -10,7 +10,7 @@ class NodesController < ApplicationController
   # GET /nodes
   # GET /nodes.json
   def index
-    set_node_to_children_map(0)
+    set_node_to_children_map(0, )
   end
 
   # GET /nodes/1
@@ -39,10 +39,6 @@ class NodesController < ApplicationController
     @node = Node.new
   end
 
-  # # GET /nodes/1/edit
-  # def edit
-  # end
-
   # POST /nodes
   # POST /nodes.json
   def create
@@ -67,30 +63,6 @@ class NodesController < ApplicationController
       end
     end
   end
-
-  # # PATCH/PUT /nodes/1
-  # # PATCH/PUT /nodes/1.json
-  # def update
-  #   respond_to do |format|
-  #     if @node.update(node_params)
-  #       format.html { redirect_to @node, notice: "Node was successfully updated." }
-  #       format.json { render :show, status: :ok, location: @node }
-  #     else
-  #       format.html { render :edit }
-  #       format.json { render json: @node.errors, status: :unprocessable_entity }
-  #     end
-  #   end
-  # end
-
-  # # DELETE /nodes/1
-  # # DELETE /nodes/1.json
-  # def destroy
-  #   @node.destroy
-  #   respond_to do |format|
-  #     format.html { redirect_to nodes_url, notice: "Node was successfully destroyed." }
-  #     format.json { head :no_content }
-  #   end
-  # end
 
   def count_descendants(node)
     cs = @node_id_to_children[node.id]

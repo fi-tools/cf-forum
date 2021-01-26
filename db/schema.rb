@@ -40,14 +40,14 @@ ActiveRecord::Schema.define(version: 2021_01_19_134716) do
     t.bigint "author_id"
     t.bigint "parent_id"
     t.bigint "depth", default: 0
-    t.bigint "children", default: 0
-    t.bigint "descendants", default: 0
+    t.bigint "n_children", default: 0
+    t.bigint "n_descendants", default: 0
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["author_id"], name: "index_nodes_on_author_id"
-    t.index ["children"], name: "index_nodes_on_children"
     t.index ["depth"], name: "index_nodes_on_depth"
-    t.index ["descendants"], name: "index_nodes_on_descendants"
+    t.index ["n_children"], name: "index_nodes_on_n_children"
+    t.index ["n_descendants"], name: "index_nodes_on_n_descendants"
     t.index ["parent_id"], name: "index_nodes_on_parent_id"
   end
 
@@ -148,8 +148,8 @@ ActiveRecord::Schema.define(version: 2021_01_19_134716) do
       n.author_id,
       n.parent_id,
       n.depth,
-      n.children,
-      n.descendants,
+      n.n_children,
+      n.n_descendants,
       n.created_at,
       n.updated_at
      FROM nodes n,
@@ -178,8 +178,8 @@ ActiveRecord::Schema.define(version: 2021_01_19_134716) do
       n.author_id,
       n.parent_id,
       n.depth,
-      n.children,
-      n.descendants,
+      n.n_children,
+      n.n_descendants,
       n.created_at,
       n.updated_at
      FROM nodes n,
@@ -272,7 +272,7 @@ ActiveRecord::Schema.define(version: 2021_01_19_134716) do
       WHERE n.id = NEW.id AND NEW.parent_id IS NOT NULL;
 
       UPDATE nodes n 
-      SET children = n.children + 1
+      SET n_children = n.n_children + 1
       WHERE n.id = NEW.parent_id;
 
       with recursive ancestors as (
@@ -286,7 +286,7 @@ ActiveRecord::Schema.define(version: 2021_01_19_134716) do
           on a.parent_id = ns.id
       )
       UPDATE nodes n
-      SET descendants = n.descendants + 1
+      SET n_descendants = n.n_descendants + 1
       where id in (
         select id from ancestors
       );

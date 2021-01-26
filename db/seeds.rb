@@ -93,6 +93,8 @@ class SeedDatabase
     @faker_users = [@admin, sub_user, general_user]
     @faker_root = create_node nil, "Faker Root", @root.id, body: "All faker nodes will be created under this node."
 
+    n_fake_nodes ||= 500
+    puts "n_fake_nodes set to #{n_fake_nodes}. set env var 'n_fake_nodes' to overwrite."
     ActiveRecord::Base.transaction do
       self.run_faker(ENV["n_fake_nodes"]&.to_i || n_fake_nodes)
     end
