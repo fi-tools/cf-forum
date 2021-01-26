@@ -1,4 +1,10 @@
 class NodeQueryBuilder
+  <<~END
+
+    based on https://www.thegreatcodeadventure.com/composable-query-builders-with-arel-in-rails/
+    WIP - just testing 
+    
+  END
   attr_reader :relation
 
   def initialize(relation = Node.all)
