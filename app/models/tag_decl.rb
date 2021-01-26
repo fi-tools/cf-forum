@@ -15,7 +15,11 @@ class TagDecl < ApplicationRecord
       table[:user_id].eq(nil)
     end
 
-    # returns (id, td_tag, anchored_type, anchored_id, ut_tag)
+    def where_system
+      TagDecl.where(is_system)
+    end
+
+    # query returns (id, td_tag, anchored_type, anchored_id, ut_tag)
     def system_tags
       uts = UserTag.table
       tds = TagDecl.table

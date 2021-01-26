@@ -18,4 +18,7 @@ class NodeTest < ActiveSupport::TestCase
       assert (nodes.select { |n| n.id == a_node.id }).count == 1
     end
   end
+
+  # test "get /0 gives title, body, author" do
+  # end
 end

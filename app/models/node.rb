@@ -9,21 +9,26 @@ class Node < ApplicationRecord
   has_many :direct_children, class_name: "Node", foreign_key: :parent_id
 
   has_many :anchoring_tags, as: :anchored, class_name: "TagDecl"
+  has_many :anchoring_systags, -> { where TagDecl.is_system }, as: :anchored, class_name: "TagDecl"
   has_many :targeting_tags, as: :target, class_name: "TagDecl"
   has_many :anchored_usertags, through: :anchoring_tags, source: :target, source_type: "UserTag"
+  has_many :anchored_systags, -> { where UserTag.is_system }, through: :anchoring_systags, source: :target, source_type: "UserTag"
+
+  has_many :anchoring_authz_read, -> { where({ tag: "authz_read" }).where(TagDecl.is_system) }, as: :anchored, class_name: "TagDecl"
+  has_many :read_permissions, -> { where UserTag.is_system }, through: :anchoring_authz_read, source: :target, source_type: "UserTag"
 
   # has_many
   has_many :anchoring_view_tags, as: :anchored, class_name: "ViewTagDecl"
   has_many :anchored_view_tags, through: :anchoring_view_tags, source: :target, source_type: "UserTag"
 
-  has_many :anchoring_authz_tags, as: :anchored, class_name: "AuthzTagDecl"
+  # has_many :anchoring_authz_tags, as: :anchored, class_name: "AuthzTagDecl"
   # we don't want to find just the UserTags associated with Authz; that's not v useful on its own.
   # has_many :anchored_authz_tags, through: :anchoring_authz_tags, source: :target, source_type: "UserTag"
 
   has_many :system_tag_decls, as: :anchored
   has_many :system_user_tags, through: :system_tag_decls, source: :target, source_type: "UserTag"
 
-  has_many :node_authz_reads, foreign_key: :base_node_id
+  # has_many :node_authz_reads, foreign_key: :base_node_id
 
   before_create :set_node_cache_init
   after_create :set_tags
@@ -39,6 +44,13 @@ class Node < ApplicationRecord
         )
       )
     Node.find_by_sql(q)
+  end
+
+  # test joining children on author and user
+  def children_1(user, limit)
+    Node.where(:parent_id => id)
+      .includes(:author)
+      .includes(:user)
   end
 
   # do not use unless you're benchmarking
@@ -179,9 +191,8 @@ class Node < ApplicationRecord
 
   # do not use unless you're benchmarking
   def descendants_via_arhq(user)
-    _id = self.id
     Node.join_recursive do
-      start_with(id: _id).
+      start_with(id: self.id).
         connect_by(id: :parent_id)
     end
   end
@@ -214,6 +225,7 @@ class Node < ApplicationRecord
   end
 
   def all_tags
+    logger.error "Should not use all_tags -- currently only returns authz_read"
     ActiveRecord::Base.connection.execute self.get_all_tags_sql self, "authz_read"
   end
 
@@ -342,7 +354,6 @@ class Node < ApplicationRecord
 
     def anar_closest_parent
       anar = Arel::Table.new :anar
-
       Arel::SelectManager.new
         .project(anar[:base_id], anar[:id].maximum.as("closest_permission_id"))
         .from(all_node_authz_reads.as("anar"))
