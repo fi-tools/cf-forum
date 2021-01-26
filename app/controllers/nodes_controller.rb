@@ -10,7 +10,7 @@ class NodesController < ApplicationController
   # GET /nodes
   # GET /nodes.json
   def index
-    set_node_to_children_map(0, )
+    set_node_to_children_map(0)
   end
 
   # GET /nodes/1
@@ -44,7 +44,7 @@ class NodesController < ApplicationController
   def create
     # TODO: permissions
     safe_params = new_node_params
-    @parent_id = safe_params[:parent_id].to_i
+    @parent = Node.find(safe_params[:parent_id].to_i)
     node_params = safe_params.slice(:parent_id)
     cv_params = safe_params.slice(:title, :body)
     author_params = safe_params.slice(:name)
@@ -58,7 +58,7 @@ class NodesController < ApplicationController
         format.html { redirect_to @node, notice: "Node was successfully created." }
         format.json { render :show, status: :created, location: @node }
       else
-        format.html { render :new, :parent_id => @parent_id }
+        format.html { render :new, :parent_id => @parent.id }
         format.json { render json: @node.errors, status: :unprocessable_entity }
       end
     end
@@ -85,7 +85,7 @@ class NodesController < ApplicationController
   def set_parent(parent_id = params[:parent_id].to_i)
     # todo: is set_parent okay like this?
     # i understand set_node is like okay in ruby/rails conventions - MK
-    @parent_id = parent_id
+    @parent = Node.find(parent_id)
   end
 
   # this sets both @node and @node_id_to_children
