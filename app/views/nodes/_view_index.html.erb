@@ -2,18 +2,18 @@
   <div class="columns">
     <div class="column is-three-quarters">
       <div class="title is-2">
-        <%= node.title %>
+        <%= node.title_w_default %>
         <%= link_to "../", node.parent, class: "is-small" %>
       </div>
       <div class="subtitle is-4">
-        Children: <%= @node_id_to_children[node.id].count %>
+        Children: <%= @node.n_children %>
       </div>
     </div>
     <div class="column has-text-right">
       <%= link_to "New Post", new_node_path(:parent_id => node.id), class: "button is-info" %>
     </div>
   </div>
-  <% @node_id_to_children[node.id].each do |child| %>
+  <% node.children(current_user).each do |child| %>
     <%= render 'preview_topic', node: child %>
   <% end %>
 </section>

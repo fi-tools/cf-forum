@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_01_26_082339) do
+ActiveRecord::Schema.define(version: 2021_01_26_102138) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -211,8 +211,8 @@ ActiveRecord::Schema.define(version: 2021_01_26_082339) do
               'all'::character varying AS ut_tag
              FROM users u
           UNION ALL
-           SELECT NULL::bigint,
-              'all'::character varying
+           SELECT NULL::bigint AS int8,
+              'all'::character varying AS "varchar"
           )
    SELECT raw_groups.user_id,
       array_agg(raw_groups.ut_tag) AS groups
@@ -228,6 +228,15 @@ ActiveRecord::Schema.define(version: 2021_01_26_082339) do
       ug.groups AS user_groups
      FROM (node_inherited_authz_reads niar
        JOIN users_groups ug ON ((niar.groups && ug.groups)));
+  SQL
+  create_view "node_readable_descendants", sql_definition: <<-SQL
+      SELECT nd.base_id,
+      nd.id,
+      nd.parent_id,
+      nd.distance,
+      nr.user_id
+     FROM (nodes_readables nr
+       JOIN node_descendants nd ON ((nr.node_id = nd.id)));
   SQL
   create_trigger("nodes_after_insert_row_tr", :compatibility => 1).
       on("nodes").

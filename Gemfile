@@ -37,20 +37,23 @@ gem 'activerecord-hierarchical_query', git: 'https://github.com/XertroV/activere
 # db agnostic triggers
 gem 'hairtrigger', git: 'https://github.com/XertroV/hair_trigger'
 
-# functional support ~~- disabled bc we're not using it and it might be deprecated.~~ 
+# functional support ~~- disabled bc we're not using it and it might be deprecated.~~
 gem "functional-ruby"
 
 # admin panel
 gem "rails_admin", "~> 2.0"
 
 # hotwire
-gem 'hotwire-rails'
+# gem 'hotwire-rails'
 
 # Use Active Storage variant
 # gem 'image_processing', '~> 1.2'
 
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", ">= 1.4.4", require: false
+
+gem "sidekiq"
+gem 'sidekiq-debounce'
 
 group :devmysql do
   gem "scenic-mysql"

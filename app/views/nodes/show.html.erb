@@ -2,7 +2,7 @@
   Critical Fallibilism Forum
 <% end %>
 <% content_for :subtitle do %>
-  <%= @node.title || "untitled" %>
+  <%= @node.title_w_default || "untitled" %>
 <% end %>
 <%= render 'view_node', node: @node %>
 <% unless @node.parent_id.nil? %>

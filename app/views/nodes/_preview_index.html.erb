@@ -1,22 +1,22 @@
 <section class="section">
   <div class="container grid">
     <div class="title is-2">
-      <%= node.title %>
+      <%= node.title_w_default %>
     </div>
     <div class="subtitle is-4">
-      <%= link_to "View All Posts (#{@node_id_to_children[node.id].count})", node %>
+      <%= link_to "View All Posts (#{node.n_children})", node %>
     </div>
-    <% if @node_id_to_children[node.id].count > 0 %>
+    <% if node.n_children > 0 %>
       <div class="title is-5 mt-3">
         Recent Threads:
       </div>
-      <% @node_id_to_children[node.id].each do |child| %>
+      <% node.direct_children.each do |child| %>
         <div class="content">
-          <%= link_to child.title, node_path(child), class: "is-link is-size-6" %>
+          <%= link_to child.title_w_default, node_path(child), class: "is-link is-size-6" %>
           / Posted: <%= child.created_at %>
         </div>
       <% end %>
-      <% if @node_id_to_children[node.id].count > 10 %>
+      <% if node.n_children > 10 %>
         todo: some 'see more' type thing
       <% end %>
     <% end %>

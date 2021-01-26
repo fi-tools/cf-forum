@@ -21,9 +21,12 @@ class Node < ApplicationRecord
   belongs_to :author
   belongs_to :parent, class_name: "Node", optional: true
   has_many :content_versions
+  has_one :content, -> { order(created_at: :desc).limit(1) }, class_name: "ContentVersion"
 
   has_one :user, through: :author
   has_many :direct_children, class_name: "Node", foreign_key: :parent_id
+  # has_many :readable_children_links, class_name: "NodesReadable", foreign_key: :node_id
+  # has_many :readable_children, through: :readable_children_links, class_name: "Node"
 
   has_many :anchoring_tags, as: :anchored, class_name: "TagDecl"
   has_many :targeting_tags, as: :target, class_name: "TagDecl"
@@ -41,31 +44,43 @@ class Node < ApplicationRecord
   has_many :system_user_tags, through: :system_tag_decls, source: :target, source_type: "UserTag"
 
   has_one :readable_by_groups, class_name: "NodeInheritedAuthzRead"
+  has_many :readable_by_users, class_name: "NodesReadable"
+
+  has_many :descendants, class_name: "NodeDescendant", foreign_key: :base_id
+  has_many :readable_descendants, class_name: "NodeReadableDescendant", foreign_key: :base_id
 
   before_create :set_node_cache_init
   after_create :refresh_node_views
 
   def refresh_node_views
-    NodeDescendant.refresh
-    NodeInheritedAuthzRead.refresh
+    NodeViewsWorker.perform_in 3.seconds
   end
 
-  def children(user, limit: 1000)
-    nar = Arel::Table.new :nar
-    q =
-      Node.join_with_author_username(
-        Node.join_with_author(
-          Node.join_with_content(
-            Node.nodes_readable_by(user).where(nar[:parent_id].eq(id)).take(limit)
-          )
-        )
-      )
-    Node.find_by_sql(q)
+  # def children(user, limit: 1000)
+  #   nar = Arel::Table.new :nar
+  #   q =
+  #     Node.join_with_author_username(
+  #       Node.join_with_author(
+  #         Node.join_with_content(
+  #           Node.nodes_readable_by(user).where(nar[:parent_id].eq(id)).take(limit)
+  #         )
+  #       )
+  #     )
+  #   Node.find_by_sql(q)
+  # end
+  def children(user)
+    Node
+      .joins(:readable_by_users)
+      .includes(:content)
+      .includes(:author)
+      .includes(:user)
+      .where(parent_id: id, direct_children: { nodes_readables: { user_id: user } })
+      .order(id: :asc)
   end
 
-  def content
-    content_versions.last
-  end
+  # def content
+  #   content_versions.last
+  # end
 
   def descendants(user)
     q = Node.descendants_readable_by(id, user)
@@ -97,13 +112,7 @@ class Node < ApplicationRecord
   end
 
   def formatted_name
-    if self.author_name
-      "a/#{self.author_name}"
-    elsif self.username
-      "u/#{self.username}"
-    else
-      self.author.formatted_name
-    end
+    self.author.formatted_name
   end
 
   def title_w_default
@@ -146,13 +155,14 @@ class Node < ApplicationRecord
   end
 
   def who_can_read
+    throw "deprecated"
     gs_raw = ActiveRecord::Base.connection.execute Node.node_authz_groups_for(id).to_sql
     gs_raw.to_a.collect { |g| g[:group_name.to_s] }
   end
 
   class << self
     def root
-      throw "deprecated, use with_descendants or with_descendants_map instead"
+      throw "deprecated, use find_readable, with_descendants, or with_descendants_map instead"
       Node.find(0)
     end
 
@@ -160,22 +170,39 @@ class Node < ApplicationRecord
       arel_table
     end
 
-    def with_descendants(node_id, user, max_branch_depth: 999)
-      # return Node.descendants_readable_by(node_id, user, max_branch_depth)
-      #          .join(content_versions: [{ author: :user }])
-      #          .order(:id)
-      Node.find_by_sql(
-        Node.join_with_author_username(
-          Node.join_with_author(
-            Node.join_with_content(
-              Node.descendants_readable_by(node_id, user, max_branch_depth)
-            )
-          )
-        ).order(:id)
-      )
+    def with_children(node_id, user)
+      Node
+      # .includes(direct_children: [:content, :author, :user, :readable_by_users])
+        .includes(:readable_by_users)
+        .includes(:content)
+        .includes(:author)
+        .includes(:user)
+        .where(nodes_readables: { user_id: user })
+        .find(node_id)
     end
 
-    def with_descendants_map(node_id, user, max_branch_depth: 999)
+    def with_descendants(node_id, user, max_branch_depth: 3)
+      # this works but is sorta slow; tho faster than without materialized views
+      nr = NodesReadable.arel_table
+      nd = NodeDescendant.arel_table
+      q = table
+        .join(nd)
+        .on(nd[:id].eq(table[:id]))
+        .where(nd[:base_id].eq(node_id))
+        .where(nd[:distance].lteq(max_branch_depth))
+        .join(nr)
+        .on(nr[:node_id].eq(table[:id]))
+        .where(nr[:user_id].eq(user&.id))
+        .project(table[Arel.star])
+        .order(:id)
+      r = Node.find_by_sql q
+      return r
+
+      #  .where("node_readable_descendants.distance < ?", max_branch_depth)
+      #  .where(node_readable_descendants: { user_id: user })
+    end
+
+    def with_descendants_map(node_id, user, max_branch_depth: 3)
       node_id = node_id.to_i
       # get this node + children
       nodes = with_descendants(node_id, user, max_branch_depth: max_branch_depth)
@@ -337,11 +364,6 @@ class Node < ApplicationRecord
         .where(nar[:group_name].eq("all").or(nar[:group_name].in(maybe_user&.groups_arel)))
         .project(nar[Arel.star])
         .order(nar[:id])
-      if block_given?
-        block q
-      else
-        q
-      end
     end
 
     def descendants_readable_by(node_id, maybe_user, max_branch_depth = 3)
@@ -405,16 +427,28 @@ class Node < ApplicationRecord
     end
 
     def find_readable(id, user)
-      nar = Arel::Table.new :nar
-      q =
-        join_with_author_username(
-          join_with_author(
-            join_with_content(
-              nodes_readable_by(user).where(nar[:id].eq(id))
-            )
-          )
-        )
-      find_by_sql(q).first
+      # nr = NodesReadable.by(user).where(node_id: id).first
+      # puts nr.to_json
+      # return Node.where(id: nr.node_id)
+      Node
+        .includes(:content)
+        .includes(:author)
+        .includes(:user)
+        .includes(:readable_by_users)
+        .where(nodes_readables: { user_id: user })
+        .find(id)
+      # .find(id)
+      # .where(id: id).first
+      # nar = Arel::Table.new :nar
+      # q =
+      #   join_with_author_username(
+      #     join_with_author(
+      #       join_with_content(
+      #         nodes_readable_by(user).where(nar[:id].eq(id))
+      #       )
+      #     )
+      #   )
+      # find_by_sql(q).first
     end
   end
 

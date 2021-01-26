@@ -5,7 +5,7 @@
       <h2 class="title is-size-3">
         Creating
         <% if @parent.depth >= 2 %>reply<% end %>
-        under <%= link_to "##{@parent.id}: #{@parent.title}", node_path(@parent) %>
+        under <%= link_to "##{@parent.id}: #{@parent.title_w_default}", node_path(@parent) %>
       </h2>
       <%= render 'form_new_topic', parent_id: @parent.id, node: @node %>
     </div>

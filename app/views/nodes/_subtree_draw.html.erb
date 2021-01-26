@@ -6,10 +6,10 @@
 <%= link_to use_anchor ? "##{node.id}" : node_path(node) do %>
   <%= node.id %>: <%= node.title_w_default %>
 <% end %>
-<% if @node_id_to_children[node.id].count > 0 %>
+<% if node.n_children > 0 %>
   <% if max_depth > 0 %>
     <ul>
-      <% @node_id_to_children[node.id].each do |n2| %>
+      <% node.children(current_user).each do |n2| %>
         <li>
           <%= render 'subtree_draw', node: n2, max_depth: max_depth - 1, use_anchor: use_anchor, prefix_anchor: prefix_anchor %>
         </li>
@@ -17,7 +17,7 @@
     </ul>
   <% else %>
     <ul>
-      <li>...</li>
+      <li>... <%= node.n_children %> children, <%= node.n_descendants %> descendants</li>
     </ul>
   <% end %>
 <% end %>
