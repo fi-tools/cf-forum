@@ -6,6 +6,12 @@ class TagDecl < ApplicationRecord
   # has_many :anchoring_tags, as: :anchored, class_name: self.class.name
   # has_many :targeting_tags, as: :target, class_name: self.class.name
 
+  after_create :refresh_system_tags
+
+  def refresh_system_tags
+    SystemTag.refresh
+  end
+
   class << self
     def table
       arel_table

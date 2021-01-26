@@ -13,7 +13,7 @@ class Node < ApplicationRecord
 
     ### 'recursive' queries with rails
 
-    We can do 'recursive' queries with just rails like: 
+    We can do 'recursive' queries with just rails like:
     Node.includes(parent: [:parent, { parent: [:parent] }])
     Node.includes(direct_children: [:direct_children, { direct_children: [:direct_children] }])
   END
@@ -43,6 +43,12 @@ class Node < ApplicationRecord
   # has_many :node_authz_reads, foreign_key: :base_node_id
 
   before_create :set_node_cache_init
+  after_create :refresh_node_views
+
+  def refresh_node_views
+    NodeAncestor.refresh
+    NodeDescendant.refresh
+  end
 
   def children(user, limit: 1000)
     nar = Arel::Table.new :nar

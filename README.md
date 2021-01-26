@@ -4,7 +4,7 @@ run:
 
 * i think: `bundle install` for deps (you might need global rails, IDK)
 * `bundle guard` to start guard
-* then `rails s` (or `bundle rails s`?) to run the server 
+* then `rails s` (or `bundle rails s`?) to run the server
 
 ## useful for testing migrations:
 
@@ -59,7 +59,7 @@ rails generate scenic:view view_tag_decls create db/views/view_tag_decls_v01.sql
 * `echo "create role cffdev with createdb login password 'hunter2';" | sudo -u postgres psql`
 * then **NOT ON PRODUCTION - JUST FOR TEST** `echo "ALTER USER cffdev WITH SUPERUSER;" | sudo -u postgres psql` **NOT ON PRODUCTION - JUST FOR TEST**
 
-you might need to run this first, but I think `create role` will create a user for you. 
+you might need to run this first, but I think `create role` will create a user for you.
 
 * `sudo -u postgres createuser -s cffdev`
 
@@ -113,7 +113,7 @@ rm db/schema.rb ; rails db:environment:set RAILS_ENV=devmysql ; RAILS_ENV=devmys
 
 ### be capable of running discussion & issue tracking for dev of cf-forum on a dev instance of cf-forum
 
-Important things: 
+Important things:
 
 * create threads, nodes, etc
 * view-node-as feature (view node as index)
