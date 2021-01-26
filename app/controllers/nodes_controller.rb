@@ -47,9 +47,9 @@ class NodesController < ApplicationController
     @parent = Node.find(safe_params[:parent_id].to_i)
     node_params = safe_params.slice(:parent_id)
     cv_params = safe_params.slice(:title, :body)
-    author_params = safe_params.slice(:name)
+    author_params = { id: safe_params[:author_id].to_i }
 
-    @author = Author.find_or_create_by(**author_params.merge(:user => current_user))
+    @author = Author.where(**author_params.merge(:user => current_user)).first
     @node = Node.new(node_params.merge :author => @author)
     @cv = ContentVersion.new(cv_params.merge :node => @node, :author => @author)
 
@@ -97,6 +97,6 @@ class NodesController < ApplicationController
 
   # Only allow a list of trusted parameters through.
   def new_node_params
-    params.require(:node).permit(:parent_id, :title, :body, :name)
+    params.require(:node).permit(:parent_id, :title, :body, :author_id)
   end
 end

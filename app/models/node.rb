@@ -62,14 +62,16 @@ class Node < ApplicationRecord
   end
 
   def descendants(user)
+    q = Node.descendants_readable_by(id, user)
+    q = block q if block_given?
     Node.find_by_sql(
       Node.join_with_author_username(
         Node.join_with_author(
           Node.join_with_content(
-            Node.descendants_readable_by(id, user)
+            q
           )
         )
-      )
+      ).order(:id)
     )
   end
 
@@ -153,6 +155,9 @@ class Node < ApplicationRecord
     end
 
     def with_descendants(node_id, user, max_branch_depth: 999)
+      # return Node.descendants_readable_by(node_id, user, max_branch_depth)
+      #          .join(content_versions: [{ author: :user }])
+      #          .order(:id)
       Node.find_by_sql(
         Node.join_with_author_username(
           Node.join_with_author(
@@ -254,7 +259,7 @@ class Node < ApplicationRecord
       nstc = Arel::Table.new :nstc
 
       Arel::SelectManager.new
-        .project(nwa[Arel::star], nstc[:td_tag], nstc[:ut_tag])
+        .project(nwa[Arel::star], nstc[:ut_tag])
         .from(all_ancestors_via_arel_mgr.as("nwa"))
         .join(node_system_tag_combos.as("nstc"))
         .on(nstc[:id].eq(nwa[:id]))
@@ -321,17 +326,23 @@ class Node < ApplicationRecord
 
     def nodes_readable_by(maybe_user)
       nar = Arel::Table.new :nar
-      Arel::SelectManager.new
+      q = Arel::SelectManager.new
         .from(node_authz_read.as("nar"))
         .where(nar[:group_name].eq("all").or(nar[:group_name].in(maybe_user&.groups_arel)))
         .project(nar[Arel.star])
         .order(nar[:id])
+      if block_given?
+        block q
+      else
+        q
+      end
     end
 
     def descendants_readable_by(node_id, maybe_user, max_branch_depth = 3)
       nar = Arel::Table.new :nar
       nwc = Arel::Table.new :nwc
-      Arel::SelectManager.new
+
+      q = Arel::SelectManager.new
         .from(node_authz_read.as("nar"))
         .join(relatives_via_arel_mgr(false, node_id, max_branch_depth).as("nwc"))
         .on(nar[:id].eq(nwc[:id]))
@@ -340,7 +351,7 @@ class Node < ApplicationRecord
     end
 
     def get_nodes_readable_by(user)
-      find_by_sql nodes_readable_by(user)
+      nodes_readable_by(user)
     end
 
     def get_old_nodes_readable_by(user)
@@ -348,8 +359,10 @@ class Node < ApplicationRecord
     end
 
     def join_with_content(nodes_query, on: :id)
+      # return nodes_query.joins(:content_versions)
       cvs = ContentVersion.arel_table
       n = Arel::Table.new :n
+
       Arel::SelectManager.new
         .project(n[Arel.star], cvs[:body], cvs[:title], cvs[:author_id].as(:content_author_id.to_s))
         .from(nodes_query.as("n"))
@@ -359,6 +372,7 @@ class Node < ApplicationRecord
     end
 
     def join_with_author(nodes_query, on: :content_author_id)
+      # return nodes_query.joins(:author)
       authors = Author.arel_table
       n = Arel::Table.new :n
       Arel::SelectManager.new
@@ -380,6 +394,7 @@ class Node < ApplicationRecord
     end
 
     def join_with_author_username(q)
+      # return q.join(:user)
       join_with(q, User, :author_user_id, project: [:username])
     end
 

@@ -14,7 +14,8 @@
     <% if false && node.content_versions.count > 1 %>, <em>Updated at: <%= node.content.created_at %></em>
     <% end %>
     <span class="mx-2"></span>
-    <%= link_to "Reply", reply_to_node_path(:parent_id => node.id), class: "button is-small is-link" %>
+    <%# old reply link: reply_to_node_path(parent_id) %>
+    <%= link_to "Reply", new_node_path(:parent_id => node.id), class: "button is-small is-link" %>
     <%= link_to "Permalink", node, class: "button is-gray is-small ml-1" %>
   </div>
   <div class="comment-children">

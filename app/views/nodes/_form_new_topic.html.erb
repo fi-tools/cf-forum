@@ -17,10 +17,10 @@
     <%= form.label :title, class: "label" %>
     <%= form.text_field :title, class: "input" %>
   </div>
-  <%= form.label :author_name, class: "label" %>
+  <%= form.label :author_id, class: "label" %>
   <div class="select">
-    <%= form.select :author_name, [["Public", true], ["Pseudonyms", false]].to_h {|p|
-      [p[0], @user.authors.where(public: p[1]).collect {|a| [a.formatted_name, a]}]
+    <%= form.select :author_id, [["Public", true], ["Pseudonyms", false]].to_h {|p|
+      [p[0], @user.authors.where(public: p[1]).collect {|a| [a.formatted_name, a.id]}]
     }, class: "" %>
   </div>
   <div class="field">
