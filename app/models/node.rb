@@ -198,11 +198,17 @@ class Node < ApplicationRecord
   end
 
   # do not use unless you're benchmarking
-  def ancestors_via_arhq(user)
+  def ancestors_via_arhq
     Node.join_recursive do |q|
       q.start_with(id: self.id)
         .connect_by(parent_id: :id)
     end
+  end
+
+  def ancestors_with_authz_reads
+    ancestors_via_arhq
+      .joins(:anchoring_authz_read)
+    # .where(TagDecl.table[:target_id] = )
   end
 
   def view
