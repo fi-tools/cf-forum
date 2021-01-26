@@ -20,7 +20,7 @@ gem "turbolinks", "~> 5"
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 gem "jbuilder", "~> 2.7"
 # Use Redis adapter to run Action Cable in production
-# gem 'redis', '~> 4.0'
+gem 'redis', '~> 4.0'
 # Use Active Model has_secure_password
 # gem 'bcrypt', '~> 3.1.7'
 
@@ -31,7 +31,6 @@ gem "devise"
 gem "scenic"
 # support adapters for scenic other than postgres (which is default and included)
 gem "scenic_sqlite_adapter"
-gem "scenic-mysql"
 
 gem 'activerecord-hierarchical_query', git: 'https://github.com/XertroV/activerecord-hierarchical_query', branch: 'rails-6-1'
 
@@ -44,12 +43,18 @@ gem "functional-ruby"
 # admin panel
 gem "rails_admin", "~> 2.0"
 
+# hotwire
+gem 'hotwire-rails'
+
 # Use Active Storage variant
 # gem 'image_processing', '~> 1.2'
 
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", ">= 1.4.4", require: false
 
+group :devmysql do
+  gem "scenic-mysql"
+end
 
 group :development, :devpg, :devmysql, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console

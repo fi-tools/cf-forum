@@ -78,6 +78,7 @@ class NodesController < ApplicationController
     @user = current_user
   end
 
+  # deprecated, use set_node_to_children_map
   def set_node
     @node = Node.find_readable(params[:id].to_i, current_user)
   end
@@ -85,7 +86,7 @@ class NodesController < ApplicationController
   def set_parent(parent_id = params[:parent_id].to_i)
     # todo: is set_parent okay like this?
     # i understand set_node is like okay in ruby/rails conventions - MK
-    @parent = Node.find(parent_id)
+    @parent = Node.find_readable(parent_id, @user)
   end
 
   # this sets both @node and @node_id_to_children

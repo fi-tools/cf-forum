@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  mount RailsAdmin::Engine => '/admin', as: 'rails_admin'
+  mount RailsAdmin::Engine => "/admin", as: "rails_admin"
   devise_for :users
   resources :authors, :path => "a"
   resources :users, :path => "u"
@@ -9,6 +9,7 @@ Rails.application.routes.draw do
 
   get "/new", to: "nodes#new", as: "new_node"
   get "/edit/:id", to: "content_versions#new", as: "edit_node"
+  # todo: can we deprecate /comment/reply_to ?
   get "/comment/reply_to", to: "nodes#new_comment", as: "reply_to_node"
 
   get "/users/authors", to: "authors#mine", as: "edit_user_authors"

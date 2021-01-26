@@ -10,6 +10,6 @@ class AuthorsController < ApplicationController
   private
 
   def set_author
-    @author = Author.find(params[:id])
+    @author = Author.includes(posts: [:content_versions]).find(params[:id])
   end
 end

@@ -1,6 +1,23 @@
 require "active_record/hierarchical_query"
 
 class Node < ApplicationRecord
+  <<~END
+    The Node object -- the primary object in the discussion tree
+
+    ## usage
+
+    Typically you should find nodes using a method that considers permissions, e.g.:
+    `Node.find_readable(_id)`
+
+    ## notes
+
+    ### 'recursive' queries with rails
+
+    We can do 'recursive' queries with just rails like: 
+    Node.includes(parent: [:parent, { parent: [:parent] }])
+    Node.includes(direct_children: [:direct_children, { direct_children: [:direct_children] }])
+  END
+
   belongs_to :author
   belongs_to :parent, class_name: "Node", optional: true
   has_many :content_versions
@@ -23,7 +40,7 @@ class Node < ApplicationRecord
   has_many :system_tag_decls, as: :anchored
   has_many :system_user_tags, through: :system_tag_decls, source: :target, source_type: "UserTag"
 
-  has_many :node_authz_reads, foreign_key: :base_node_id
+  # has_many :node_authz_reads, foreign_key: :base_node_id
 
   before_create :set_node_cache_init
 
@@ -78,6 +95,16 @@ class Node < ApplicationRecord
       "u/#{self.username}"
     else
       self.author.formatted_name
+    end
+  end
+
+  def title
+    if @title
+      @title
+    elsif self.body
+      self.body.slice(0, 100)
+    else
+      self.content.title
     end
   end
 
@@ -376,5 +403,4 @@ class Node < ApplicationRecord
       self.depth = 0
     end
   end
-
 end
