@@ -88,6 +88,15 @@ rm db/schema.rb ; rails db:environment:set RAILS_ENV=devmysql ; RAILS_ENV=devmys
 
 ## running dev server
 
+### prereq
+
+* start postgres docker and redis docker
+* start `bundle exec sidekiq` -- processes bg jobs
+* start `bundle guard`
+
+### options for starting a server
+
+* `rails s`
 * `rails s -e devpg --log-to-stdout`
 * `bundle exec puma -t 5:5 -p ${PORT:-3000} -e devpg --log-to-stdout`
 

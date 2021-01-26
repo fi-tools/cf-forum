@@ -172,8 +172,8 @@ class Node < ApplicationRecord
 
     def with_children(node_id, user)
       Node
-      # .includes(direct_children: [:content, :author, :user, :readable_by_users])
-        .includes(:readable_by_users)
+        .includes(direct_children: [:content, :author, :user, :readable_by_users])
+        .joins(:readable_by_users)
         .includes(:content)
         .includes(:author)
         .includes(:user)
