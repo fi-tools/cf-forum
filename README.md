@@ -19,6 +19,12 @@
 * `rails s -e devpg --log-to-stdout`
 * `bundle exec puma -t 5:5 -p ${PORT:-3000} -e devpg --log-to-stdout`
 
+## segmentation fault with `rails s` after setting things up
+
+Check webpacker; you need node installed and the npm dependencies, etc.
+
+You might need libsass.
+
 ## useful for testing migrations:
 
 ### my go-to while developing the schema
