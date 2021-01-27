@@ -52,6 +52,7 @@ gem "rails_admin", "~> 2.0"
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", ">= 1.4.4", require: false
 
+# used for jobs, e.g. refreshing materialized views
 gem "sidekiq"
 gem 'sidekiq-debounce'
 
@@ -93,6 +94,10 @@ group :test do
   gem "selenium-webdriver"
   # Easy installation and use of web drivers to run system tests with browsers
   gem "webdrivers"
+  # start a debugger on failing test
+  # gem 'minitest-byebug'
+  # clean databases
+  gem 'database_cleaner-active_record'
 end
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem

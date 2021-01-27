@@ -51,7 +51,6 @@ class CreateInit < ActiveRecord::Migration[6.1]
 
     create_trigger(:compatibility => 1).on(:nodes).after(:insert) do
       <<-SQL
-
       --with parent_depth as (select n2.depth FROM nodes n2 WHERE n2.id = NEW.parent_id)
       UPDATE nodes n
       SET depth = (select n2.depth FROM nodes n2 WHERE n2.id = NEW.parent_id) + 1
@@ -80,7 +79,7 @@ class CreateInit < ActiveRecord::Migration[6.1]
 
       -- build ancestors incrementally
       anc_incr as (INSERT INTO node_ancestors_incrs (base_id, node_id, distance)
-      SELECT base_id, id as node_id, distance
+      SELECT base_id, id, distance
       from ancestors),
 
       -- build descendants incrementally

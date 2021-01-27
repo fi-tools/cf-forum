@@ -12,8 +12,7 @@ module CfForum
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 6.1
 
-    # default to using postgres, not sqlite. This is set to true in dev/test config rb files.
-    config.use_sqlite = false
+    config.active_record.schema_format = :sql
 
     # Configuration for the application, engines, and railties goes here.
     #
