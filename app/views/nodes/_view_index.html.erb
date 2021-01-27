@@ -13,7 +13,7 @@
       <%= link_to "New Post", new_node_path(:parent_id => node.id), class: "button is-info" %>
     </div>
   </div>
-  <% node.children(current_user).each do |child| %>
+  <% @children_lookup[node.id].each do |child| %>
     <%= render 'preview_topic', node: child %>
   <% end %>
 </section>

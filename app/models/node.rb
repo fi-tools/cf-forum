@@ -84,11 +84,14 @@ class Node < ApplicationRecord
   #   content_versions.last
   # end
 
-  def children_rec(user, limit_nodes_lower: 100)
+  def children_rec_arhq(user, limit_nodes_lower: 100)
     descendants_map = Hash.new { |h, k| h[k] = Array.new }
     cs = Node
       .joins(:readable_by_users)
       .where({ nodes_readables: { user_id: user } })
+      .eager_load(:content)
+      .eager_load(:author)
+      .eager_load(:user)
       .limit(limit_nodes_lower)
       .join_recursive do |q|
       q.start_with(id: id)

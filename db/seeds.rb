@@ -45,7 +45,7 @@ class SeedDatabase
     self.create_test_users
     self.create_test_subs_posts
 
-    self.run_faker(88537 - 1, @admin, @sub_user, @general_user)
+    self.run_faker(88537 - 28 - 1, @admin, @sub_user, @general_user)
   end
 end
 

@@ -22,7 +22,7 @@
   <div class="comment-children">
     <% if node.n_children > 0 %>
       <% if depth_left > 0 %>
-        <% node.children(current_user).each do |child| %>
+        <% @children_lookup[node.id].each do |child| %>
           <%= render 'view_comment_inline', node: child, depth_left: depth_left - 1 %>
         <% end %>
       <% else %>

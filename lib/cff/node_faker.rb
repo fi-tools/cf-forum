@@ -26,7 +26,7 @@ module Cff::NodeFaker
     Benchmark.bm do |m|
       m.report("creating #{n_topics_to_create} nodes\n") {
         parent = @faker_root
-        n_topics_to_create.times.to_a.in_groups_of(200) do |i_chunk|
+        n_topics_to_create.times.to_a.in_groups_of(90) do |i_chunk|
           ActiveRecord::Base.transaction do
             if queue.count < i_chunk.count + 2
               i_chunk.each do |i|
