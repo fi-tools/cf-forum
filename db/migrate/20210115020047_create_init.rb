@@ -30,7 +30,8 @@ class CreateInit < ActiveRecord::Migration[6.1]
 
     create_table :node_ancestors_incrs do |t|
       t.bigint :base_id, index: true
-      t.bigint :node_id
+      t.bigint :node_id, index: true
+      t.bigint :parent_id, index: true
       t.bigint :distance
     end
 
@@ -81,8 +82,8 @@ class CreateInit < ActiveRecord::Migration[6.1]
       --),
 
       -- build ancestors incrementally
-      anc_incr as (INSERT INTO node_ancestors_incrs (base_id, node_id, distance)
-      SELECT base_id, id, distance
+      anc_incr as (INSERT INTO node_ancestors_incrs (base_id, node_id, parent_id, distance)
+      SELECT base_id, id, parent_id, distance
       from ancestors RETURNING 1)
 
       ---- build descendants incrementally

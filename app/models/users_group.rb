@@ -2,6 +2,8 @@ class UsersGroup < ApplicationRecord
   attr_reader :user_id, :groups
   belongs_to :user, optional: true
 
+  self.primary_key = "user_id"
+
   def readonly?
     true
   end

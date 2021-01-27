@@ -1,6 +1,7 @@
 module Cff::TemplateTestExtras
   def test_setup_3_nodes
-    self.create_test_admin_user(email: "#{SecureRandom.hex(12)}@xk.io", :username => SecureRandom.hex(12))
+    create_test_admin_user(email: gen_random_email, :username => SecureRandom.hex(12))
+    gen_user gen_random_string, gen_random_email, @test_pw
 
     @nodes = []
     @root = create_node(nil, "root", nil, author: @admin_author)
@@ -12,6 +13,14 @@ module Cff::TemplateTestExtras
     set_root_node_authz @root, @admin
 
     NodeInheritedAuthzRead.refresh
+  end
+
+  def gen_random_email
+    "#{SecureRandom.hex(12)}@xk.io"
+  end
+
+  def gen_random_string
+    SecureRandom.hex(12)
   end
 
   def create_test_admin_user(**params)

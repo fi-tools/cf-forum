@@ -88,10 +88,14 @@ class Node < ApplicationRecord
 
   def children_rec_arhq(user, limit_nodes_lower: 140)
     descendants_map = Hash.new { |h, k| h[k] = Array.new }
+    # rs = NodeInheritedAuthzRead
+    #   .join_recursive { |q| q.start_with(node_id: id).connect_by(node_id: :parent_id) }
+    #   .where.overlap(groups: user&.groups || User.default_groups)
+
     cs = Node
       .joins(:readable_by_groups)
+      .where.overlap({ node_inherited_authz_reads: { groups: user&.groups || User.default_groups } })
       .limit(limit_nodes_lower)
-      .join_recursive { |q| q.start_with(id: id).connect_by(id: :parent_id).where('? && ?', q.table[:groups].name, user&.groups || ['all']) }
       .eager_load(:content)
       .eager_load(:author)
       .eager_load(:user)

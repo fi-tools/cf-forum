@@ -31,7 +31,7 @@ class User < ApplicationRecord
   end
 
   def groups
-    self.users_group.groups
+    self.users_group.groups_in_database
   end
 
   def groups_arel
@@ -51,6 +51,10 @@ class User < ApplicationRecord
       unless id.nil?
         User.from(id)
       end
+    end
+
+    def default_groups
+      ["all"]
     end
   end
 end

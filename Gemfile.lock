@@ -57,6 +57,10 @@ GEM
       erubi (~> 1.4)
       rails-dom-testing (~> 2.0)
       rails-html-sanitizer (~> 1.1, >= 1.2.0)
+    active_record_extended (2.0.0)
+      activerecord (>= 5.1, < 6.2)
+      ar_outer_joins (~> 0.2)
+      pg (< 3.0)
     activejob (6.1.1)
       activesupport (= 6.1.1)
       globalid (>= 0.3.6)
@@ -84,6 +88,8 @@ GEM
       zeitwerk (~> 2.3)
     addressable (2.7.0)
       public_suffix (>= 2.0.2, < 5.0)
+    ar_outer_joins (0.2.0)
+      activerecord (>= 3.2)
     ast (2.4.1)
     backport (1.1.2)
     bcrypt (3.1.16)
@@ -391,6 +397,7 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  active_record_extended
   activerecord-hierarchical_query!
   bootsnap (>= 1.4.4)
   byebug

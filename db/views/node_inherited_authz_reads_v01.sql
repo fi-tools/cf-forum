@@ -1,10 +1,10 @@
 WITH node_all_ancestor_authz(base_id, node_id, groups) as (
-    SELECT na.base_id, na.node_id, array_agg(nst.ut_tag) as groups
+    SELECT na.base_id, na.node_id, na.parent_id, array_agg(nst.ut_tag) as groups
     FROM node_ancestors_incrs na
     INNER JOIN node_system_tags as nst
     ON na.node_id = nst.node_id
     WHERE nst.td_tag = 'authz_read'
-    GROUP BY na.base_id, na.node_id
+    GROUP BY na.base_id, na.node_id, na.parent_id
 ),
 closest_parent(base_id, closest_ancestor_id) as (
     SELECT base_id, MAX(node_id) as closest_ancestor_id

@@ -31,8 +31,10 @@ gem "devise"
 gem "scenic"
 # support adapters for scenic other than postgres (which is default and included)
 gem "scenic_sqlite_adapter"
-
+# provides .join_recursive
 gem 'activerecord-hierarchical_query', git: 'https://github.com/XertroV/activerecord-hierarchical_query', branch: 'rails-6-1'
+# extended functions for active record
+gem 'active_record_extended'
 
 # db agnostic triggers
 gem 'hairtrigger', git: 'https://github.com/XertroV/hair_trigger'
