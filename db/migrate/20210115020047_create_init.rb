@@ -61,7 +61,7 @@ class CreateInit < ActiveRecord::Migration[6.1]
       WHERE n.id = NEW.parent_id;
 
       -- start with distance=1 bc we start with the parent node, not the NEW node
-      with recursive ancestors as (
+      with recursive ancestors(base_id, id, parent_id, distance) as (
         select NEW.id as base_id, id, parent_id, 0 as distance
         from nodes
         where id = NEW.id
@@ -80,12 +80,12 @@ class CreateInit < ActiveRecord::Migration[6.1]
       -- build ancestors incrementally
       anc_incr as (INSERT INTO node_ancestors_incrs (base_id, node_id, distance)
       SELECT base_id, id, distance
-      from ancestors),
+      from ancestors RETURNING 1),
 
       -- build descendants incrementally
       dec_incr as (INSERT INTO node_descendants_incrs (base_id, node_id, distance)
       SELECT id, base_id, distance
-      FROM ancestors)
+      FROM ancestors RETURNING 1)
 
       -- cache n_descendants
       UPDATE nodes n
@@ -93,6 +93,30 @@ class CreateInit < ActiveRecord::Migration[6.1]
       where id in (
         select id from ancestors
       ) and id != NEW.id;
+      --and 1 in (select * from anc_incr union all select * from dec_incr);
+
+      RAISE INFO 'Ran triggers for % w parent %', NEW.id, NEW.parent_id;
+
+      DECLARE
+      countancestors bigint;
+      countnodes bigint;
+      BEGIN
+
+      with recursive ancestors(base_id, id, parent_id, distance) as (
+        select NEW.id as base_id, id, parent_id, 0 as distance
+        from nodes
+        where id = NEW.id
+        union all
+        select a.base_id, ns.id, ns.parent_id, a.distance + 1
+        from nodes ns
+        inner join ancestors a
+          on a.parent_id = ns.id
+      )
+      select COUNT(*) into countancestors from ancestors;
+      select count(*) into countnodes from nodes;
+      RAISE INFO 'Ancestors count: %', countancestors;
+      RAISE INFO 'nodes count: %', countnodes;
+      END;
 
       SQL
     end
