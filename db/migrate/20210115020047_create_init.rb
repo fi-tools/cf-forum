@@ -95,30 +95,6 @@ class CreateInit < ActiveRecord::Migration[6.1]
       ) and id != NEW.id;
       --and 1 in (select * from anc_incr union all select * from dec_incr);
 
-      -- DEBUG CODE FOR TRIGGERS IN TEST, can probs remove
-      --RAISE INFO 'Ran triggers for % w parent %', NEW.id, NEW.parent_id;
---
-      --DECLARE
-      --countancestors bigint;
-      --countnodes bigint;
-      --BEGIN
---
-      --with recursive ancestors(base_id, id, parent_id, distance) as (
-      --  select NEW.id as base_id, id, parent_id, 0 as distance
-      --  from nodes
-      --  where id = NEW.id
-      --  union all
-      --  select a.base_id, ns.id, ns.parent_id, a.distance + 1
-      --  from nodes ns
-      --  inner join ancestors a
-      --    on a.parent_id = ns.id
-      --)
-      --select COUNT(*) into countancestors from ancestors;
-      --select count(*) into countnodes from nodes;
-      --RAISE INFO 'Ancestors count: %', countancestors;
-      --RAISE INFO 'nodes count: %', countnodes;
-      --END;
-
       SQL
     end
     add_foreign_key :nodes, :nodes, column: :parent_id
