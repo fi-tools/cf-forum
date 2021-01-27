@@ -27,7 +27,7 @@ devpg: &devpg
   database: cff-dev-pg
   username: cffdev
   password: hunter2
-  host: <%= ENV['PGHOST'] || 'host.docker.internal' %>
+  host: <%= ENV.fetch('PGHOST') { 'host.docker.internal' } %>
 
 development:
   <<: *devpg
