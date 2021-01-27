@@ -5,6 +5,7 @@ class NodeTest < ActiveSupport::TestCase
   include Cff::NodeFaker
 
   setup do
+    puts "running setuop"
     test_setup_3_nodes
   end
 
@@ -21,15 +22,6 @@ class NodeTest < ActiveSupport::TestCase
     # gs = n.who_can_read
     # assert gs.count > 0
     # assert gs.include?("all")
-  end
-
-  test "getting relatives via arel includes self" do
-    a_node = Node.first
-    [true, false].each do |dir|
-      mgr = Node.relatives_via_arel_mgr(dir, a_node.id)
-      nodes = Node.find_by_sql(mgr.to_sql)
-      assert (nodes.select { |n| n.id == a_node.id }).count == 1
-    end
   end
 
   test "children_rec_arhq sanity" do

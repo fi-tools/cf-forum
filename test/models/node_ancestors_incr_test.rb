@@ -8,7 +8,7 @@ class NodeAncestorsIncrTest < ActiveSupport::TestCase
     @nodes = []
     @root = create_node(0, "root", nil, author: @author)
     @nodes << @root
-    @nodes << create_node(nil, "reply1", @root.id, author: @author)
+    @nodes << create_node(nil, "reply1", @root, author: @author)
     @nodes << create_node(nil, "reply2", @root, author: @author)
   end
 

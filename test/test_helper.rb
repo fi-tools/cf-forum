@@ -26,10 +26,7 @@ class ActiveSupport::TestCase
     unless id.nil?
       node_params[:id] = id
     end
-    parent = parent.id unless (parent.nil? || parent.instance_of?(Integer))
-    unless parent.nil?
-      node_params = node_params.merge(:parent_id => parent)
-    end
+    node_params = node_params.merge(:parent_id => parent&.id)
     node = node_params
     cv = { :id => id, :title => title, :author => author, :body => body }
     return node_params, cv
