@@ -53,7 +53,9 @@ class Node < ApplicationRecord
   after_create :refresh_node_views
 
   def refresh_node_views
-    NodeViewsWorker.perform_in 3.seconds
+    # NodeViewsWorker.perform_in 3.seconds
+    # this will refresh basically everything underneath -- fast enough to run in main thread now
+    NodeInheritedAuthzRead.refresh
   end
 
   # def children(user, limit: 1000)

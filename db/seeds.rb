@@ -52,29 +52,29 @@ class SeedDatabase
     self.add_to_group @admin, @g_subscribers
     self.set_root_node_authz @root, @admin
 
-    @main = create_node nil, "Main", @root.id
-    @meta = create_node nil, "Meta", @root.id
+    @main = create_node nil, "Main", @root
+    @meta = create_node nil, "Meta", @root
     # should it be called *detailed* instead?
-    @details = create_node nil, "Details", @root.id
-    @other = create_node nil, "Other", @root.id
+    @details = create_node nil, "Details", @root
+    @other = create_node nil, "Other", @root
 
     [@main, @meta, @details, @other].each do |n|
       TagDecl.find_or_create_by! :anchored => n, :tag => Authz.writeChildren, :target => @g_all
     end
 
-    @post1 = create_node nil, "Post 1", @main.id, body: "post 1 body", author: @author2
-    @post2 = create_node nil, "Post 2", @main.id, body: "post 2 body", author: @author3
+    @post1 = create_node nil, "Post 1", @main, body: "post 1 body", author: @author2
+    @post2 = create_node nil, "Post 2", @main, body: "post 2 body", author: @author3
 
-    @reply1 = create_node nil, "Reply 1st", @post2.id, body: "reply 1st level", author: @author1
-    @reply2 = create_node nil, "Reply 2nd", @reply1.id, body: "reply 2nd level", author: @author2
-    @reply3 = create_node nil, nil, @reply2.id, body: "reply 3rd level", author: @author1
-    @reply1a = create_node nil, "Another Reply 1st L", @post2.id, body: "reply 1st level again", author: @author3
-    @reply4 = create_node nil, nil, @reply3.id, body: "4th level repy body", author: @author3
-    @reply5 = create_node nil, "5th level", @reply4.id, body: "body 5th", author: @author_anon
-    @reply2a = create_node nil, "Click 'To Parent' to go back up", @reply1a.id, body: "It's at the bottom"
+    @reply1 = create_node nil, "Reply 1st", @post2, body: "reply 1st level", author: @author1
+    @reply2 = create_node nil, "Reply 2nd", @reply1, body: "reply 2nd level", author: @author2
+    @reply3 = create_node nil, nil, @reply2, body: "reply 3rd level", author: @author1
+    @reply1a = create_node nil, "Another Reply 1st L", @post2, body: "reply 1st level again", author: @author3
+    @reply4 = create_node nil, nil, @reply3, body: "4th level repy body", author: @author3
+    @reply5 = create_node nil, "5th level", @reply4, body: "body 5th", author: @author_anon
+    @reply2a = create_node nil, "Click 'To Parent' to go back up", @reply1a, body: "It's at the bottom"
 
     # create subscribers area
-    @subs_node = create_node nil, "SubsOnly", @root.id
+    @subs_node = create_node nil, "SubsOnly", @root
     TagDecl.find_or_create_by! :anchored => @subs_node, :tag => Authz.read, :target => @g_subscribers
     TagDecl.find_or_create_by! :anchored => @subs_node, :tag => Authz.read, :target => @g_admins
     TagDecl.find_or_create_by! :anchored => @subs_node, :tag => Authz.writeChildren, :target => @g_subscribers
@@ -84,14 +84,14 @@ class SeedDatabase
     self.add_to_group sub_user, @g_subscribers
     general_user = gen_user "general-user", "cfgen@xk.io", pw
 
-    @s1 = create_node nil, "subs only test", @subs_node.id, body: "only subs should see this"
-    @s2a = create_node nil, "subs only reply", @s1.id, body: "only subs reply test"
-    @s2b = create_node nil, nil, @s1.id, body: "yarp"
+    @s1 = create_node nil, "subs only test", @subs_node, body: "only subs should see this"
+    @s2a = create_node nil, "subs only reply", @s1, body: "only subs reply test"
+    @s2b = create_node nil, nil, @s1, body: "yarp"
 
     # set up faker
     Faker::Config.random = Random.new(0)
     @faker_users = [@admin, sub_user, general_user]
-    @faker_root = create_node nil, "Faker Root", @root.id, body: "All faker nodes will be created under this node."
+    @faker_root = create_node nil, "Faker Root", @root, body: "All faker nodes will be created under this node."
 
     n_fake_nodes ||= 500
     puts "n_fake_nodes set to #{n_fake_nodes}. set env var 'n_fake_nodes' to overwrite."
@@ -104,15 +104,17 @@ class SeedDatabase
   end
 
   def gen_node(id, title, parent, body: nil, author: @admin_author, quiet: false)
-    node_params = { :author => author }
+    node_params = { :author_id => author.id }
+    cv = { :title => title, :author_id => author.id, :body => body }
     unless id.nil?
       node_params[:id] = id
+      cv[:id] = id
     end
     unless parent.nil?
-      node_params = node_params.merge(:parent_id => parent)
+      node_params = node_params.merge(:parent_id => parent.id)
     end
-    node = node_params
-    cv = { :id => id, :title => title, :author => author, :body => body }
+    add_timestamps(node_params)
+    add_timestamps(cv)
     return node_params, cv
   end
 
@@ -173,25 +175,50 @@ class SeedDatabase
     Benchmark.bm do |m|
       m.report("creating #{n_topics_to_create} nodes\n") {
         parent = @faker_root
-        n_topics_to_create.times.to_a.in_groups_of(100) do |i_chunk|
+        n_topics_to_create.times.to_a.in_groups_of(200) do |i_chunk|
           ActiveRecord::Base.transaction do
-            i_chunk.each do |i|
-              if child_c >= branching_f
-                parent = queue[next_sample_index]
-                next_sample_index += 1
-                child_c = 0
-              end
+            if queue.count < i_chunk.count + 2
+              i_chunk.each do |i|
+                if child_c >= branching_f
+                  parent = queue[next_sample_index]
+                  next_sample_index += 1
+                  child_c = 0
+                end
+                child_c += 1
 
-              title = Faker::Lorem.sentence(word_count: 3, random_words_to_add: 4)
-              body = Faker::Lorem.paragraph(sentence_count: 2, supplemental: false, random_sentences_to_add: 4)
-              queue << create_node(nil, title, parent.id, body: body, quiet: true)
-              child_c += 1
+                title = Faker::Lorem.sentence(word_count: 3, random_words_to_add: 4)
+                body = Faker::Lorem.paragraph(sentence_count: 2, supplemental: false, random_sentences_to_add: 4)
+                queue << create_node(nil, title, parent, body: body, quiet: true)
+              end
+            else
+              pairs = i_chunk.map do |i|
+                if child_c >= branching_f
+                  parent = queue[next_sample_index]
+                  next_sample_index += 1
+                  child_c = 0
+                end
+                child_c += 1
+                title = Faker::Lorem.sentence(word_count: 3, random_words_to_add: 4)
+                body = Faker::Lorem.paragraph(sentence_count: 2, supplemental: false, random_sentences_to_add: 4)
+                gen_node(nil, title, parent, body: body, quiet: true)
+              end
+              nodes = Node.find(Node.insert_all!(pairs.map { |p| p[0] }).map { |n| n["id"] })
+              cvs = pairs.map { |p| p[1] }
+
+              cvs = ContentVersion.insert_all!(pairs.map { |p| p[1] }.each_with_index.map { |cv, i| cv.merge(:node_id => nodes[i]["id"]) })
+              queue += nodes
             end
           end
           puts "created node #{i_chunk.last}/#{n_topics_to_create}"
         end
       }
     end
+  end
+
+  def add_timestamps(record)
+    time = Time.now.utc
+    record[:created_at] = time
+    record[:updated_at] = time
   end
 
   #   def create_tag(tag)
