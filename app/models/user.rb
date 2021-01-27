@@ -14,7 +14,7 @@ class User < ApplicationRecord
   has_many :anchoring_system_tags, as: :anchored, class_name: "SystemTagDecl"
   has_many :anchored_system_tags, through: :anchoring_system_tags, source: :target, source_type: "UserTag"
 
-  has_many :user_groups
+  has_one :users_group
 
   after_create :create_user_author, :refresh_users_groups
 
@@ -31,7 +31,7 @@ class User < ApplicationRecord
   end
 
   def groups
-    self.user_groups.collect { |ga| ga.group_name }
+    self.users_group.groups
   end
 
   def groups_arel
