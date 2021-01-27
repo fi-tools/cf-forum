@@ -44,7 +44,7 @@ class NodeTest < ActiveSupport::TestCase
   end
 
   test "children_rec_arhq faker" do
-    run_faker 10, @admin, @sub_user, @general_user
+    run_faker 11, @admin, @sub_user, @general_user
     _, child_map = @faker_root.children_rec_arhq(nil)
     assert_equal @faker_root.children(nil).count, child_map[@faker_root.id].count, "child counting methods agree"
   end
