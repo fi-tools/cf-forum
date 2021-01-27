@@ -101,6 +101,7 @@ class Node < ApplicationRecord
   end
 
   def children_rec_incr(user, limit_nodes_lower: 140)
+    throw "disabled since node_descendants_incr is disabled"
     descendants_map = Hash.new { |h, k| h[k] = Array.new }
     cs = Node
       .joins(:descendants)
