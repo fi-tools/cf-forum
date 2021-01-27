@@ -111,10 +111,9 @@ class Node < ApplicationRecord
       .eager_load(:content)
       .eager_load(:author)
       .eager_load(:user)
-      .joins(:readable_by_users)
-      .where({ nodes_readables: { user_id: user } })
+      .joins(:readable_descendants)
+      .where({ node_readable_descendants: { user_id: user } })
       .limit(limit_nodes_lower)
-    # .joins(:descendants)
     # .having(q.prior[:id].count.lteq(limit_nodes_lower))
     # .where(Arel::SelectManager.new.from(q.prior).project(q.prior[:id].count).lteq(limit_nodes_lower)) # "(SELECT ? FROM ?) < ?", q.prior[:id].count, q.prior.name, limit_nodes_lower)
     # puts cs.to_sql
