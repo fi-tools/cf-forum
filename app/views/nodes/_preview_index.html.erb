@@ -10,7 +10,7 @@
       <div class="title is-5 mt-3">
         Recent Threads:
       </div>
-      <% node.direct_children.each do |child| %>
+      <% @children_lookup[node.id].each do |child| %>
         <div class="content">
           <%= link_to child.title_w_default, node_path(child), class: "is-link is-size-6" %>
           / Posted: <%= child.created_at %>

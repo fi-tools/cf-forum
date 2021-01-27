@@ -47,9 +47,8 @@ class Node < ApplicationRecord
   has_one :readable_by_groups, class_name: "NodeInheritedAuthzRead"
   has_many :readable_by_users, class_name: "NodesReadable"
 
-  has_many :descendants, class_name: "NodeDescendantsIncr", foreign_key: :base_id
-  # has_many :descendants, through: :descendant_links, class_name: "Node"
-  has_many :readable_descendants, class_name: "NodeReadableDescendant", foreign_key: :base_id
+  has_many :view_tags, -> { where(tag: "view", user_id: Arel::Nodes::Or.new(nil, @user_id)) }, as: :anchored, class_name: "TagDecl"
+  has_many :views, -> { where(user_id: Arel::Nodes::Or.new(nil, @user_id)) }, through: :view_tags, source: :target, source_type: "UserTag"
 
   before_create :set_node_cache_init
   after_create :refresh_node_views
@@ -94,6 +93,7 @@ class Node < ApplicationRecord
   end
 
   def view
+    return views.last unless views.empty?
     # todo: add way for view to be set to something else, ideally user controlled
     case self.depth
     when 0
@@ -125,6 +125,7 @@ class Node < ApplicationRecord
         .eager_load(:content)
         .eager_load(:author)
         .eager_load(:user)
+        .preload(:views) # eager_loading :views will do a join and massively slow down this query.
         .sort
       # sorting here adds 200ms!!! .order(id: :asc)
       cs.each { |n| descendants_map[n.parent_id] << n }

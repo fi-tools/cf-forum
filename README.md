@@ -1,10 +1,23 @@
 # README
 
-run:
+## running dev server
+
+### prereq
 
 * i think: `bundle install` for deps (you might need global rails, IDK)
 * `bundle guard` to start guard
-* then `rails s` (or `bundle rails s`?) to run the server
+* start postgres docker and redis docker (hint scripts in ./tools/dev/ -- they're sorta untested but should work if you copy paste them in to terminal or run them directly)
+* NOT REQUIRED ATM start `bundle exec sidekiq` -- processes bg jobs
+* start `bundle guard` for autoreload stuff (I run it in tmux -MK)
+
+### options for starting a server
+
+* before first time
+  * `rm db/schema.rb ; bin/rails db:environment:set RAILS_ENV=development ; n_fake_nodes=88500 rake db:drop db:create db:migrate db:reset`
+
+* `rails s`
+* `rails s -e devpg --log-to-stdout`
+* `bundle exec puma -t 5:5 -p ${PORT:-3000} -e devpg --log-to-stdout`
 
 ## useful for testing migrations:
 
@@ -54,7 +67,7 @@ rails generate scenic:view view_tag_decls create db/views/view_tag_decls_v01.sql
 
 (there are some benefits to doing this vs mixing logging w/ stdout)
 
-## local postgres config
+## local postgres config (not docker)
 
 * `echo "create role cffdev with createdb login password 'hunter2';" | sudo -u postgres psql`
 * then **NOT ON PRODUCTION - JUST FOR TEST** `echo "ALTER USER cffdev WITH SUPERUSER;" | sudo -u postgres psql` **NOT ON PRODUCTION - JUST FOR TEST**
@@ -85,20 +98,6 @@ testing schemas:
 ```
 rm db/schema.rb ; rails db:environment:set RAILS_ENV=devmysql ; RAILS_ENV=devmysql rake db:drop db:create db:migrate db:setup
 ```
-
-## running dev server
-
-### prereq
-
-* start postgres docker and redis docker
-* start `bundle exec sidekiq` -- processes bg jobs
-* start `bundle guard`
-
-### options for starting a server
-
-* `rails s`
-* `rails s -e devpg --log-to-stdout`
-* `bundle exec puma -t 5:5 -p ${PORT:-3000} -e devpg --log-to-stdout`
 
 -----
 

@@ -3,7 +3,7 @@
     <div class="column is-three-quarters">
       <div class="title is-2">
         <%= node.title_w_default %>
-        <%= link_to "../", node.parent, class: "is-small" %>
+        <%= link_to "../", node_path(node.parent_id), class: "is-small" %>
       </div>
       <div class="subtitle is-4">
         Children: <%= @node.n_children %>
