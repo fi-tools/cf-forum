@@ -63,7 +63,7 @@ class CreateInit < ActiveRecord::Migration[6.1]
 
       -- start with distance=1 bc we start with the parent node, not the NEW node
       with recursive ancestors as (
-        select NEW.id as base_id, id, parent_id, 1 as distance
+        select NEW.id as base_id, id, parent_id, 0 as distance
         from nodes
         where id = NEW.id
         union all
