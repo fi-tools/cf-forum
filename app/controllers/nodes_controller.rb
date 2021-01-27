@@ -94,9 +94,9 @@ class NodesController < ApplicationController
     # @node_id_to_children = Node.with_descendants_map(id, @user, max_branch_depth: 2)
     # @node = @node_id_to_children[-1].first
     @node = Node.with_children(id, current_user)
-    @node_id_to_children = Hash.new { |h, k| h[k] = Array.new }
-    # @node_id_to_children[@node.id] = @node.direct_children
-    @node_id_to_children[@node.id] = @node.children(current_user)
+    # @node_id_to_children = Hash.new { |h, k| h[k] = Array.new }
+    ## @node_id_to_children[@node.id] = @node.direct_children
+    # @node_id_to_children[@node.id] = @node.children(current_user)
   end
 
   # Only allow a list of trusted parameters through.

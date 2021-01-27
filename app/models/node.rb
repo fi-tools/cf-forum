@@ -428,10 +428,6 @@ class Node < ApplicationRecord
     end
 
     def find_readable(id, user)
-      nr = Node.joins(:readable_by_users)
-        .where(nodes_readables: { user: user, node_id: id })
-      # puts nr.to_json
-      return nr
       Node
         .includes(:content)
         .includes(:author)

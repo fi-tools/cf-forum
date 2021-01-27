@@ -1,3 +1,3 @@
-<% @node_id_to_children[node.id].each do |child| %>
+<% @node.children(current_user).each do |child| %>
   <%= render 'preview_index', node: child  %>
 <% end %>

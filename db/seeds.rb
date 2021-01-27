@@ -185,6 +185,7 @@ class SeedDatabase
               title = Faker::Lorem.sentence(word_count: 3, random_words_to_add: 4)
               body = Faker::Lorem.paragraph(sentence_count: 2, supplemental: false, random_sentences_to_add: 4)
               queue << create_node(nil, title, parent.id, body: body, quiet: true)
+              child_c += 1
             end
           end
           puts "created node #{i_chunk.last}/#{n_topics_to_create}"
