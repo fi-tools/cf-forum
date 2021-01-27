@@ -2,20 +2,6 @@ ENV["RAILS_ENV"] ||= "test"
 require_relative "../config/environment"
 require "rails/test_help"
 
-# db cleaner
-require "database_cleaner"
-require "database_cleaner_support"
-
-# DatabaseCleaner.clean_with :truncation
-# DatabaseCleaner.strategy = :transaction
-
-DatabaseCleaner.clean_with :deletion
-DatabaseCleaner.strategy = :deletion
-
-class ActionDispatch::IntegrationTest
-  include DatabaseCleanerSupport
-end
-
 # TODO: terminates all connections to db name
 # ActiveRecord::Base.connection.execute <<-SQL
 #   SELECT pg_terminate_backend(pg_stat_activity.pid)
@@ -26,7 +12,6 @@ end
 # puts _, "thing"
 
 class ActiveSupport::TestCase
-  include DatabaseCleanerSupport
   # Run tests in parallel with specified workers
   parallelize(workers: :number_of_processors)
 

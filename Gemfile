@@ -96,8 +96,6 @@ group :test do
   gem "webdrivers"
   # start a debugger on failing test
   # gem 'minitest-byebug'
-  # clean databases
-  gem 'database_cleaner-active_record'
 end
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
