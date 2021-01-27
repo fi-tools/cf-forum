@@ -48,6 +48,7 @@ jobs:
         PGPASSWORD: hunter2
         RAILS_ENV: test
       run: |
+        bin/rails db:create
         bin/rails db:migrate
         bin/rails db:setup
 
