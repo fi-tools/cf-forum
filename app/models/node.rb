@@ -91,7 +91,7 @@ class Node < ApplicationRecord
     cs = Node
       .joins(:readable_by_groups)
       .limit(limit_nodes_lower)
-      .join_recursive { |q| q.start_with(id: id).connect_by(id: :parent_id).where('? && ?', q.table[:groups], user&.groups || ['all']) }
+      .join_recursive { |q| q.start_with(id: id).connect_by(id: :parent_id).where('? && ?', q.table[:groups].name, user&.groups || ['all']) }
       .eager_load(:content)
       .eager_load(:author)
       .eager_load(:user)
