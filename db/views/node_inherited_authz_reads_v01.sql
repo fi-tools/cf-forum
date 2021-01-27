@@ -11,11 +11,8 @@ closest_parent(base_id, closest_ancestor_id) as (
     FROM node_all_ancestor_authz
     GROUP BY base_id
 )
--- node_to_permissions(node_id, groups) as (
-    SELECT naaa.base_id as node_id, naaa.groups as groups
-    FROM node_all_ancestor_authz naaa
-    JOIN closest_parent cp
-    ON cp.base_id = naaa.base_id AND cp.closest_ancestor_id = naaa.node_id
-    ORDER BY naaa.base_id
--- )
--- select * from node_to_permissions
+SELECT naaa.base_id as node_id, naaa.groups as groups
+FROM node_all_ancestor_authz naaa
+JOIN closest_parent cp
+ON cp.base_id = naaa.base_id AND cp.closest_ancestor_id = naaa.node_id
+ORDER BY naaa.base_id
