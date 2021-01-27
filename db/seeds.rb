@@ -103,10 +103,7 @@ class SeedDatabase
     User.create! :username => username, :email => email, :password => pw
   end
 
-  def create_node(id, title, parent, body: nil, author: @admin_author, quiet: false)
-    unless quiet
-      # puts "create_node: #{id}, #{parent}, #{title}"
-    end
+  def gen_node(id, title, parent, body: nil, author: @admin_author, quiet: false)
     node_params = { :author => author }
     unless id.nil?
       node_params[:id] = id
@@ -114,10 +111,20 @@ class SeedDatabase
     unless parent.nil?
       node_params = node_params.merge(:parent_id => parent)
     end
-    #puts "creating node"
-    node = Node.create! **node_params
-    #puts "node.parent: #{node.parent&.id}"
-    cv = ContentVersion.create! :id => id, :node => node, :title => title, :author => author, :body => body
+    node = node_params
+    cv = { :id => id, :title => title, :author => author, :body => body }
+    return node_params, cv
+  end
+
+  def create_node(id, title, parent, body: nil, author: @admin_author, quiet: false)
+    pair = gen_node id, title, parent, body: body, author: author, quiet: quiet
+    create_pair pair
+  end
+
+  def create_pair(pair)
+    node_, cv_ = pair
+    node = Node.create! **node_
+    cv = ContentVersion.create! :node => node, **cv_
     node
   end
 

@@ -28,13 +28,13 @@ class CreateInit < ActiveRecord::Migration[6.1]
     #   t.timestamps
     # end
 
-    create_table :node_ancestors_incr do |t|
+    create_table :node_ancestors_incrs do |t|
       t.bigint :base_id, index: true
       t.bigint :node_id
       t.bigint :distance
     end
 
-    create_table :node_descendants_incr do |t|
+    create_table :node_descendants_incrs do |t|
       t.bigint :base_id, index: true
       t.bigint :node_id
       t.bigint :distance
@@ -73,25 +73,27 @@ class CreateInit < ActiveRecord::Migration[6.1]
           on a.parent_id = ns.id
       ),
 
-      -- cache n_descendants
-      dec_update as (UPDATE nodes n
-        SET n_descendants = n.n_descendants + 1
-        where id in (
-          select id from ancestors
-        )
-      ),
+      -- updating n_descendants used to be here; but we need some final query
+      -- or have to use PERFORM or something
+      --dec_update as (
+      --),
 
       -- build ancestors incrementally
-      anc_incr as (INSERT INTO node_ancestors_incr (base_id, node_id, distance)
+      anc_incr as (INSERT INTO node_ancestors_incrs (base_id, node_id, distance)
       SELECT base_id, id as node_id, distance
       from ancestors),
 
       -- build descendants incrementally
-      dec_incr as (INSERT INTO node_descendants_incr (base_id, node_id, distance)
-      SELECT base_id as node_id, id as base_id, distance
+      dec_incr as (INSERT INTO node_descendants_incrs (base_id, node_id, distance)
+      SELECT id, base_id, distance
       FROM ancestors)
 
-      SELECT 1;
+      -- cache n_descendants
+      UPDATE nodes n
+      SET n_descendants = n.n_descendants + 1
+      where id in (
+        select id from ancestors
+      );
 
       SQL
     end

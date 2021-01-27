@@ -12,7 +12,7 @@ class NodesReadable < ApplicationRecord
 
   class << self
     def by(user)
-      NodesReadable.where(user_id: user.id || user)
+      NodesReadable.where(user_id: user.id)
     end
   end
 end

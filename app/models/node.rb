@@ -46,7 +46,7 @@ class Node < ApplicationRecord
   has_one :readable_by_groups, class_name: "NodeInheritedAuthzRead"
   has_many :readable_by_users, class_name: "NodesReadable"
 
-  has_many :descendants, class_name: "NodeDescendant", foreign_key: :base_id
+  has_many :descendants, class_name: "NodeDescendantsIncr", foreign_key: :base_id
   has_many :readable_descendants, class_name: "NodeReadableDescendant", foreign_key: :base_id
 
   before_create :set_node_cache_init
@@ -171,6 +171,7 @@ class Node < ApplicationRecord
     end
 
     def with_children(node_id, user)
+      return Node.find_readable(node_id, user)
       Node
         .includes(direct_children: [:content, :author, :user, :readable_by_users])
         .joins(:readable_by_users)
@@ -427,9 +428,10 @@ class Node < ApplicationRecord
     end
 
     def find_readable(id, user)
-      # nr = NodesReadable.by(user).where(node_id: id).first
+      nr = Node.joins(:readable_by_users)
+        .where(nodes_readables: { user: user, node_id: id })
       # puts nr.to_json
-      # return Node.where(id: nr.node_id)
+      return nr
       Node
         .includes(:content)
         .includes(:author)
