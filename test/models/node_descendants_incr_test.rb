@@ -11,8 +11,8 @@ class NodeDescendantsIncrTest < ActiveSupport::TestCase
     @nodes = []
     @root = create_node(0, "root", nil, author: @admin_author)
     @nodes << @root
-    @nodes << create_node(nil, "reply1", @root, author: @admin_author)
-    @nodes << create_node(nil, "reply2", @root, author: @admin_author)
+    @nodes << create_node(nil, "reply1", @root.id, author: @admin_author)
+    @nodes << create_node(nil, "reply2", @root.id, author: @admin_author)
   end
 
   test "node_descendants_incr has records with base_id=node_id for each node" do

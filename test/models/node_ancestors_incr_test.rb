@@ -11,9 +11,9 @@ class NodeAncestorsIncrTest < ActiveSupport::TestCase
     @nodes = []
     @root = create_node(0, "root", nil, author: @admin_author)
     @nodes << @root
-    @nodes << create_node(nil, "reply1", @root, author: @admin_author)
+    @nodes << create_node(nil, "reply1", @root.id, author: @admin_author)
     sleep 1
-    @nodes << create_node(nil, "reply2", @root, author: @admin_author)
+    @nodes << create_node(nil, "reply2", @root.id, author: @admin_author)
   end
 
   test "node_ancestors_incr has records with base_id=node_id for each node" do
@@ -24,7 +24,7 @@ class NodeAncestorsIncrTest < ActiveSupport::TestCase
     t = NodeAncestorsIncr.arel_table
     assert_equal @nodes.count, total_nodes, "sanity check nodes count in db -- is only those we've set up"
     assert_equal 5, NodeAncestorsIncr.all.count, "should have 5 total records"
-    assert_equal total_nodes, NodeAncestorsIncr.where(t[:base_id].eq(@root.id)).count, "root node should have `Node.all.count` ancestors"
+    assert_equal 1, NodeAncestorsIncr.where(t[:base_id].eq(@root.id)).count, "root node should have 1 ancestor"
     assert_equal total_nodes, NodeAncestorsIncr.where(t[:base_id].eq(t[:node_id])).count, "each node should have 1 record for base_id=node_id"
     assert_equal total_nodes, NodeAncestorsIncr.where(t[:base_id].eq(t[:node_id]).and(t[:distance].eq(0))).count, "all base_id=node_id records should have distance=0"
   end
