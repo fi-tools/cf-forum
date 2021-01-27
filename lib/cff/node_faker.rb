@@ -53,8 +53,8 @@ module Cff::NodeFaker
                 body = Faker::Lorem.paragraph(sentence_count: 2, supplemental: false, random_sentences_to_add: 4)
                 gen_node(nil, title, parent, body: body, quiet: true)
               end
-              nodes = Node.find(Node.insert_all!(pairs.map { |p| p[0] }).map { |n| n["id"] })
-              cvs = ContentVersion.insert_all!(pairs.map { |p| p[1] }.each_with_index.map { |cv, i| cv.merge(:node_id => nodes[i]["id"]) })
+              nodes = Node.insert_all!(pairs.map { |p| p[0] }).map { |n| Node.new(:id => n["id"]) }
+              cvs = ContentVersion.insert_all!(pairs.map { |p| p[1] }.each_with_index.map { |cv, i| cv.merge(:node_id => nodes[i]) })
               queue += nodes
             end
           end
