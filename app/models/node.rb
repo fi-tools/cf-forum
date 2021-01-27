@@ -429,10 +429,10 @@ class Node < ApplicationRecord
 
     def find_readable(id, user)
       Node
+        .joins(:readable_by_users)
         .includes(:content)
         .includes(:author)
         .includes(:user)
-        .includes(:readable_by_users)
         .where(nodes_readables: { user_id: user })
         .find(id)
       # .find(id)

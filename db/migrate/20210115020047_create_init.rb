@@ -65,7 +65,7 @@ class CreateInit < ActiveRecord::Migration[6.1]
       with recursive ancestors as (
         select NEW.id as base_id, id, parent_id, 1 as distance
         from nodes
-        where id = NEW.parent_id
+        where id = NEW.id
         union all
         select a.base_id, ns.id, ns.parent_id, a.distance + 1
         from nodes ns
@@ -93,7 +93,7 @@ class CreateInit < ActiveRecord::Migration[6.1]
       SET n_descendants = n.n_descendants + 1
       where id in (
         select id from ancestors
-      );
+      ) and id != NEW.id;
 
       SQL
     end
