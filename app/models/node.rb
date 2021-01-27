@@ -89,10 +89,9 @@ class Node < ApplicationRecord
   def children_rec_arhq(user, limit_nodes_lower: 140)
     descendants_map = Hash.new { |h, k| h[k] = Array.new }
     cs = Node
-      .joins(:readable_by_users)
-      .where({ nodes_readables: { user_id: user } })
+      .joins(:readable_by_groups)
       .limit(limit_nodes_lower)
-      .join_recursive { |q| q.start_with(id: id).connect_by(id: :parent_id) }
+      .join_recursive { |q| q.start_with(id: id).connect_by(id: :parent_id).where('? && ?', query.table[:groups], user&.groups || ['all']) }
       .eager_load(:content)
       .eager_load(:author)
       .eager_load(:user)
