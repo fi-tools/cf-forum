@@ -3,21 +3,16 @@ require "test_helper"
 
 class NodeAncestorsIncrTest < ActiveSupport::TestCase
   setup do
-    pw = "hunter2"
-    admin_email = "#{SecureRandom.hex(12)}@xk.io"
-    admin = User.create! :username => SecureRandom.hex(12), :email => admin_email, :password => pw
-    @admin_author = Author.find_or_create_by! :user => admin, :name => SecureRandom.hex(12), :public => true
+    @user, @author = gen_test_user_and_author
 
     @nodes = []
-    @root = create_node(0, "root", nil, author: @admin_author)
+    @root = create_node(0, "root", nil, author: @author)
     @nodes << @root
-    @nodes << create_node(nil, "reply1", @root.id, author: @admin_author)
-    sleep 1
-    @nodes << create_node(nil, "reply2", @root.id, author: @admin_author)
+    @nodes << create_node(nil, "reply1", @root.id, author: @author)
+    @nodes << create_node(nil, "reply2", @root, author: @author)
   end
 
   test "node_ancestors_incr has records with base_id=node_id for each node" do
-    sleep 1
     total_nodes = Node.all.count
     triggers = ActiveRecord::Base.connection.execute "SELECT * FROM information_schema.triggers;"
     puts triggers.to_a
