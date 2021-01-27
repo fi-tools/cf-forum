@@ -93,6 +93,9 @@ class NodesController < ApplicationController
   def set_node_to_children_map(id = params[:id].to_i)
     # we want to set @node after calling children_rec_arhq so we check permissions
     _, @children_lookup, @node = Node.children_rec_arhq(id, current_user)
+    if @node.nil?
+      raise ActiveRecord::RecordNotFound, "Node(id: #{id}) not found."
+    end
   end
 
   # Only allow a list of trusted parameters through.
