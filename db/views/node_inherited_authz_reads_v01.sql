@@ -16,5 +16,6 @@ closest_parent(base_id, closest_ancestor_id) as (
     FROM node_all_ancestor_authz naaa
     JOIN closest_parent cp
     ON cp.base_id = naaa.base_id AND cp.closest_ancestor_id = naaa.node_id
+    ORDER BY naaa.base_id
 -- )
 -- select * from node_to_permissions

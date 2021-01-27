@@ -96,6 +96,7 @@ class Node < ApplicationRecord
       .eager_load(:content)
       .eager_load(:author)
       .eager_load(:user)
+    # sorting here adds 200ms!!! .order(id: :asc)
     cs.each { |n| descendants_map[n.parent_id] << n }
     # return fresh copy of this node as 3rd item
     return cs, descendants_map, descendants_map[parent_id].first
