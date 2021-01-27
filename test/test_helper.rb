@@ -15,21 +15,14 @@ class ActiveSupport::TestCase
   # Run tests in parallel with specified workers
   parallelize(workers: :number_of_processors)
 
-  # disable fixtures
-  # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
-  # fixtures :all
-
-  # Add more helper methods to be used by all tests here...
+  # TODO: do these overlap with Cff::TemplateTestExtra?
 
   def gen_node(id, title, parent, body: nil, author: nil, quiet: false)
     node_params = { :author => author }
     unless id.nil?
       node_params[:id] = id
     end
-    parent = parent.id unless (parent.nil? || parent.instance_of?(Integer))
-    unless parent.nil?
-      node_params = node_params.merge(:parent_id => parent)
-    end
+    node_params = node_params.merge(:parent_id => parent&.id)
     node = node_params
     cv = { :id => id, :title => title, :author => author, :body => body }
     return node_params, cv

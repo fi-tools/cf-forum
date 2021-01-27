@@ -30,7 +30,8 @@ class CreateInit < ActiveRecord::Migration[6.1]
 
     create_table :node_ancestors_incrs do |t|
       t.bigint :base_id, index: true
-      t.bigint :node_id
+      t.bigint :node_id, index: true
+      t.bigint :parent_id, index: true
       t.bigint :distance
     end
 
@@ -39,6 +40,9 @@ class CreateInit < ActiveRecord::Migration[6.1]
       t.bigint :node_id
       t.bigint :distance
     end
+
+    add_index :node_descendants_incrs, [:base_id, :node_id]
+    add_index :node_descendants_incrs, [:node_id, :base_id]
 
     create_table :nodes do |t|
       t.belongs_to :author, index: true
@@ -78,14 +82,14 @@ class CreateInit < ActiveRecord::Migration[6.1]
       --),
 
       -- build ancestors incrementally
-      anc_incr as (INSERT INTO node_ancestors_incrs (base_id, node_id, distance)
-      SELECT base_id, id, distance
-      from ancestors RETURNING 1),
+      anc_incr as (INSERT INTO node_ancestors_incrs (base_id, node_id, parent_id, distance)
+      SELECT base_id, id, parent_id, distance
+      from ancestors RETURNING 1)
 
-      -- build descendants incrementally
-      dec_incr as (INSERT INTO node_descendants_incrs (base_id, node_id, distance)
-      SELECT id, base_id, distance
-      FROM ancestors RETURNING 1)
+      ---- build descendants incrementally
+      --dec_incr as (INSERT INTO node_descendants_incrs (base_id, node_id, distance)
+      --SELECT id, base_id, distance
+      --FROM ancestors RETURNING 1)
 
       -- cache n_descendants
       UPDATE nodes n
@@ -98,6 +102,10 @@ class CreateInit < ActiveRecord::Migration[6.1]
       SQL
     end
     add_foreign_key :nodes, :nodes, column: :parent_id
+    add_foreign_key :node_descendants_incrs, :nodes, column: :node_id
+    add_foreign_key :node_descendants_incrs, :nodes, column: :base_id
+    add_foreign_key :node_ancestors_incrs, :nodes, column: :node_id
+    add_foreign_key :node_ancestors_incrs, :nodes, column: :base_id
 
     create_table :content_versions do |t|
       t.belongs_to :author, foreign_key: true, index: true

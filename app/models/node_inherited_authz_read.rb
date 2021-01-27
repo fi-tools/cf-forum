@@ -1,6 +1,8 @@
 class NodeInheritedAuthzRead < ApplicationRecord
-  attr_reader :node_id, :groups
+  attr_reader :node_id, :parent_id, :groups
   belongs_to :node
+
+  self.primary_key = :node_id
 
   def readonly?
     true

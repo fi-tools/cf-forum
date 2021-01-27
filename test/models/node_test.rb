@@ -2,17 +2,16 @@ require "test_helper"
 # require "minitest/byebug" if ENV["DEBUG"]
 
 class NodeTest < ActiveSupport::TestCase
-  setup do
-    pw = "hunter2"
-    admin_email = "#{SecureRandom.hex(12)}@xk.io"
-    admin = User.create! :username => SecureRandom.hex(12), :email => admin_email, :password => pw
-    @admin_author = Author.find_or_create_by! :user => admin, :name => SecureRandom.hex(12), :public => true
+  include Cff::NodeFaker
 
-    @nodes = []
-    @root = create_node(0, "root", nil, author: @admin_author)
-    @nodes << @root
-    @nodes << create_node(nil, "reply1", @root.id, author: @admin_author)
-    @nodes << create_node(nil, "reply2", @root.id, author: @admin_author)
+  setup do
+    test_setup_3_nodes
+  end
+
+  # called after every single test
+  teardown do
+    # when controller is using cache it may be a good idea to reset it afterwards
+    Rails.cache.clear
   end
 
   test "node record should have accurate n_descendants, n_children, and depth" do
@@ -30,12 +29,21 @@ class NodeTest < ActiveSupport::TestCase
     # assert gs.include?("all")
   end
 
-  test "getting relatives via arel includes self" do
-    a_node = Node.first
-    [true, false].each do |dir|
-      mgr = Node.relatives_via_arel_mgr(dir, a_node.id)
-      nodes = Node.find_by_sql(mgr.to_sql)
-      assert (nodes.select { |n| n.id == a_node.id }).count == 1
-    end
+  test "children_rec_arhq sanity" do
+    # note: we sometimes have more than 3 nodes in the db, but also multiple roots... not sure why this happens. db not being reset on teardown?
+    assert_equal 3, Node.descendants_raw(@root.id).count, "3 nodes sanity"
+    root = Node.find(@root.id)
+    Rails::logger.info root.to_json
+    Rails::logger.info root.children_direct(nil).to_sql
+    assert_equal 2, root.children_direct(nil).count, "2 children sanity"
+    cs, descendants_map = root.children_rec_arhq(nil)
+    puts cs, descendants_map
+    assert_equal 2, descendants_map[root.id].count, "2 children returned"
+  end
+
+  test "children_rec_arhq faker" do
+    run_faker 11, @admin, @sub_user, @general_user
+    _, child_map = @faker_root.children_rec_arhq(nil)
+    assert_equal @faker_root.children_direct(nil).count, child_map[@faker_root.id].count, "child counting methods agree"
   end
 end

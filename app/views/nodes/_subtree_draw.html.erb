@@ -9,7 +9,7 @@
 <% if node.n_children > 0 %>
   <% if max_depth > 0 %>
     <ul>
-      <% node.children(current_user).each do |n2| %>
+      <% @children_lookup[node.id].each do |n2| %>
         <li>
           <%= render 'subtree_draw', node: n2, max_depth: max_depth - 1, use_anchor: use_anchor, prefix_anchor: prefix_anchor %>
         </li>

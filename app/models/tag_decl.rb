@@ -10,6 +10,7 @@ class TagDecl < ApplicationRecord
 
   def refresh_system_tags
     SystemTag.refresh
+    UsersGroup.refresh
   end
 
   class << self
