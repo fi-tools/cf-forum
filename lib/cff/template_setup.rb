@@ -40,6 +40,10 @@ module Cff::TemplateSetup
     @g_subscribers = UserTag.find_or_create_by! :tag => :subscribers
   end
 
+  def create_group(group_name)
+    UserTag.find_or_create_by! :tag => group_name.to_sym
+  end
+
   def setup_subscribers
     # create subscribers area
     @subs_node = create_node nil, "SubsOnly", @root
@@ -48,7 +52,7 @@ module Cff::TemplateSetup
   end
 
   def add_to_group(user, group)
-    TagDecl.find_or_create_by! :anchored => user, :tag => Authz::userInGroup, :target => @g_subscribers
+    TagDecl.find_or_create_by! :anchored => user, :tag => Authz::userInGroup, :target => group
   end
 
   def add_timestamps(record)
@@ -58,7 +62,7 @@ module Cff::TemplateSetup
   end
 
   def gen_user(username, email, pw)
-    puts "Generating User: #{username} <#{email}> | pw: #{pw}"
+    Rails::logger.info "Generating User: #{username} <#{email}> | pw: #{pw}"
     User.create! :username => username, :email => email, :password => pw
   end
 

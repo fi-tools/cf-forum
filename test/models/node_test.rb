@@ -33,11 +33,12 @@ class NodeTest < ActiveSupport::TestCase
   end
 
   test "children_rec_arhq sanity" do
+    puts Node.all.inspect
     assert_equal 3, Node.all.count, "3 nodes sanity"
     root = Node.find(@root.id)
-    puts root.to_json
-    puts root.children(nil).to_sql
-    assert_equal 2, root.children(nil).count, "2 children sanity"
+    Rails::logger.info root.to_json
+    Rails::logger.info root.children_direct(nil).to_sql
+    assert_equal 2, root.children_direct(nil).count, "2 children sanity"
     cs, descendants_map = root.children_rec_arhq(nil)
     puts cs, descendants_map
     assert_equal 2, descendants_map[root.id].count, "2 children returned"
@@ -46,6 +47,6 @@ class NodeTest < ActiveSupport::TestCase
   test "children_rec_arhq faker" do
     run_faker 11, @admin, @sub_user, @general_user
     _, child_map = @faker_root.children_rec_arhq(nil)
-    assert_equal @faker_root.children(nil).count, child_map[@faker_root.id].count, "child counting methods agree"
+    assert_equal @faker_root.children_direct(nil).count, child_map[@faker_root.id].count, "child counting methods agree"
   end
 end

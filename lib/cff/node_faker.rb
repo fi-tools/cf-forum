@@ -10,7 +10,7 @@ module Cff::NodeFaker
 
     n_fake_nodes ||= 500
     n_fake_nodes = ENV["n_fake_nodes"]&.to_i || n_fake_nodes
-    puts "n_fake_nodes set to #{n_fake_nodes}. set env var 'n_fake_nodes' to overwrite."
+    Rails::logger.warn "n_fake_nodes set to #{n_fake_nodes}. set env var 'n_fake_nodes' to overwrite."
     self.run_faker_inner(n_fake_nodes)
   end
 
@@ -60,7 +60,7 @@ module Cff::NodeFaker
               queue += nodes
             end
           end
-          puts "created node #{i_chunk.last}/#{n_topics_to_create}"
+          Rails::logger.info "created node #{i_chunk.last}/#{n_topics_to_create}"
         end
         NodeInheritedAuthzRead.refresh
       }

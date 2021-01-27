@@ -22,7 +22,6 @@ class Author < ApplicationRecord
 
   def formatted_name
     if self.name.nil? || self.name.length == 0
-      puts self.to_json
       if self.public
         return "u/#{self.user.username}"
       else
