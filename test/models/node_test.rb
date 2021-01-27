@@ -20,15 +20,6 @@ class NodeTest < ActiveSupport::TestCase
     assert_equal 2, Node.find(@root.id).n_descendants, "root cached 2 descendants"
   end
 
-  # todo: this will depend on fixtures and users+groups, OR seeding the test db, but `rake RAILS_ENV=test db:seed` works but they don't seem to show up in tests. IDK
-  test "who_can_read" do
-    # n = Node.first
-    # puts n.to_json, n.who_can_read
-    # gs = n.who_can_read
-    # assert gs.count > 0
-    # assert gs.include?("all")
-  end
-
   test "children_rec_arhq sanity" do
     # note: we sometimes have more than 3 nodes in the db, but also multiple roots... not sure why this happens. db not being reset on teardown?
     assert_equal 3, Node.descendants_raw(@root.id).count, "3 nodes sanity"
@@ -45,5 +36,9 @@ class NodeTest < ActiveSupport::TestCase
     run_faker 11, @admin, @sub_user, @general_user
     _, child_map = @faker_root.children_rec_arhq(nil)
     assert_equal @faker_root.children_direct(nil).count, child_map[@faker_root.id].count, "child counting methods agree"
+  end
+
+  test "children_rec_arhq resepects Authz.read permissions on nodes" do
+    skip "todo"
   end
 end
