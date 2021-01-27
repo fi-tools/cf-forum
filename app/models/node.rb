@@ -84,6 +84,23 @@ class Node < ApplicationRecord
   #   content_versions.last
   # end
 
+  def children_rec(user, limit_nodes_lower: 100)
+    descendants_map = Hash.new { |h, k| h[k] = Array.new }
+    cs = Node
+      .joins(:readable_by_users)
+      .where({ nodes_readables: { user_id: user } })
+      .limit(limit_nodes_lower)
+      .join_recursive do |q|
+      q.start_with(id: id)
+        .connect_by(id: :parent_id)
+      # .having(q.prior[:id].count.lteq(limit_nodes_lower))
+      # .where(Arel::SelectManager.new.from(q.prior).project(q.prior[:id].count).lteq(limit_nodes_lower)) # "(SELECT ? FROM ?) < ?", q.prior[:id].count, q.prior.name, limit_nodes_lower)
+    end
+    puts cs.to_sql
+    cs.each { |n| descendants_map[n.parent_id] << n }
+    return cs, descendants_map
+  end
+
   def descendants(user)
     q = Node.descendants_readable_by(id, user)
     q = block q if block_given?

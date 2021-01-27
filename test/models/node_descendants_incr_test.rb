@@ -18,8 +18,8 @@ class NodeDescendantsIncrTest < ActiveSupport::TestCase
   test "node_descendants_incr has records with base_id=node_id for each node" do
     total_nodes = Node.all.count
     t = NodeDescendantsIncr.arel_table
-    all_ndi = NodeDescendantsIncr.all
-    Rails::logger.debug all_ndi.inspect
+    # all_ndi = NodeDescendantsIncr.all
+    # Rails::logger.debug all_ndi.inspect
     assert_equal @nodes.count, total_nodes, "sanity check nodes count in db -- is only those we've set up"
     assert_equal 5, NodeDescendantsIncr.all.count, "should have 5 total records"
     assert_equal total_nodes, NodeDescendantsIncr.where(t[:base_id].eq(@root.id)).count, "root node should have `Node.all.count` descendants"

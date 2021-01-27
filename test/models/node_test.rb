@@ -2,17 +2,10 @@ require "test_helper"
 # require "minitest/byebug" if ENV["DEBUG"]
 
 class NodeTest < ActiveSupport::TestCase
-  setup do
-    pw = "hunter2"
-    admin_email = "#{SecureRandom.hex(12)}@xk.io"
-    admin = User.create! :username => SecureRandom.hex(12), :email => admin_email, :password => pw
-    @admin_author = Author.find_or_create_by! :user => admin, :name => SecureRandom.hex(12), :public => true
+  include Cff::NodeFaker
 
-    @nodes = []
-    @root = create_node(0, "root", nil, author: @admin_author)
-    @nodes << @root
-    @nodes << create_node(nil, "reply1", @root.id, author: @admin_author)
-    @nodes << create_node(nil, "reply2", @root.id, author: @admin_author)
+  setup do
+    test_setup_3_nodes
   end
 
   test "node record should have accurate n_descendants, n_children, and depth" do
@@ -37,5 +30,18 @@ class NodeTest < ActiveSupport::TestCase
       nodes = Node.find_by_sql(mgr.to_sql)
       assert (nodes.select { |n| n.id == a_node.id }).count == 1
     end
+  end
+
+  test "children_rec sanity" do
+    assert_equal 3, Node.all.count, "3 nodes sanity"
+    root = Node.find(@root.id)
+    puts root.to_json
+    puts root.children(nil).to_sql
+    assert_equal 2, root.children(nil).count, "2 children sanity"
+    cs, descendants_map = root.children_rec(nil)
+    puts cs, descendants_map
+    assert_equal 2, descendants_map[root.id].count, "2 children returned"
+
+    # @faker_root =
   end
 end
