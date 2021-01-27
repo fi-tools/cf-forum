@@ -5,7 +5,7 @@
 #   gem 'sqlite3'
 #
 
-# if you change between postgres and sqlite -- comment/uncomment config/initializers/scenic.rb as appropriate 
+# if you change between postgres and sqlite -- comment/uncomment config/initializers/scenic.rb as appropriate
 
 default: &default
   # adapter: postgresql
@@ -24,13 +24,14 @@ devsqlite:
 devpg: &devpg
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   adapter: postgresql
-  database: cffdev
+  database: cff-dev-pg
   username: cffdev
   password: hunter2
   host: host.docker.internal
 
 development:
   <<: *devpg
+  database: cffdev
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".

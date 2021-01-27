@@ -28,6 +28,18 @@ class CreateInit < ActiveRecord::Migration[6.1]
     #   t.timestamps
     # end
 
+    create_table :node_ancestors_incr do |t|
+      t.bigint :base_id, index: true
+      t.bigint :node_id
+      t.bigint :distance
+    end
+
+    create_table :node_descendants_incr do |t|
+      t.bigint :base_id, index: true
+      t.bigint :node_id
+      t.bigint :distance
+    end
+
     create_table :nodes do |t|
       t.belongs_to :author, index: true
       t.bigint :parent_id, index: true
@@ -49,21 +61,37 @@ class CreateInit < ActiveRecord::Migration[6.1]
       SET n_children = n.n_children + 1
       WHERE n.id = NEW.parent_id;
 
+      -- start with distance=1 bc we start with the parent node, not the NEW node
       with recursive ancestors as (
-        select id, parent_id
+        select NEW.id as base_id, id, parent_id, 1 as distance
         from nodes
         where id = NEW.parent_id
         union all
-        select ns.id, ns.parent_id
+        select a.base_id, ns.id, ns.parent_id, a.distance + 1
         from nodes ns
         inner join ancestors a
           on a.parent_id = ns.id
-      )
-      UPDATE nodes n
-      SET n_descendants = n.n_descendants + 1
-      where id in (
-        select id from ancestors
-      );
+      ),
+
+      -- cache n_descendants
+      dec_update as (UPDATE nodes n
+        SET n_descendants = n.n_descendants + 1
+        where id in (
+          select id from ancestors
+        )
+      ),
+
+      -- build ancestors incrementally
+      anc_incr as (INSERT INTO node_ancestors_incr (base_id, node_id, distance)
+      SELECT base_id, id as node_id, distance
+      from ancestors),
+
+      -- build descendants incrementally
+      dec_incr as (INSERT INTO node_descendants_incr (base_id, node_id, distance)
+      SELECT base_id as node_id, id as base_id, distance
+      FROM ancestors)
+
+      SELECT 1;
 
       SQL
     end

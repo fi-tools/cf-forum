@@ -180,7 +180,7 @@ class SeedDatabase
               queue << create_node(nil, title, parent.id, body: body, quiet: true)
             end
           end
-          puts "created node #{i}/#{n_topics_to_create}"
+          puts "created node #{i_chunk.last}/#{n_topics_to_create}"
         end
       }
     end

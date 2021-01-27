@@ -20,7 +20,7 @@ or mb this is enough
 rake db:reset db:migrate db:seed
 ```
 
-and sometimes this, which seems reliable. the copying is for WSL
+and sometimes this, which seems reliable. the copying is for WSL and using sqlite
 
 ```
 rm db/cff_dev.db ; rm db/schema.rb ; rake db:rollback VERSION=0 db:migrate ; rake db:migrate db:seed ; cp db/cff_dev.db /mnt/c/Users/xertrov/cff_dev.db
