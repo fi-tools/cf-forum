@@ -95,7 +95,7 @@ class NodesController < ApplicationController
     # @node = @node_id_to_children[-1].first
     @node = Node.with_children(id, current_user)
     # _, @children_lookup = @node.children_rec_arhq(current_user)
-    _, @children_lookup = @node.children_rec_arhq(current_user)
+    _, @children_lookup = @node.children_rec_incr(current_user)
     # @node_id_to_children = Hash.new { |h, k| h[k] = Array.new }
     ## @node_id_to_children[@node.id] = @node.direct_children
     # @node_id_to_children[@node.id] = @node.children(current_user)
