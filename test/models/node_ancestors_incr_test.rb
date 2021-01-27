@@ -1,6 +1,6 @@
 require "test_helper"
 
-class NodeDescendantTest < ActiveSupport::TestCase
+class NodeAncestorsIncrTest < ActiveSupport::TestCase
   # test "the truth" do
   #   assert true
   # end
