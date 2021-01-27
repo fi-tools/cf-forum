@@ -47,6 +47,7 @@ class Node < ApplicationRecord
   has_many :readable_by_users, class_name: "NodesReadable"
 
   has_many :descendants, class_name: "NodeDescendantsIncr", foreign_key: :base_id
+  # has_many :descendants, through: :descendant_links, class_name: "Node"
   has_many :readable_descendants, class_name: "NodeReadableDescendant", foreign_key: :base_id
 
   before_create :set_node_cache_init
@@ -89,17 +90,35 @@ class Node < ApplicationRecord
     cs = Node
       .joins(:readable_by_users)
       .where({ nodes_readables: { user_id: user } })
+      .limit(limit_nodes_lower)
       .eager_load(:content)
       .eager_load(:author)
       .eager_load(:user)
-      .limit(limit_nodes_lower)
       .join_recursive do |q|
       q.start_with(id: id)
         .connect_by(id: :parent_id)
       # .having(q.prior[:id].count.lteq(limit_nodes_lower))
       # .where(Arel::SelectManager.new.from(q.prior).project(q.prior[:id].count).lteq(limit_nodes_lower)) # "(SELECT ? FROM ?) < ?", q.prior[:id].count, q.prior.name, limit_nodes_lower)
     end
-    puts cs.to_sql
+    # puts cs.to_sql
+    cs.each { |n| descendants_map[n.parent_id] << n }
+    return cs, descendants_map
+  end
+
+  def children_rec_incr(user, limit_nodes_lower: 100)
+    descendants_map = Hash.new { |h, k| h[k] = Array.new }
+    cs = Node
+      .eager_load(:content)
+      .eager_load(:author)
+      .eager_load(:user)
+      .joins(:readable_by_users)
+      .where({ nodes_readables: { user_id: user } })
+      .limit(limit_nodes_lower)
+    # .joins(:descendants)
+    # .having(q.prior[:id].count.lteq(limit_nodes_lower))
+    # .where(Arel::SelectManager.new.from(q.prior).project(q.prior[:id].count).lteq(limit_nodes_lower)) # "(SELECT ? FROM ?) < ?", q.prior[:id].count, q.prior.name, limit_nodes_lower)
+    # puts cs.to_sql
+    # puts cs
     cs.each { |n| descendants_map[n.parent_id] << n }
     return cs, descendants_map
   end

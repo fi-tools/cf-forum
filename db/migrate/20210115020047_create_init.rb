@@ -98,6 +98,10 @@ class CreateInit < ActiveRecord::Migration[6.1]
       SQL
     end
     add_foreign_key :nodes, :nodes, column: :parent_id
+    add_foreign_key :node_descendants_incrs, :nodes, column: :node_id
+    add_foreign_key :node_descendants_incrs, :nodes, column: :base_id
+    add_foreign_key :node_ancestors_incrs, :nodes, column: :node_id
+    add_foreign_key :node_ancestors_incrs, :nodes, column: :base_id
 
     create_table :content_versions do |t|
       t.belongs_to :author, foreign_key: true, index: true

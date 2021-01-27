@@ -28,7 +28,7 @@ module Cff::NodeFaker
         parent = @faker_root
         n_topics_to_create.times.to_a.in_groups_of(90) do |i_chunk|
           ActiveRecord::Base.transaction do
-            if queue.count < i_chunk.count + 2
+            if queue.count < i_chunk.count
               i_chunk.each do |i|
                 if child_c >= branching_f
                   parent = queue[next_sample_index]
@@ -53,13 +53,14 @@ module Cff::NodeFaker
                 body = Faker::Lorem.paragraph(sentence_count: 2, supplemental: false, random_sentences_to_add: 4)
                 gen_node(nil, title, parent, body: body, quiet: true)
               end
-              nodes = Node.insert_all!(pairs.map { |p| p[0] }).map { |n| Node.new(:id => n["id"]) }
-              cvs = ContentVersion.insert_all!(pairs.map { |p| p[1] }.each_with_index.map { |cv, i| cv.merge(:node_id => nodes[i]) })
+              nodes = Node.find(Node.insert_all!(pairs.map { |p| p[0] }).map { |n| n["id"] })
+              cvs = ContentVersion.insert_all!(pairs.map { |p| p[1] }.each_with_index.map { |cv, i| cv.merge(:node_id => nodes[i].id) })
               queue += nodes
             end
           end
           puts "created node #{i_chunk.last}/#{n_topics_to_create}"
         end
+        NodeInheritedAuthzRead.refresh
       }
     end
   end
