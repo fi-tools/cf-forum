@@ -38,6 +38,14 @@ class NodeTest < ActiveSupport::TestCase
     assert_equal @faker_root.children_direct(nil).count, child_map[@faker_root.id].count, "child counting methods agree"
   end
 
+  test "children_rec_arhq returns sorted lists" do
+    run_faker 11, @admin, @sub_user, @general_user
+    _, child_map = @faker_root.children_rec_arhq(nil)
+    child_map.each_value do |v|
+      assert_equal v.sort, v, "children are sorted"
+    end
+  end
+
   test "children_rec_arhq resepects Authz.read permissions on nodes" do
     skip "todo"
   end

@@ -92,7 +92,7 @@ class NodesController < ApplicationController
   # this sets both @node and @node_id_to_children
   def set_node_to_children_map(id = params[:id].to_i)
     # we want to set @node after calling children_rec_arhq so we check permissions
-    _, @children_lookup, @node = Node.find(id).children_rec_arhq(current_user)
+    _, @children_lookup, @node = Node.children_rec_arhq(id, current_user)
   end
 
   # Only allow a list of trusted parameters through.

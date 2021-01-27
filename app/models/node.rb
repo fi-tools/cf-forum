@@ -60,18 +60,6 @@ class Node < ApplicationRecord
     NodeInheritedAuthzRead.refresh
   end
 
-  # def children(user, limit: 1000)
-  #   nar = Arel::Table.new :nar
-  #   q =
-  #     Node.join_with_author_username(
-  #       Node.join_with_author(
-  #         Node.join_with_content(
-  #           Node.nodes_readable_by(user).where(nar[:parent_id].eq(id)).take(limit)
-  #         )
-  #       )
-  #     )
-  #   Node.find_by_sql(q)
-  # end
   def children_direct(user)
     Node
       .joins(:readable_by_users)
@@ -86,24 +74,12 @@ class Node < ApplicationRecord
   #   content_versions.last
   # end
 
-  def children_rec_arhq(user, limit_nodes_lower: 140)
-    descendants_map = Hash.new { |h, k| h[k] = Array.new }
-    cs = Node
-      .joins(:readable_by_groups)
-      .where.overlap({ node_inherited_authz_reads: { groups: user&.groups || User.default_groups } })
-      .join_recursive { |q| q.start_with(id: id).connect_by(id: :parent_id) }
-      .limit(limit_nodes_lower)
-      .eager_load(:content)
-      .eager_load(:author)
-      .eager_load(:user)
-    # sorting here adds 200ms!!! .order(id: :asc)
-    cs.each { |n| descendants_map[n.parent_id] << n }
-    # return fresh copy of this node as 3rd item
-    return cs, descendants_map, descendants_map[parent_id].first
-  end
-
   def formatted_name
     self.author.formatted_name
+  end
+
+  def children_rec_arhq(user, **opts)
+    Node.children_rec_arhq(id, user, **opts)
   end
 
   def title_w_default
@@ -137,6 +113,25 @@ class Node < ApplicationRecord
 
     def descendants_raw(node_id)
       Node.join_recursive { |q| q.start_with(id: node_id).connect_by(id: :parent_id) }
+    end
+
+    def children_rec_arhq(node_id, user, limit_nodes_lower: 140)
+      descendants_map = Hash.new { |h, k| h[k] = Array.new }
+      cs = Node
+        .joins(:readable_by_groups)
+        .where.overlap({ node_inherited_authz_reads: { groups: user&.groups || User.default_groups } })
+        .join_recursive { |q| q.start_with(id: node_id).connect_by(id: :parent_id) }
+        .limit(limit_nodes_lower)
+        .eager_load(:content)
+        .eager_load(:author)
+        .eager_load(:user)
+        .sort
+      # sorting here adds 200ms!!! .order(id: :asc)
+      cs.each { |n| descendants_map[n.parent_id] << n }
+      branch_root = cs.find { |n| n.id == node_id }
+      # descendants_map.each_value { |v| v.sort }
+      # return fresh copy of this node as 3rd item
+      return cs, descendants_map, branch_root
     end
   end
 
