@@ -5,8 +5,13 @@ class NodeTest < ActiveSupport::TestCase
   include Cff::NodeFaker
 
   setup do
-    puts "running setuop"
     test_setup_3_nodes
+  end
+
+  # called after every single test
+  teardown do
+    # when controller is using cache it may be a good idea to reset it afterwards
+    Rails.cache.clear
   end
 
   test "node record should have accurate n_descendants, n_children, and depth" do
@@ -25,8 +30,8 @@ class NodeTest < ActiveSupport::TestCase
   end
 
   test "children_rec_arhq sanity" do
-    puts Node.all.inspect
-    assert_equal 3, Node.all.count, "3 nodes sanity"
+    # note: we sometimes have more than 3 nodes in the db, but also multiple roots... not sure why this happens. db not being reset on teardown?
+    assert_equal 3, Node.descendants_raw(@root.id).count, "3 nodes sanity"
     root = Node.find(@root.id)
     Rails::logger.info root.to_json
     Rails::logger.info root.children_direct(nil).to_sql

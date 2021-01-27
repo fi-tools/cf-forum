@@ -97,7 +97,8 @@ class Node < ApplicationRecord
       .eager_load(:author)
       .eager_load(:user)
     cs.each { |n| descendants_map[n.parent_id] << n }
-    return cs, descendants_map
+    # return fresh copy of this node as 3rd item
+    return cs, descendants_map, descendants_map[parent_id].first
   end
 
   def formatted_name
@@ -131,6 +132,10 @@ class Node < ApplicationRecord
   class << self
     def table
       arel_table
+    end
+
+    def descendants_raw(node_id)
+      Node.join_recursive { |q| q.start_with(id: node_id).connect_by(id: :parent_id) }
     end
   end
 
