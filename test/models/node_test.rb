@@ -41,7 +41,11 @@ class NodeTest < ActiveSupport::TestCase
     cs, descendants_map = root.children_rec(nil)
     puts cs, descendants_map
     assert_equal 2, descendants_map[root.id].count, "2 children returned"
+  end
 
-    # @faker_root =
+  test "children_rec faker" do
+    run_faker 10, @admin, @sub_user, @general_user
+    _, child_map = @faker_root.children_rec(nil)
+    assert_equal @faker_root.children(nil).count, child_map[@faker_root.id].count, "child counting methods agree"
   end
 end

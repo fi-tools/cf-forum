@@ -37,7 +37,7 @@ class SeedDatabase
   def initialize(n_fake_nodes: nil)
     self.create_test_admin_user
     self.create_test_admin_authors
-    self.create_initial_forum @admin
+    self.create_initial_forum
     self.add_to_group @admin, @g_subscribers
 
     self.create_test_posts_1
