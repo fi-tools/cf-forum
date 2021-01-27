@@ -21,11 +21,12 @@ class ActiveSupport::TestCase
 
   # Add more helper methods to be used by all tests here...
 
-  def gen_node(id, title, parent, body: nil, author: $admin_author, quiet: false)
+  def gen_node(id, title, parent, body: nil, author: nil, quiet: false)
     node_params = { :author => author }
     unless id.nil?
       node_params[:id] = id
     end
+    parent = parent.id unless (parent.nil? || parent.instance_of?(Integer))
     unless parent.nil?
       node_params = node_params.merge(:parent_id => parent)
     end
@@ -41,8 +42,16 @@ class ActiveSupport::TestCase
     node
   end
 
-  def create_node(id, title, parent, body: nil, author: $admin_author, quiet: false)
+  def create_node(id, title, parent, body: nil, author: nil, quiet: false)
     pair = gen_node id, title, parent, body: body, author: author, quiet: quiet
     create_pair pair
+  end
+
+  def gen_test_user_and_author
+    pw = "hunter2"
+    user_email = "#{SecureRandom.hex(12)}@xk.io"
+    user = User.create! :username => SecureRandom.hex(12), :email => user_email, :password => pw
+    author = Author.find_or_create_by! :user => user, :name => SecureRandom.hex(12), :public => true
+    return user, author
   end
 end
