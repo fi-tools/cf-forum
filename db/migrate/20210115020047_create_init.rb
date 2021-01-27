@@ -40,6 +40,9 @@ class CreateInit < ActiveRecord::Migration[6.1]
       t.bigint :distance
     end
 
+    add_index :node_descendants_incrs, [:base_id, :node_id]
+    add_index :node_descendants_incrs, [:node_id, :base_id]
+
     create_table :nodes do |t|
       t.belongs_to :author, index: true
       t.bigint :parent_id, index: true
@@ -80,12 +83,12 @@ class CreateInit < ActiveRecord::Migration[6.1]
       -- build ancestors incrementally
       anc_incr as (INSERT INTO node_ancestors_incrs (base_id, node_id, distance)
       SELECT base_id, id, distance
-      from ancestors RETURNING 1),
+      from ancestors RETURNING 1)
 
-      -- build descendants incrementally
-      dec_incr as (INSERT INTO node_descendants_incrs (base_id, node_id, distance)
-      SELECT id, base_id, distance
-      FROM ancestors RETURNING 1)
+      ---- build descendants incrementally
+      --dec_incr as (INSERT INTO node_descendants_incrs (base_id, node_id, distance)
+      --SELECT id, base_id, distance
+      --FROM ancestors RETURNING 1)
 
       -- cache n_descendants
       UPDATE nodes n

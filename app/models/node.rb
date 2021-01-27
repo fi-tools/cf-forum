@@ -18,11 +18,12 @@ class Node < ApplicationRecord
     Node.includes(direct_children: [:direct_children, { direct_children: [:direct_children] }])
   END
 
-  belongs_to :author
+  # belongs_to :author
   belongs_to :parent, class_name: "Node", optional: true
   has_many :content_versions
   has_one :content, -> { order(created_at: :desc).limit(1) }, class_name: "ContentVersion"
 
+  has_one :author, through: :content
   has_one :user, through: :author
   has_many :direct_children, class_name: "Node", foreign_key: :parent_id
   # has_many :readable_children_links, class_name: "NodesReadable", foreign_key: :node_id
@@ -85,27 +86,21 @@ class Node < ApplicationRecord
   #   content_versions.last
   # end
 
-  def children_rec_arhq(user, limit_nodes_lower: 100)
+  def children_rec_arhq(user, limit_nodes_lower: 140)
     descendants_map = Hash.new { |h, k| h[k] = Array.new }
     cs = Node
       .joins(:readable_by_users)
       .where({ nodes_readables: { user_id: user } })
       .limit(limit_nodes_lower)
+      .join_recursive { |q| q.start_with(id: id).connect_by(id: :parent_id) }
       .eager_load(:content)
       .eager_load(:author)
       .eager_load(:user)
-      .join_recursive do |q|
-      q.start_with(id: id)
-        .connect_by(id: :parent_id)
-      # .having(q.prior[:id].count.lteq(limit_nodes_lower))
-      # .where(Arel::SelectManager.new.from(q.prior).project(q.prior[:id].count).lteq(limit_nodes_lower)) # "(SELECT ? FROM ?) < ?", q.prior[:id].count, q.prior.name, limit_nodes_lower)
-    end
-    # puts cs.to_sql
     cs.each { |n| descendants_map[n.parent_id] << n }
     return cs, descendants_map
   end
 
-  def children_rec_incr(user, limit_nodes_lower: 100)
+  def children_rec_incr(user, limit_nodes_lower: 140)
     descendants_map = Hash.new { |h, k| h[k] = Array.new }
     cs = Node
       .joins(:descendants)
@@ -114,14 +109,9 @@ class Node < ApplicationRecord
       .eager_load(:content)
       .eager_load(:author)
       .eager_load(:user)
+      .where(NodeDescendantsIncr.arel_table[:distance].lteq(4))
     # .joins(:readable_descendants)
     # .where({ node_readable_descendants: { user_id: user, base_id: id } })
-
-    # .order(:id)
-    # .having(q.prior[:id].count.lteq(limit_nodes_lower))
-    # .where(Arel::SelectManager.new.from(q.prior).project(q.prior[:id].count).lteq(limit_nodes_lower)) # "(SELECT ? FROM ?) < ?", q.prior[:id].count, q.prior.name, limit_nodes_lower)
-    # puts cs.to_sql
-    # puts cs
     cs.each { |n| descendants_map[n.parent_id] << n }
     return cs, descendants_map
   end

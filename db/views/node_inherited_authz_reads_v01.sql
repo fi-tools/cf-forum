@@ -10,11 +10,11 @@ closest_parent(base_id, closest_ancestor_id) as (
     SELECT base_id, MAX(node_id) as closest_ancestor_id
     FROM node_all_ancestor_authz
     GROUP BY base_id
-),
-node_to_permissions(node_id, groups) as (
-    SELECT naaa.base_id, naaa.groups
+)
+-- node_to_permissions(node_id, groups) as (
+    SELECT naaa.base_id as node_id, naaa.groups
     FROM node_all_ancestor_authz naaa
     JOIN closest_parent cp
     ON cp.base_id = naaa.base_id AND cp.closest_ancestor_id = naaa.node_id
-)
-select * from node_to_permissions
+-- )
+-- select * from node_to_permissions
