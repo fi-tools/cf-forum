@@ -47,9 +47,9 @@ class NodesController < ApplicationController
     @parent = Node.find(safe_params[:parent_id].to_i)
     node_params = safe_params.slice(:parent_id)
     cv_params = safe_params.slice(:title, :body)
-    author_params = { id: safe_params[:author_id].to_i }
+    author_params = { id: safe_params[:author_id].to_i, user: current_user }
 
-    @author = Author.where(**author_params.merge(:user => current_user)).first
+    @author = Author.where(**author_params).first
     @node = Node.new(node_params.merge :author => @author)
     @cv = ContentVersion.new(cv_params.merge :node => @node, :author => @author)
 
@@ -86,7 +86,7 @@ class NodesController < ApplicationController
   def set_parent(parent_id = params[:parent_id].to_i)
     # todo: is set_parent okay like this?
     # i understand set_node is like okay in ruby/rails conventions - MK
-    @parent = Node.find_readable(parent_id, @user)
+    _, @children_lookup, @parent = Node.children_rec_arhq(parent_id, @user, limit_nodes_lower: 1)
   end
 
   # this sets both @node and @node_id_to_children
