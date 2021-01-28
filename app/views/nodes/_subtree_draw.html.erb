@@ -7,7 +7,7 @@
   <%= node.id %>: <%= node.title_w_default %>
 <% end %>
 <% if node.n_children > 0 %>
-  <% if max_depth > 0 %>
+  <% if max_depth > 0 && @children_lookup[node.id].count > 0 %>
     <ul>
       <% @children_lookup[node.id].each do |n2| %>
         <li>
@@ -16,6 +16,7 @@
       <% end %>
     </ul>
   <% else %>
+    <%# todo: although @children_lookup[node.id] might have > 0 nodes, it doesn't mean it has all available children for the current user. also, there could be fewer children available to the user than .n_children. How do we handle both of these situations at once? %>
     <ul>
       <li>... <%= node.n_children %> children, <%= node.n_descendants %> descendants</li>
     </ul>
