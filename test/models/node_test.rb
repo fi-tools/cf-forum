@@ -49,4 +49,8 @@ class NodeTest < ActiveSupport::TestCase
   test "children_rec_arhq resepects Authz.read permissions on nodes" do
     skip "todo"
   end
+
+  test "when a custom view tag is set on a node (by node's author or system) it's returned from .view" do
+    skip "impl me - needed for blog stuff?"
+  end
 end
