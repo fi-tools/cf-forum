@@ -42,7 +42,7 @@ class NodesController < ApplicationController
   # POST /nodes
   # POST /nodes.json
   def create
-    # TODO: permissions
+    # TODO: permissions (allowed to create child?)
     safe_params = new_node_params
     @parent = Node.find(safe_params[:parent_id].to_i)
     node_params = safe_params.slice(:parent_id)
