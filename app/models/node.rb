@@ -126,8 +126,8 @@ class Node < ApplicationRecord
         .eager_load(:author)
         .eager_load(:user)
         .preload(:views) # eager_loading :views will do a join and massively slow down this query.
-        .sort
-      # sorting here adds 200ms!!! .order(id: :asc)
+        .sort # this is a ruby sort on an array
+      # sorting here in the database adds 200ms!!! .order(id: :asc)
       cs.each { |n| descendants_map[n.parent_id] << n }
       branch_root = cs.find { |n| n.id == node_id }
       # descendants_map.each_value { |v| v.sort }
