@@ -130,7 +130,6 @@ class Node < ApplicationRecord
       # sorting here in the database adds 200ms!!! .order(id: :asc)
       cs.each { |n| descendants_map[n.parent_id] << n }
       branch_root = cs.find { |n| n.id == node_id }
-      # descendants_map.each_value { |v| v.sort }
       # return fresh copy of this node as 3rd item
       return cs, descendants_map, branch_root
     end
