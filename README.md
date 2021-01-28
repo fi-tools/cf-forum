@@ -165,9 +165,12 @@ add other stuff if you can think of it and want to
 ## performance notes
 
 * earlier: things looked grim for overhead with 25k nodes. queries^1 taking 2s (or 30s with postgres)
-* latest: refactoring via arel with some restructuring meant postgres queries started taking like 200-300ms with 25k nodes.
+* mid: refactoring via arel with some restructuring meant postgres queries started taking like 200-300ms with 25k nodes.
+* using materialized views and sensible separation of DB logic and Model logic: queries on 88k nodes run in 20ms for hundreds/a thousand nodes. All significant timesave is now in `view`s.
 
 [1]: the partiular queries involve complex joins and things to account for permissions and inheritance
+
+I wrote some benchmark stuff in `tools/benchmark.rb` -- you might need to check out an old version for it to work properly. run like `rails runner tools/benchmark.rb`
 
 ----
 
