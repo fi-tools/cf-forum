@@ -115,7 +115,7 @@ class Node < ApplicationRecord
       Node.join_recursive { |q| q.start_with(id: node_id).connect_by(id: :parent_id) }
     end
 
-    def children_rec_arhq(node_id, user, limit_nodes_lower: 140)
+    def children_rec_arhq(node_id, user, limit_nodes_lower: 1000)
       descendants_map = Hash.new { |h, k| h[k] = Array.new }
       cs = Node
         .joins(:readable_by_groups)
