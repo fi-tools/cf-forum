@@ -15,8 +15,7 @@
         </div>
       </div>
       <div class="panel-block">
-        <%# todo: render markdown %>
-        <%= node.content.body %>
+        <%= simple_format markdown(@node.content.body) %>
       </div>
       <!-- <p class="panel-tabs has-text-left is-flex pl-1">
         <%# <%= link_to 'Delete', node_path(@node), class: "button is-warning", method: :delete, data: { confirm: "Are you sure?" } %>

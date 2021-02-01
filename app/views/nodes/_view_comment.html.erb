@@ -12,7 +12,7 @@
           Date: <%= @node.created_at %>
         </div>
         <div class="panel-block">
-          <%= @node.content.body %>
+          <%= simple_format markdown(@node.content.body) %>
         </div>
       </nav>
       <div class="columns is-mobile">
