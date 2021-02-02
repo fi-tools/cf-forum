@@ -45,8 +45,9 @@ gem "functional-ruby"
 # admin panel
 gem "rails_admin", "~> 2.0"
 
-# markdown support 
-gem "redcarpet"
+# markdown support
+ gem "redcarpet"
+ gem "coderay", '~> 1.1'
 
 # hotwire
 # gem 'hotwire-rails'

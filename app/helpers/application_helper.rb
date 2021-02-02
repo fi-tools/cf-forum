@@ -1,7 +1,22 @@
 module ApplicationHelper
+    class CodeRayify < Redcarpet::Render::HTML
+        def block_code(code, language)
+            CodeRay.scan(code, language || :text).div
+        end
+    end
+
     def markdown(content)
-        renderer = Redcarpet::Render::HTML.new(filter_html: true, hard_wrap:true)
-        markdown = Redcarpet::Markdown.new(renderer, extensions = {tables:true, fenced_code_block: true, underline:true, strikethrough:true, quote:true, highlight: true, superscript:true})
+        coderayified = CodeRayify.new(filter_html: true)
+        markdown = Redcarpet::Markdown.new(coderayified, extensions = { 
+                                                                    tables: true,
+                                                                    fenced_code_blocks: true, 
+                                                                    underline: true, 
+                                                                    strikethrough: true, 
+                                                                    quote: true, 
+                                                                    highlight: true, 
+                                                                    superscript: true,
+                                                                    footnotes: true
+                                                                  })
         markdown.render(content).html_safe
     end
 end

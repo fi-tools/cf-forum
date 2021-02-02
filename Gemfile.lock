@@ -403,6 +403,7 @@ DEPENDENCIES
   bootsnap (>= 1.4.4)
   byebug
   capybara (>= 3.26)
+  coderay (~> 1.1)
   devise
   faker
   functional-ruby
