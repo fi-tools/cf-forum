@@ -1,5 +1,6 @@
 module ApplicationHelper
-    class CodeRayify < Redcarpet::Render::HTML
+    class CodeRayify < Redcarpet::Render::Safe
+        # uses html_escape flag to prevent html/xss injections
         def block_code(code, language)
             CodeRay.scan(code, language || :text).div
         end
