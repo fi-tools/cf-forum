@@ -13,7 +13,6 @@ class AuthorsController < ApplicationController
 
   def set_author
     @author = Author.find(params[:id])
-    @posts = Node.get_nodes_readable_by(current_user) { |q| where("author_id = #{author.id}") }
-      .joins(:content_versions)
+    @posts = Node.joins(:readable_by_users).where("nodes_readables.user_id = ?", (current_user ? current_user.id : nil)).joins(:content).where("content_versions.author_id = ?", @author.id).includes(:content)
   end
 end
