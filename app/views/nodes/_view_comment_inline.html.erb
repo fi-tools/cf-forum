@@ -7,7 +7,7 @@
   <% end %>
   <div class='comment-block'>
     <div class="content">
-      <%= markdown(node.content.body) %>
+      <%= markdown(node.content.body) if node.content.body %>
     </div>
   </div>
   <div class='comment-block is-small'>

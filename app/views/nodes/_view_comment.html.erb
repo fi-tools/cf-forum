@@ -3,7 +3,7 @@
     <div class="column">
       <nav class="panel is-link">
         <div class="panel-heading">
-          <%= @node.title %>
+          <%= @node.title_w_default %>
         </div>
         <div class="panel-block">
           By: <%= @node.author.formatted_name || "Anonymous" %>
@@ -13,7 +13,7 @@
         </div>
         <div class="panel-block">
           <div class="content">
-            <%= markdown(@node.content.body) %>
+        <%= markdown(@node.content.body) if @node.content.body %>
           </div>
         </div>
       </nav>

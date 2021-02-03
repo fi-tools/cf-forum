@@ -4,7 +4,7 @@
       <%= link_to node.title_w_default, node %>
     </p>
     <p class="border">
-      <%= node.content.body.slice(0, 200) if node.content.body %>
+      <%= markdown(node.content.body.slice(0, 200)) if node.content.body %>
     </p>
     <nav class="breadcrumb">
       <ul>

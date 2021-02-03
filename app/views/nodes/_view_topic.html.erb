@@ -16,7 +16,7 @@
       </div>
       <div class="panel-block">
         <div class="content">
-          <%= markdown(@node.content.body) %>
+          <%= markdown(@node.content.body) if @node.content.body %>
         </div>
       </div>
       <!-- <p class="panel-tabs has-text-left is-flex pl-1">
