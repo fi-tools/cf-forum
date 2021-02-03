@@ -6,7 +6,9 @@
     </div>
   <% end %>
   <div class='comment-block'>
-    <%= node.content.body %>
+    <div class="content">
+      <%= markdown(node.content.body) if node.content.body %>
+    </div>
   </div>
   <div class='comment-block is-small'>
     <% anchor = "##{node.id}" %>
