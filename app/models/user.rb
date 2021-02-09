@@ -14,27 +14,30 @@ class User < ApplicationRecord
   has_many :anchoring_system_tags, as: :anchored, class_name: "SystemTagDecl"
   has_many :anchored_system_tags, through: :anchoring_system_tags, source: :target, source_type: "UserTag"
 
-  has_many :user_groups
+  has_one :users_group
+
+  after_create :create_user_author, :refresh_users_groups
+
+  def create_user_author
+    self.authors << Author.create(user: self)
+  end
+
+  def refresh_users_groups
+    UsersGroup.refresh
+  end
 
   def public_authors
     self.authors.select { |author| author.public }
   end
 
   def groups
-    self.user_groups.collect { |ga| ga.group_name }
-  end
-
-  def groups2
-    tds = self.anchored_system_tags.map(&:tag)
-    # tds = SystemTagDecl.where(anchored: self, tag: Authz.userInGroup).preload(:target)
-    # puts tds, tds.to_a.map(&:to_json)
-    return tds
+    self.users_group.groups_in_database
   end
 
   def groups_arel
+    throw "deprecated? replaced with user_groups view"
     uts = UserTag.table
     tds = TagDecl.table
-
     User.arel_table.join(tds)
       .on(tds[:anchored_id].eq(id).and(tds[:anchored_type].eq(User.name)).and(tds[:tag].eq(Authz.userInGroup)))
       .join(uts)
@@ -48,6 +51,10 @@ class User < ApplicationRecord
       unless id.nil?
         User.from(id)
       end
+    end
+
+    def default_groups
+      ["all"]
     end
   end
 end

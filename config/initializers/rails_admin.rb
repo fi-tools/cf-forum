@@ -1,3 +1,7 @@
+# required nested_form stuff based on https://github.com/sferik/rails_admin/issues/887#issuecomment-751459904
+require "nested_form/engine"
+require "nested_form/builder_mixin"
+
 RailsAdmin.config do |config|
 
   ### Popular gems integration

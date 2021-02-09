@@ -1,23 +1,23 @@
 <div class="card">
   <div class="card-content">
     <p class="title is-size-4 mb-1">
-      <%= link_to node.title, node %>
+      <%= link_to node.title_w_default, node %>
     </p>
     <p class="border">
-      <%= node.body.slice(0, 200) if node.body %>
+      <%= markdown(node.content.body.slice(0, 200)) if node.content.body %>
     </p>
     <nav class="breadcrumb">
       <ul>
-        <li><%= link_to node.formatted_name, author_path(node.author_id) %></li>
-        <li><%= link_to node.username, user_path(node.user) %></li>
+        <li><%= link_to node.author.formatted_name, author_path(node.author_id) %></li>
+        <li><%= link_to node.user.username, user_path(node.user) %></li>
         <li class="is-active">
           <a><%= node.created_at %> / <%= time_ago_in_words(node.created_at || DateTime.now) %> ago</a>
         </li>
         <li class="is-active">
-          <a>Children: <%= @node_id_to_children[node.id].count %></a>
+          <a>Children: <%= node.n_children %></a>
         </li>
         <li class="is-active">
-          <a>Descendants: <%= count_descendants(node) %></a>
+          <a>Descendants: <%= node.n_descendants %></a>
         </li>
       </ul>
     </nav>

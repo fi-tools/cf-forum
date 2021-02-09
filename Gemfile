@@ -20,7 +20,7 @@ gem "turbolinks", "~> 5"
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 gem "jbuilder", "~> 2.7"
 # Use Redis adapter to run Action Cable in production
-# gem 'redis', '~> 4.0'
+gem 'redis', '~> 4.0'
 # Use Active Model has_secure_password
 # gem 'bcrypt', '~> 3.1.7'
 
@@ -31,18 +31,26 @@ gem "devise"
 gem "scenic"
 # support adapters for scenic other than postgres (which is default and included)
 gem "scenic_sqlite_adapter"
-gem "scenic-mysql"
-
+# provides .join_recursive
 gem 'activerecord-hierarchical_query', git: 'https://github.com/XertroV/activerecord-hierarchical_query', branch: 'rails-6-1'
+# extended functions for active record
+gem 'active_record_extended'
 
 # db agnostic triggers
 gem 'hairtrigger', git: 'https://github.com/XertroV/hair_trigger'
 
-# functional support ~~- disabled bc we're not using it and it might be deprecated.~~ 
+# functional support ~~- disabled bc we're not using it and it might be deprecated.~~
 gem "functional-ruby"
 
 # admin panel
 gem "rails_admin", "~> 2.0"
+
+# markdown support
+ gem "redcarpet"
+ gem "coderay", '~> 1.1'
+
+# hotwire
+# gem 'hotwire-rails'
 
 # Use Active Storage variant
 # gem 'image_processing', '~> 1.2'
@@ -50,6 +58,13 @@ gem "rails_admin", "~> 2.0"
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", ">= 1.4.4", require: false
 
+# used for jobs, e.g. refreshing materialized views
+gem "sidekiq"
+gem 'sidekiq-debounce'
+
+group :devmysql do
+  gem "scenic-mysql"
+end
 
 group :development, :devpg, :devmysql, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
@@ -67,6 +82,10 @@ group :development, :devpg, :devmysql do
   # Can be configured to work on production as well see: https://github.com/MiniProfiler/rack-mini-profiler/blob/master/README.md
   gem "rack-mini-profiler", "~> 2.0"
   gem "listen", "~> 3.3"
+  # For memory profiling
+  gem 'memory_profiler'
+  # For call-stack profiling flamegraphs
+  gem 'stackprof'
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem "spring"
   # guard, guard-zeus, and rack-livereload are used   with guard-livereload to do livereloading
@@ -81,6 +100,8 @@ group :test do
   gem "selenium-webdriver"
   # Easy installation and use of web drivers to run system tests with browsers
   gem "webdrivers"
+  # start a debugger on failing test
+  # gem 'minitest-byebug'
 end
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem

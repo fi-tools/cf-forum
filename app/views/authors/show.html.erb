@@ -7,12 +7,12 @@
 <div class="columns mt-6">
   <div class="column">
     <div class="title is-size-2">
-      Posts: (<%= @author.posts.count %>)
+      Posts: (<%= @posts.count %>)
     </div>
-    <% @author.posts.each do |post| %>
+    <% @posts.each do |post| %>
       <div class="content pa-3">
         <div class="title is-size-4">
-          <%= link_to "Title: " + (post.content.title || "untitled"), post %>
+          <%= link_to "Title: " + (post.title_w_default || "untitled"), post %>
         </div>
         <%= post.content.created_at %>
       </div>

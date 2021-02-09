@@ -1,8 +1,10 @@
 <% use_anchor ||= false %>
+<% prefix_anchor ||= false %>
+<% max_depth ||= 4 %>
 <div class="clt node_subtree_full">
   <ul>
     <li>
-      <%= render "subtree_draw", node: @node, max_depth: 999, use_anchor: use_anchor %>
+      <%= render "subtree_draw", node: @node, max_depth: max_depth, use_anchor: use_anchor, prefix_anchor: prefix_anchor %>
     </li>
   </ul>
 </div>

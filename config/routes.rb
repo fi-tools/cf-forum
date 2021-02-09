@@ -1,6 +1,8 @@
 Rails.application.routes.draw do
-  mount RailsAdmin::Engine => '/admin', as: 'rails_admin'
-  devise_for :users
+  mount RailsAdmin::Engine => "/admin", as: "rails_admin"
+  devise_for :users do
+    get "/sign_out" => "devise/sessions#destroy"
+  end
   resources :authors, :path => "a"
   resources :users, :path => "u"
   # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
@@ -9,6 +11,7 @@ Rails.application.routes.draw do
 
   get "/new", to: "nodes#new", as: "new_node"
   get "/edit/:id", to: "content_versions#new", as: "edit_node"
+  # todo: can we deprecate /comment/reply_to ?
   get "/comment/reply_to", to: "nodes#new_comment", as: "reply_to_node"
 
   get "/users/authors", to: "authors#mine", as: "edit_user_authors"

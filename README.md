@@ -1,10 +1,29 @@
 # README
 
-run:
+## running dev server
+
+### prereq
 
 * i think: `bundle install` for deps (you might need global rails, IDK)
 * `bundle guard` to start guard
-* then `rails s` (or `bundle rails s`?) to run the server 
+* start postgres docker and redis docker (hint scripts in ./tools/dev/ -- they're sorta untested but should work if you copy paste them in to terminal or run them directly)
+* NOT REQUIRED ATM start `bundle exec sidekiq` -- processes bg jobs
+* start `bundle guard` for autoreload stuff (I run it in tmux -MK)
+
+### options for starting a server
+
+* before first time
+  * `rm db/schema.rb ; bin/rails db:environment:set RAILS_ENV=development ; n_fake_nodes=88500 rake db:drop db:create db:migrate db:reset`
+
+* `rails s`
+* `rails s -e devpg --log-to-stdout`
+* `bundle exec puma -t 5:5 -p ${PORT:-3000} -e devpg --log-to-stdout`
+
+## segmentation fault with `rails s` after setting things up
+
+Check webpacker; you need node installed and the npm dependencies, etc.
+
+You might need libsass.
 
 ## useful for testing migrations:
 
@@ -20,7 +39,7 @@ or mb this is enough
 rake db:reset db:migrate db:seed
 ```
 
-and sometimes this, which seems reliable. the copying is for WSL
+and sometimes this, which seems reliable. the copying is for WSL and using sqlite
 
 ```
 rm db/cff_dev.db ; rm db/schema.rb ; rake db:rollback VERSION=0 db:migrate ; rake db:migrate db:seed ; cp db/cff_dev.db /mnt/c/Users/xertrov/cff_dev.db
@@ -54,12 +73,12 @@ rails generate scenic:view view_tag_decls create db/views/view_tag_decls_v01.sql
 
 (there are some benefits to doing this vs mixing logging w/ stdout)
 
-## local postgres config
+## local postgres config (not docker)
 
 * `echo "create role cffdev with createdb login password 'hunter2';" | sudo -u postgres psql`
 * then **NOT ON PRODUCTION - JUST FOR TEST** `echo "ALTER USER cffdev WITH SUPERUSER;" | sudo -u postgres psql` **NOT ON PRODUCTION - JUST FOR TEST**
 
-you might need to run this first, but I think `create role` will create a user for you. 
+you might need to run this first, but I think `create role` will create a user for you.
 
 * `sudo -u postgres createuser -s cffdev`
 
@@ -86,11 +105,6 @@ testing schemas:
 rm db/schema.rb ; rails db:environment:set RAILS_ENV=devmysql ; RAILS_ENV=devmysql rake db:drop db:create db:migrate db:setup
 ```
 
-## running dev server
-
-* `rails s -e devpg --log-to-stdout`
-* `bundle exec puma -t 5:5 -p ${PORT:-3000} -e devpg --log-to-stdout`
-
 -----
 
 ## todo
@@ -113,7 +127,7 @@ rm db/schema.rb ; rails db:environment:set RAILS_ENV=devmysql ; RAILS_ENV=devmys
 
 ### be capable of running discussion & issue tracking for dev of cf-forum on a dev instance of cf-forum
 
-Important things: 
+Important things:
 
 * create threads, nodes, etc
 * view-node-as feature (view node as index)
@@ -151,9 +165,12 @@ add other stuff if you can think of it and want to
 ## performance notes
 
 * earlier: things looked grim for overhead with 25k nodes. queries^1 taking 2s (or 30s with postgres)
-* latest: refactoring via arel with some restructuring meant postgres queries started taking like 200-300ms with 25k nodes.
+* mid: refactoring via arel with some restructuring meant postgres queries started taking like 200-300ms with 25k nodes.
+* using materialized views and sensible separation of DB logic and Model logic: queries on 88k nodes run in 20ms for hundreds/a thousand nodes. All significant timesave is now in `view`s.
 
 [1]: the partiular queries involve complex joins and things to account for permissions and inheritance
+
+I wrote some benchmark stuff in `tools/benchmark.rb` -- you might need to check out an old version for it to work properly. run like `rails runner tools/benchmark.rb`
 
 ----
 

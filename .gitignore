@@ -47,3 +47,5 @@ yarn-debug.log*
 .vscode
 db/cff_test.db*
 pg-age-docker-vol
+db/schema.rb
+db/structure.sql

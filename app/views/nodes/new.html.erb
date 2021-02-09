@@ -1,10 +1,13 @@
 <section class="section">
-<div class="columns is-centered mt-6">
+  <div class="columns is-centered mt-6">
     <div class="column">
-        <h1 class="title is-size-2">New Post</h1>
-        <%= render 'form_new_topic', parent_id: @parent_id, node: @node %>
-
-        <%= link_to 'Back', node_path(@parent_id) %>
+      <h1 class="title is-size-2">New Post</h1>
+      <h2 class="title is-size-3">
+        Creating
+        <% if @parent.depth >= 2 %>reply<% end %>
+        under <%= link_to "##{@parent.id}: #{@parent.title_w_default}", node_path(@parent) %>
+      </h2>
+      <%= render 'form_new_topic', parent_id: @parent.id, node: @node %>
     </div>
-</div>
+  </div>
 </section>

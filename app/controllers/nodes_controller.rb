@@ -39,21 +39,17 @@ class NodesController < ApplicationController
     @node = Node.new
   end
 
-  # # GET /nodes/1/edit
-  # def edit
-  # end
-
   # POST /nodes
   # POST /nodes.json
   def create
-    # TODO: permissions
+    # TODO: permissions (allowed to create child?)
     safe_params = new_node_params
-    @parent_id = safe_params[:parent_id].to_i
+    @parent = Node.find(safe_params[:parent_id].to_i)
     node_params = safe_params.slice(:parent_id)
     cv_params = safe_params.slice(:title, :body)
-    author_params = safe_params.slice(:name)
+    author_params = { id: safe_params[:author_id].to_i, user: current_user }
 
-    @author = Author.find_or_create_by(**author_params.merge(:user => current_user))
+    @author = Author.where(**author_params).first
     @node = Node.new(node_params.merge :author => @author)
     @cv = ContentVersion.new(cv_params.merge :node => @node, :author => @author)
 
@@ -62,35 +58,11 @@ class NodesController < ApplicationController
         format.html { redirect_to @node, notice: "Node was successfully created." }
         format.json { render :show, status: :created, location: @node }
       else
-        format.html { render :new, :parent_id => @parent_id }
+        format.html { render :new, :parent_id => @parent.id }
         format.json { render json: @node.errors, status: :unprocessable_entity }
       end
     end
   end
-
-  # # PATCH/PUT /nodes/1
-  # # PATCH/PUT /nodes/1.json
-  # def update
-  #   respond_to do |format|
-  #     if @node.update(node_params)
-  #       format.html { redirect_to @node, notice: "Node was successfully updated." }
-  #       format.json { render :show, status: :ok, location: @node }
-  #     else
-  #       format.html { render :edit }
-  #       format.json { render json: @node.errors, status: :unprocessable_entity }
-  #     end
-  #   end
-  # end
-
-  # # DELETE /nodes/1
-  # # DELETE /nodes/1.json
-  # def destroy
-  #   @node.destroy
-  #   respond_to do |format|
-  #     format.html { redirect_to nodes_url, notice: "Node was successfully destroyed." }
-  #     format.json { head :no_content }
-  #   end
-  # end
 
   def count_descendants(node)
     cs = @node_id_to_children[node.id]
@@ -106,6 +78,7 @@ class NodesController < ApplicationController
     @user = current_user
   end
 
+  # deprecated, use set_node_to_children_map
   def set_node
     @node = Node.find_readable(params[:id].to_i, current_user)
   end
@@ -113,17 +86,20 @@ class NodesController < ApplicationController
   def set_parent(parent_id = params[:parent_id].to_i)
     # todo: is set_parent okay like this?
     # i understand set_node is like okay in ruby/rails conventions - MK
-    @parent_id = parent_id
+    _, @children_lookup, @parent = Node.children_rec_arhq(parent_id, @user, limit_nodes_lower: 1)
   end
 
   # this sets both @node and @node_id_to_children
   def set_node_to_children_map(id = params[:id].to_i)
-    @node_id_to_children = Node.with_descendants_map(id, @user)
-    @node = @node_id_to_children[-1].first
+    # we want to set @node after calling children_rec_arhq so we check permissions
+    _, @children_lookup, @node = Node.children_rec_arhq(id, current_user)
+    if @node.nil?
+      raise ActiveRecord::RecordNotFound, "Node(id: #{id}) not found."
+    end
   end
 
   # Only allow a list of trusted parameters through.
   def new_node_params
-    params.require(:node).permit(:parent_id, :title, :body, :name)
+    params.require(:node).permit(:parent_id, :title, :body, :author_id)
   end
 end

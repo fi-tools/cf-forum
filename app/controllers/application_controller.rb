@@ -3,6 +3,12 @@ class ApplicationController < ActionController::Base
 
   helper_method :current_user
 
+  before_action do
+    if true || (current_user && current_user.is_admin?)
+      Rack::MiniProfiler.authorize_request
+    end
+  end
+
   protected
 
   def configure_permitted_parameters

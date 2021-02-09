@@ -28,63 +28,84 @@ class CreateInit < ActiveRecord::Migration[6.1]
     #   t.timestamps
     # end
 
+    create_table :node_ancestors_incrs do |t|
+      t.bigint :base_id, index: true
+      t.bigint :node_id, index: true
+      t.bigint :parent_id, index: true
+      t.bigint :distance
+    end
+
+    create_table :node_descendants_incrs do |t|
+      t.bigint :base_id, index: true
+      t.bigint :node_id
+      t.bigint :distance
+    end
+
+    add_index :node_descendants_incrs, [:base_id, :node_id]
+    add_index :node_descendants_incrs, [:node_id, :base_id]
+
     create_table :nodes do |t|
       t.belongs_to :author, index: true
       t.bigint :parent_id, index: true
       t.bigint :depth, index: true, default: 0
-      t.bigint :children, index: true, default: 0
-      t.bigint :descendants, index: true, default: 0
+      t.bigint :n_children, index: true, default: 0
+      t.bigint :n_descendants, index: true, default: 0
       t.timestamps
     end
 
-    # create_trigger(:compatibility => 1).on(:nodes).after(:insert) do
-    #   <<-SQL
-    #     UPDATE nodes n
-    #     SET depth = (
-    #       SELECT n2.depth FROM nodes n2 WHERE n2.id = n.parent_id LIMIT 1
-    #     ) + 1 WHERE n.id = NEW.id;
-    #   SQL
-    # end
-
-    # create_trigger(:compatibility => 1).on(:nodes).after(:insert) do
-    #   <<-SQL
-    #     UPDATE nodes n
-    #     SET children = n.children + 1
-    #     WHERE n.id = NEW.parent_id;
-    #   SQL
-    # end
-
     create_trigger(:compatibility => 1).on(:nodes).after(:insert) do
       <<-SQL
-      
       --with parent_depth as (select n2.depth FROM nodes n2 WHERE n2.id = NEW.parent_id)
       UPDATE nodes n
-      SET depth = (select n2.depth FROM nodes n2 WHERE n2.id = NEW.parent_id) + 1 
+      SET depth = (select n2.depth FROM nodes n2 WHERE n2.id = NEW.parent_id) + 1
       WHERE n.id = NEW.id AND NEW.parent_id IS NOT NULL;
 
-      UPDATE nodes n 
-      SET children = n.children + 1
+      UPDATE nodes n
+      SET n_children = n.n_children + 1
       WHERE n.id = NEW.parent_id;
 
-      with recursive ancestors as (
-        select id, parent_id
+      -- start with distance=1 bc we start with the parent node, not the NEW node
+      with recursive ancestors(base_id, id, parent_id, distance) as (
+        select NEW.id as base_id, id, parent_id, 0 as distance
         from nodes
-        where id = NEW.parent_id
+        where id = NEW.id
         union all
-        select ns.id, ns.parent_id
+        select a.base_id, ns.id, ns.parent_id, a.distance + 1
         from nodes ns
         inner join ancestors a
           on a.parent_id = ns.id
-      )
+      ),
+
+      -- updating n_descendants used to be here; but we need some final query
+      -- or have to use PERFORM or something
+      --dec_update as (
+      --),
+
+      -- build ancestors incrementally
+      anc_incr as (INSERT INTO node_ancestors_incrs (base_id, node_id, parent_id, distance)
+      SELECT base_id, id, parent_id, distance
+      from ancestors RETURNING 1)
+
+      ---- build descendants incrementally
+      --dec_incr as (INSERT INTO node_descendants_incrs (base_id, node_id, distance)
+      --SELECT id, base_id, distance
+      --FROM ancestors RETURNING 1)
+
+      -- cache n_descendants
       UPDATE nodes n
-      SET descendants = n.descendants + 1
+      SET n_descendants = n.n_descendants + 1
       where id in (
         select id from ancestors
-      );
+      ) and id != NEW.id;
+      --and 1 in (select * from anc_incr union all select * from dec_incr);
 
       SQL
     end
     add_foreign_key :nodes, :nodes, column: :parent_id
+    add_foreign_key :node_descendants_incrs, :nodes, column: :node_id
+    add_foreign_key :node_descendants_incrs, :nodes, column: :base_id
+    add_foreign_key :node_ancestors_incrs, :nodes, column: :node_id
+    add_foreign_key :node_ancestors_incrs, :nodes, column: :base_id
 
     create_table :content_versions do |t|
       t.belongs_to :author, foreign_key: true, index: true
