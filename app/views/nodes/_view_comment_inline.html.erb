@@ -19,6 +19,7 @@
     <span class="mx-2"></span>
     <%# old reply link: reply_to_node_path(parent_id) %>
     <%= link_to "Reply", new_node_path(:parent_id => node.id), class: "button is-small is-link" %>
+    <%= link_to "Focus", focus_path(root_node_id, node.id), class: "button is-small is-link is-light" %>
     <%= link_to "Permalink", node, class: "button is-gray is-small ml-1" %>
   </div>
   <div class="comment-children">
@@ -26,7 +27,7 @@
       <% if depth_left > 0 && @children_lookup[node.id].count > 0 %>
         <%# todo: although @children_lookup[node.id] might have > 0 nodes, it doesn't mean it has all available children for the current user. also, there could be fewer children available to the user than .n_children. How do we handle both of these situations at once? %>
         <% @children_lookup[node.id].each do |child| %>
-          <%= render 'view_comment_inline', node: child, depth_left: depth_left - 1 %>
+          <%= render 'view_comment_inline', node: child, depth_left: depth_left - 1, root_node_id: root_node_id %>
         <% end %>
       <% else %>
         <h1 class="title is-size-5 red" style="margin-bottom: 0;">TODO: handle (<%= node.n_children %>) more children that we're not showing.</h1>

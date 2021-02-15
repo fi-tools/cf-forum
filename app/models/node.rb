@@ -111,6 +111,14 @@ class Node < ApplicationRecord
       arel_table
     end
 
+    def ancestors_until_parent(node_id, parent_id)
+      ancestors = Node.join_recursive { |q| q.start_with(id: node_id).connect_by(parent_id: :id).where('nodes.id >= ?', parent_id) }
+      ancestors_map = Hash.new { |h, k| h[k] = Array.new }
+      ancestors.each { |n| ancestors_map[n.parent_id] << n } 
+      branch_root = ancestors.find_by(id: parent_id)
+      return ancestors_map, branch_root
+    end
+
     def descendants_raw(node_id)
       Node.join_recursive { |q| q.start_with(id: node_id).connect_by(id: :parent_id) }
     end

@@ -2,7 +2,7 @@ class NodesController < ApplicationController
   before_action :set_user
   before_action :set_node, only: []
   before_action :set_parent, only: [:new, :new_comment]
-  before_action :set_node_to_children_map, only: [:show, :subtree, :view_as]
+  before_action :set_node_to_children_map, only: [:show, :subtree, :view_as, :focus]
   before_action :authenticate_user!, only: [:new, :new_comment, :create]
 
   helper_method :current_user
@@ -23,6 +23,15 @@ class NodesController < ApplicationController
   def view_as
     @view_type = params[:view_name]
   end
+
+  # GET /focus/:node/on/:id
+  def focus
+    ancestors_map, @node = Node.ancestors_until_parent(params[:id], params[:node])
+    if @node.nil?
+      raise ActiveRecord::RecordNotFound, "Parent node (id: #{params[:id]}) does not connect to child node (id: #{params[:node]})."
+    end
+    @children_lookup = @children_lookup.merge(ancestors_map)
+  end 
 
   def subtree
     # TODO: permissions

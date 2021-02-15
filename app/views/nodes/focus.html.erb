@@ -4,14 +4,14 @@
     <nav class="panel">
       <div class="panel-heading has-background-primary-light is-flex">
         <div class="is-flex-grow-5">
-          <%= node.content.title %>
-          <%= link_to "../", node_path(node.parent_id), class: "is-small" unless node.parent_id.nil? %>
+          <%= @node.content.title %>
+          <%= link_to "../", node_path(@node.parent_id), class: "is-small" unless @node.parent_id.nil? %>
         </div>
         <div class="">
-          <% if current_user && node.user.id == current_user.id %>
-            <%= link_to 'Edit', edit_node_path(node), class: "button is-small" %>
+          <% if current_user && @node.user.id == current_user.id %>
+            <%= link_to 'Edit', edit_node_path(@node), class: "button is-small" %>
           <% end %>
-          <%= link_to 'Reply', reply_to_node_path(:parent_id => node.id), class: "button is-success is-small" %>
+          <%= link_to 'Reply', reply_to_node_path(:parent_id => @node.id), class: "button is-success is-small" %>
         </div>
       </div>
       <div class="panel-block">
@@ -19,23 +19,19 @@
           <%= markdown(@node.content.body) if @node.content.body %>
         </div>
       </div>
-      <!-- <p class="panel-tabs has-text-left is-flex pl-1">
-        <%# <%= link_to 'Delete', node_path(@node), class: "button is-warning", method: :delete, data: { confirm: "Are you sure?" } %>
-        <span class="is-flex-grow-4"></span>
-      </p> -->
       <div class="panel-block">
         <nav class="breadcrumb">
           <ul>
-            <li><%= link_to node.author.formatted_name, author_path(node.content.author_id) %></li>
-            <li><%= link_to node.user.username, user_path(node.author.user_id) %></li>
+            <li><%= link_to @node.author.formatted_name, author_path(@node.content.author_id) %></li>
+            <li><%= link_to @node.user.username, user_path(@node.author.user_id) %></li>
             <li class="is-active">
-              <a><%= node.created_at %> / <%= time_ago_in_words(node.created_at || DateTime.now) %> ago</a>
+              <a><%= @node.created_at %> / <%= time_ago_in_words(@node.created_at || DateTime.now) %> ago</a>
             </li>
             <li class="is-active">
-              <a>Children: <%= node.n_children %></a>
+              <a>Children: <%= @node.n_children %></a>
             </li>
             <li class="is-active">
-              <a>Descendants: <%= node.n_descendants %></a>
+              <a>Descendants: <%= @node.n_descendants %></a>
             </li>
           </ul>
         </nav>
@@ -43,6 +39,7 @@
     </nav>
   </div>
 </div>
+
 <% if @node.n_children > 0 %>
   <h3 class='title'>Replies:</h3>
   <h5 class='subtitle'>TOC:</h5>
