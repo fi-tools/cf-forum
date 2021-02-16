@@ -8,7 +8,7 @@
     </p>
     <nav class="breadcrumb">
       <ul>
-        <li><%= link_to node.author.formatted_name, author_path(node.author_id) %></li>
+        <li><%= link_to node.author.formatted_name, author_path(node.author.id) %></li>
         <li><%= link_to node.user.username, user_path(node.user) %></li>
         <li class="is-active">
           <a><%= node.created_at %> / <%= time_ago_in_words(node.created_at || DateTime.now) %> ago</a>
