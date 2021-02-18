@@ -4,7 +4,7 @@ namespace :factory_bot do
     if Rails.env.test?
       conn = ActiveRecord::Base.connection
       conn.transaction do
-        FactoryBot.lint
+        FactoryBot.lint(traits: true, verbose: true)
         raise ActiveRecord::Rollback
       end
     else
