@@ -51,6 +51,24 @@ jobs:
         bin/rails db:create
         bin/rails db:migrate
 
+    - name: Lint FactoryBot Fixtures
+      env:
+        PGHOST: localhost
+        PGUSER: cffdev
+        PGPASSWORD: hunter2
+        RAILS_ENV: test
+      run: |
+        bundle exec rake factory_bot:lint
+
+    - name: Run Specs
+      env:
+        PGHOST: localhost
+        PGUSER: cffdev
+        PGPASSWORD: hunter2
+        RAILS_ENV: test
+      run: |
+        bundle exec rspec -f documentation
+
     - name: Run Tests
       env:
         PGHOST: localhost
