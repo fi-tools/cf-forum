@@ -40,6 +40,10 @@ class User < ApplicationRecord
     self.users_group.groups_in_database
   end
 
+  def get_targeting_tags 
+    self.targeting_tags
+  end 
+
   def groups_arel
     throw "deprecated? replaced with user_groups view"
     uts = UserTag.table

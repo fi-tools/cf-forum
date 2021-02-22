@@ -57,16 +57,29 @@ class NodesController < ApplicationController
     node_params = safe_params.slice(:parent_id)
     cv_params = safe_params.slice(:title, :body)
     author_params = { id: safe_params[:author_id].to_i, user: current_user }
+    tag_decl_ids = safe_params[:tag_decl_ids]
 
     @author = Author.where(**author_params).first
     @node = Node.new(node_params.merge :author => @author)
     @cv = ContentVersion.new(cv_params.merge :node => @node, :author => @author)
-
+    @tags = []
+    tag_decl_ids.reject(&:empty?).each do |anchored_tag|
+      @anchored_tag_decl = TagDecl.find(anchored_tag)
+      @tag_decl = TagDecl.new(:user => @user, :target => @node, :anchored => @anchored_tag_decl, :tag => :include_on_blog)
+      @tags << @tag_decl
+    end 
+    
     respond_to do |format|
-      if @author.save! && @node.save! && @cv.save!
-        format.html { redirect_to @node, notice: "Node was successfully created." }
-        format.json { render :show, status: :created, location: @node }
-      else
+      begin 
+        ActiveRecord::Base.transaction do 
+          @author.save!
+          @node.save! 
+          @cv.save!
+          @tags.each &:save! 
+          format.html { redirect_to @node, notice: "Node was successfully created." }
+          format.json { render :show, status: :created, location: @node }
+        end
+      rescue ActiveRecord::ActiveRecordError => e
         format.html { render :new, :parent_id => @parent.id }
         format.json { render json: @node.errors, status: :unprocessable_entity }
       end
@@ -109,6 +122,6 @@ class NodesController < ApplicationController
 
   # Only allow a list of trusted parameters through.
   def new_node_params
-    params.require(:node).permit(:parent_id, :title, :body, :author_id)
+    params.require(:node).permit(:parent_id, :title, :body, :author_id, tag_decl_ids:[])
   end
 end
