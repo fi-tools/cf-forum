@@ -20,6 +20,11 @@ class Node < ApplicationRecord
 
   # belongs_to :author
   belongs_to :parent, class_name: "Node", optional: true
+
+  def root_node?
+    parent.nil?
+  end
+
   has_many :content_versions
   has_one :content, -> { order(created_at: :desc).limit(1) }, class_name: "ContentVersion"
 
@@ -115,6 +120,7 @@ class Node < ApplicationRecord
       Node.join_recursive { |q| q.start_with(id: node_id).connect_by(id: :parent_id) }
     end
 
+    # ARHQ: ActiveRecord Hierarchical Query
     def children_rec_arhq(node_id, user, limit_nodes_lower: 1000)
       descendants_map = Hash.new { |h, k| h[k] = Array.new }
       cs = Node
