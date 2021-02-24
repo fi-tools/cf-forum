@@ -7,7 +7,7 @@ module Cff::NodeFaker
     Faker::Config.random = Random.new(0)
     @faker_users = [user, sub_user, general_user]
     @faker_root = create_node nil, "Faker Root", @root, body: "All faker nodes will be created under this node."
-    @faker_nested_root = create_node nil, "Faker Root Node", @root, body: "A nested thread of 500 replies will be created under this node."
+    @faker_nested_root = create_node nil, "Nested Faker Root", @root, body: "A nested thread of 500 replies will be created under this node."
 
     n_fake_nodes ||= 500
     n_fake_nodes = ENV["n_fake_nodes"]&.to_i || n_fake_nodes
