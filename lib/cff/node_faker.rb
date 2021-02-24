@@ -7,12 +7,26 @@ module Cff::NodeFaker
     Faker::Config.random = Random.new(0)
     @faker_users = [user, sub_user, general_user]
     @faker_root = create_node nil, "Faker Root", @root, body: "All faker nodes will be created under this node."
+    @faker_nested_root = create_node nil, "Nested Faker Root", @root, body: "A nested thread of 500 replies will be created under this node."
 
     n_fake_nodes ||= 500
     n_fake_nodes = ENV["n_fake_nodes"]&.to_i || n_fake_nodes
     Rails::logger.warn "n_fake_nodes set to #{n_fake_nodes}. set env var 'n_fake_nodes' to overwrite."
     self.run_faker_inner(n_fake_nodes)
+    self.run_faker_deep_replies(n_fake_nodes)
   end
+
+  def run_faker_deep_replies(n_fake_nodes = nil) 
+    @curr_parent = @faker_nested_root
+    Benchmark.bm do |m| 
+      for i in 1..n_fake_nodes do 
+        title = Faker::Lorem.sentence(word_count: 3, random_words_to_add: 4)
+        body = Faker::Lorem.paragraph(sentence_count: 2, supplemental: false, random_sentences_to_add: 4)
+        @new_parent = create_node nil, title, @curr_parent, body: body
+        @curr_parent = @new_parent
+      end 
+    end 
+  end 
 
   def run_faker_inner(n_fake_nodes = nil)
     # default: 88k nodes with branching factor of 3. Approx uniformly max depth of 10
