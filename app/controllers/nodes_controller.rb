@@ -63,9 +63,9 @@ class NodesController < ApplicationController
     @node = Node.new(node_params.merge :author => @author)
     @cv = ContentVersion.new(cv_params.merge :node => @node, :author => @author)
     @tags = []
-    tag_decl_ids.reject(&:empty?).each do |anchored_tag|
+    tag_decl_ids.each do |anchored_tag|
       @anchored_tag_decl = TagDecl.find(anchored_tag)
-      @tag_decl = TagDecl.new(:user => @user, :target => @node, :anchored => @anchored_tag_decl, :tag => :include_on_blog)
+      @tag_decl = TagDecl.new(:user => @user, :target => @node, :anchored => @anchored_tag_decl, :tag => "include_" + @anchored_tag_decl.tag)
       @tags << @tag_decl
     end 
     

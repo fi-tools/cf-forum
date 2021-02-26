@@ -1,3 +1,4 @@
+<%= javascript_pack_tag 'tags' %>
 <%= form_with(model: node) do |form| %>
   <% if node.errors.any? %>
     <div id="message is-danger">
@@ -26,10 +27,14 @@
       }, class: "" %>
     </div>
   </div>
+
+  <%= form.label :targeting_tags, class:"label" %>
+  <div class="field" id="selected-tags">
+  </div>
   
   <div class="field"> 
-    <div class="select is-multiple" onChange=testing(event) >
-      <%= form.select :tag_decl_ids, @user.get_targeting_tags.collect { |t| [t.tag, t.id]} , {}, {multiple: true} %>
+    <div class="select" id="tags-select" >
+      <%= form.select :tag_decl_id, @user.get_targeting_tags.collect { |t| [t.tag, t.id]}, :include_blank => true %>
     </div>
   </div>
 
