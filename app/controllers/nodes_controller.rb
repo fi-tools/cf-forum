@@ -63,12 +63,14 @@ class NodesController < ApplicationController
     @node = Node.new(node_params.merge :author => @author)
     @cv = ContentVersion.new(cv_params.merge :node => @node, :author => @author)
     @tags = []
-    tag_decl_ids.each do |anchored_tag|
-      @anchored_tag_decl = TagDecl.find(anchored_tag)
-      @tag_decl = TagDecl.new(:user => @user, :target => @node, :anchored => @anchored_tag_decl, :tag => "include_" + @anchored_tag_decl.tag)
-      @tags << @tag_decl
-    end 
-    
+    if !tag_decl_ids.nil? 
+      tag_decl_ids.each do |anchored_tag|
+        @anchored_tag_decl = TagDecl.find(anchored_tag)
+        @tag_decl = TagDecl.new(:user => @user, :target => @node, :anchored => @anchored_tag_decl, :tag => "include_" + @anchored_tag_decl.tag)
+        @tags << @tag_decl
+      end
+    end
+
     respond_to do |format|
       begin 
         ActiveRecord::Base.transaction do 
