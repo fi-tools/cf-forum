@@ -16,10 +16,16 @@ class User < ApplicationRecord
 
   has_one :users_group
 
-  after_create :create_user_author, :refresh_users_groups
+  after_create :create_user_author, :refresh_users_groups, :add_default_tags
 
   def create_user_author
     self.authors << Author.create(user: self)
+  end
+
+  def add_default_tags
+    # default blog tag 
+    node = Node.create! 
+    TagDecl.find_or_create_by! :anchored => node, :target => self, :tag => :blog_index, :user => self
   end
 
   def refresh_users_groups
@@ -33,6 +39,10 @@ class User < ApplicationRecord
   def groups
     self.users_group.groups_in_database
   end
+
+  def get_targeting_tags 
+    self.targeting_tags
+  end 
 
   def groups_arel
     throw "deprecated? replaced with user_groups view"

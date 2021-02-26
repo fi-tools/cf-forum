@@ -1,3 +1,4 @@
+<%= javascript_pack_tag 'tags' %>
 <%= form_with(model: node) do |form| %>
   <% if node.errors.any? %>
     <div id="message is-danger">
@@ -18,11 +19,25 @@
     <%= form.text_field :title, class: "input" %>
   </div>
   <%= form.label :author_id, class: "label" %>
-  <div class="select">
-    <%= form.select :author_id, [["Public", true], ["Pseudonyms", false]].to_h {|p|
-      [p[0], @user.authors.where(public: p[1]).collect {|a| [a.formatted_name, a.id]}]
-    }, class: "" %>
+
+  <div class="field">  
+    <div class="select">
+      <%= form.select :author_id, [["Public", true], ["Pseudonyms", false]].to_h {|p|
+        [p[0], @user.authors.where(public: p[1]).collect {|a| [a.formatted_name, a.id]}]
+      }, class: "" %>
+    </div>
   </div>
+
+  <%= form.label :targeting_tags, class:"label" %>
+  <div class="field" id="selected-tags">
+  </div>
+  
+  <div class="field"> 
+    <div class="select" id="tags-select" >
+      <%= form.select :tag_decl_id, @user.get_targeting_tags.collect { |t| [t.tag, t.id]}, :include_blank => true %>
+    </div>
+  </div>
+
   <div class="field">
     <%= form.label :body, class: "label" %>
     <%= form.text_area :body, class: "textarea", size: "80x10" %>
